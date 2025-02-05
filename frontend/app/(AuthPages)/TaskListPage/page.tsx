@@ -21,7 +21,7 @@ export default function Dashboard() {
   const [isSidebarOpen, setIsSidebarOpen] = useState(false);
   const [dropdownOpen, setDropdownOpen] = useState(false);
   const [department, setDepartment] = useState<string | null>(null);
-  const [dropdownOpen1, setDropdownOpen1] = useState<number | null>(null);
+  const [dropdownOpen1, setDropdownOpen1] = useState<string | number | null>(null);
   const [isModalOpen, setIsModalOpen] = useState(false);
   const [selectedTask, setSelectedTask] = useState<Task | null>(null);
   const [tasks, setTasks] = useState<Task[]>([
@@ -41,7 +41,7 @@ export default function Dashboard() {
   const toggleSidebar = () => setIsSidebarOpen(!isSidebarOpen);
 
 
-  const toggleDropdown1 = (key: number | null) => {
+  const toggleDropdown1 = (key: string | number | null) => {
     setDropdownOpen1(dropdownOpen1 === key ? null : key);
   };
   
