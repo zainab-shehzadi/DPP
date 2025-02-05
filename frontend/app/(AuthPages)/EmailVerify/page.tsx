@@ -41,13 +41,7 @@ const EmailVerify: React.FC = () => {
       setLoading(false);
       return;
     }
- // Emit notification to all connected clients (or specific ones if needed)
- const io = getIO();
- io.emit("documentUploaded", {
-   message: "A new document has been uploaded!",
-   documentName: req.file.originalname,
-   documentId,
- });
+
     try {
       const response = await fetch(`${process.env.NEXT_PUBLIC_API_BASE_URL}/api/users/verify-token`, {
         method: "POST",
