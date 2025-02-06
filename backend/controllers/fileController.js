@@ -617,7 +617,8 @@ const generateSolution = async (req, res) => {
     console.log("Received request with ID:", id, "and Query:", query);
 
     // External API endpoint
-    const apiEndpoint = "https://45de-173-208-156-111.ngrok-free.app/get-answer/";
+    // const apiEndpoint = "https://45de-173-208-156-111.ngrok-free.app/get-answer/";
+    const apiEndpoint = `${process.env.NEXT_PUBLIC_AI_LINK}/get-answer/`;
 
     // Call the external API
     let externalResponse;
