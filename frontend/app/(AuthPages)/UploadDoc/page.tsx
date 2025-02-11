@@ -9,6 +9,7 @@ import "react-datepicker/dist/react-datepicker.css";
 import { useRouter } from "next/navigation"; // For navigation after successful reset
 import Notification from '@/components/Notification'
 import Cookies from "js-cookie";
+import { toast } from "react-toastify";
 
 export default function Dashboard() {
 
@@ -156,22 +157,17 @@ const isAuthenticated = () => {
 };
 
   const handleAssignTask = async () => {
-    // if (!isAuthenticated()) {
-    //   toast.error("Please log in with Google to assign a task.", {
-    //     position: toast.POSITIO
-    //   });
-  
-    //   setTimeout(() => {
-    //     window.location.href = `${process.env.NEXT_PUBLIC_API_BASE_URL}/api/calendar/auth-url`;
-    //   }, 5000); // Redirect after showing the message
-    //   return;
-    // }
     if (!isAuthenticated()) {
-      // Redirect the user to the Google login page
-      window.location.href = `${process.env.NEXT_PUBLIC_API_BASE_URL}/api/calendar/auth-url`;
-      //router.push(`/Login`);
+      toast.error("Please log in with Google to assign a task.", {
+        position: "top-right" 
+      });
+  
+      setTimeout(() => {
+        window.location.href = `${process.env.NEXT_PUBLIC_API_BASE_URL}/api/calendar/auth-url`;
+      }, 5000); // Redirect after showing the message
       return;
     }
+    
   
   
     if (!selectedTask || selectedTask.length === 0) {
@@ -183,7 +179,7 @@ const isAuthenticated = () => {
     console.log("Selected ID:", selectedID);
   
     try {
-      const accessToken = accessToken123;
+      const accessToken = "ya29.a0AXeO80RDezErTxkIlTc-4ajFiGAA5UM5FM2n9iDWg9Xdq8ngWTFLGe2QmgReSsbs4VpUTOg99XmIZBYxOyDNIVO-AIb1sdnKXM-eFJl_xW2eX6e1mSBQKx1Kt-EwGlg485lYK1QiF3SoWq5k67qL4v-YdoARptgHR-I-FMsDaCgYKAeUSARESFQHGX2Mi84pFgZ2UD6xbFvMGCqPW9g0175";
   
       // Prepare tasks
       const tasks = selectedTask.map((taskSummary, index) => {

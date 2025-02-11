@@ -27,29 +27,29 @@ router.get('/auth-url', (req, res) => {
   res.status(200).json({ authUrl });
 });
 
-router.get("/callback", async (req, res) => {
-  const { code } = req.query;
+// router.get("/callback", async (req, res) => {
+//   const { code } = req.query;
 
-  if (!code) {
-    return res.status(400).json({ error: "Authorization code not provided" });
-  }
+//   if (!code) {
+//     return res.status(400).json({ error: "Authorization code not provided" });
+//   }
 
-  try {
-    // Exchange the authorization code for tokens
-    const { tokens } = await oAuth2Client.getToken(code);
+//   try {
+//     // Exchange the authorization code for tokens
+//     const { tokens } = await oAuth2Client.getToken(code);
 
-    // Log the tokens for debugging purposes
-    console.log("Access Token:", tokens.access_token);
-    console.log("Refresh Token:", tokens.refresh_token);
+//     // Log the tokens for debugging purposes
+//     console.log("Access Token:", tokens.access_token);
+//     console.log("Refresh Token:", tokens.refresh_token);
 
-    // Redirect to the dashboard with the access token as a query parameter
-    const redirectUrl = `${process.env.FRONTEND_URL}/Dashboard?accessToken=${encodeURIComponent(tokens.access_token)}`;
-    res.redirect(redirectUrl);
-  } catch (error) {
-    console.error("Error during token exchange:", error.message);
-    res.status(500).json({ error: "Failed to exchange token", details: error.message });
-  }
-});
+//     // Redirect to the dashboard with the access token as a query parameter
+//     const redirectUrl = `${process.env.FRONTEND_URL}/Dashboard?accessToken=${encodeURIComponent(tokens.access_token)}`;
+//     res.redirect(redirectUrl);
+//   } catch (error) {
+//     console.error("Error during token exchange:", error.message);
+//     res.status(500).json({ error: "Failed to exchange token", details: error.message });
+//   }
+// });
 
 
 
@@ -80,6 +80,34 @@ router.get("/callback", async (req, res) => {
 //     res.status(500).json({ error: 'Failed to exchange token', details: error.message });
 //   }
 // });
+
+
+router.get("/callback", async (req, res) => {
+  const { code } = req.query;
+
+  if (!code) {
+    return res.status(400).json({ error: "Authorization code not provided" });
+  }
+
+  try {
+    // Exchange the authorization code for tokens
+    const { tokens } = await oAuth2Client.getToken(code);
+
+    // Log the tokens for debugging purposes
+    console.log("Access Token:", tokens.access_token);
+    console.log("Refresh Token:", tokens.refresh_token);
+
+    // Send tokens in JSON response
+    res.status(200).json({
+      accessToken: tokens.access_token,
+      refreshToken: tokens.refresh_token, // Store this securely in the backend
+      expiresIn: tokens.expiry_date, // Optional: Token expiration time
+    });
+  } catch (error) {
+    console.error("Error during token exchange:", error.message);
+    res.status(500).json({ error: "Failed to exchange token", details: error.message });
+  }
+});
 
 router.post('/create-event', async (req, res) => {
   console.log('Received request to create event...');

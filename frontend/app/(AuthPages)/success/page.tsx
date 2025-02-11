@@ -30,7 +30,7 @@ const SuccessPage = () => {
         </p>
         <button
           onClick={handleRedirect}
-          className="w-full py-2 px-4 text-lg bg-green-600 text-white rounded-md hover:bg-green-700"
+          className="w-full py-2 px-4 text-lg bg-[#002F6C] text-white rounded-md hover:bg-[#002F6C]"
         >
           Go to Dashboard
         </button>

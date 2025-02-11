@@ -1,45 +1,55 @@
-
-
-
-"use client"; // Add this line if you need client-side navigation
+"use client";
 
 import Image from "next/image";
 import React from "react";
 import { Button } from "./ui/button";
 import { MoveUpRight } from "lucide-react";
 import MobileNavbar from "./MobileNavbar";
-import { useRouter } from "next/navigation"; // Correct import for App Router
+import { useRouter, usePathname } from "next/navigation"; // Import usePathname
 
-const Navbar = () => {  // Use a single consistent name, e.g., Navbar
+const Navbar = () => {
   const router = useRouter();
+  const pathname = usePathname(); // Get current route
 
-  const handleSignInClick = () => {
-    router.push("/Login"); // Replace "/login" with your login page route
-  };
-  const handleNavigateToPOCAI = () => {
-    router.push("/POCAI"); // Replace "/login" with your login page route
+  const handleNavigate = (path: string) => {
+    router.push(path);
   };
 
   return (
     <div className="page-pad flex flex-row py-[20px] justify-between items-center">
       <Image src="/assets/logo.png" alt="logo" width={100} height={30} />
 
-      <ul className="flex flex-row gap-2">
-        <li className="nav-item">Home</li>
-        <li className="nav-item">Product</li>
+      <ul className="flex flex-row gap-4">
         <li
-          className="nav-item cursor-pointer hover:underline"
-          onClick={handleNavigateToPOCAI}
+          className={`nav-item cursor-pointer ${pathname === "/" ? "font-bold text-blue-600" : ""}`}
+          onClick={() => handleNavigate("/")}
+        >
+          Home
+        </li>
+        <li
+          className={`nav-item cursor-pointer ${pathname === "/Product" ? "font-bold text-blue-600" : ""}`}
+          onClick={() => handleNavigate("/Product")}
+        >
+          Product
+        </li>
+        <li
+          className={`nav-item cursor-pointer hover:underline ${pathname === "/HomePage" ? "font-extrabold text-blue-600" : ""}`}
+          onClick={() => handleNavigate("/AboutUs")}
         >
           About Us
         </li>
-        <li className="nav-item">Contact</li>
+        <li
+          className={`nav-item cursor-pointer hover:underline ${pathname === "/Pricing" ? "font-extrabold text-blue-600" : ""}`}
+          onClick={() => handleNavigate("/Pricing")}
+        >
+          Pricing Plan
+        </li>
       </ul>
 
       <div className="flex gap-3 items-center">
         <p
-          className="font-semibold cursor-pointer"
-          onClick={handleSignInClick}
+          className={`font-semibold cursor-pointer ${pathname === "/Login" ? "font-bold text-blue-600" : ""}`}
+          onClick={() => handleNavigate("/LoginPage")}
         >
           Sign In
         </p>

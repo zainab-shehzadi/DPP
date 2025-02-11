@@ -3,6 +3,10 @@ import Link from "next/link";
 import React, { useState,useEffect } from "react";
 import "@fortawesome/fontawesome-free/css/all.min.css";
 import Image2 from "@/components/imageright"; // Ensure the correct import path
+import { Eye, EyeOff } from "lucide-react";
+import { toast } from "react-toastify";
+import Image from "next/image";
+
 import { useRouter } from "next/navigation";
 const Signup: React.FC = () => {
   const [DepartmentName, setDepartmentName] = useState("");
@@ -13,7 +17,9 @@ const Signup: React.FC = () => {
   const [email, setEmail] = useState("");
   const [password, setPassword] = useState("");
   const [repeatPassword, setRepeatPassword] = useState("");
-
+ 
+  const [showPassword, setShowPassword] = useState(false);
+  const [showRepeatPassword, setShowRepeatPassword] = useState(false);
   const [message, setMessage] = useState<string>("");
 
   // Department-to-Positions Mapping
@@ -54,9 +60,23 @@ const roleCategories = {
 
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
-  
+  // Trim input and validate names
+  if (!firstName.trim()) {
+    toast.error("First Name cannot be empty or just spaces");
+    return;
+  }
+  if (!lastName.trim()) {
+    toast.error("Last Name cannot be empty or just spaces");
+    return;
+  }
+      // Check password length
+  if (password.length < 8) {
+    toast.error("Password must be at least 8 characters long", { position: "top-right" });
+    return;
+  }
+
     if (password !== repeatPassword) {
-      alert("Passwords do not match!");
+      toast.error("Passwords do not match", { position: "top-right" });
       return;
     }
   
@@ -82,16 +102,16 @@ const roleCategories = {
       const data = await response.json();
   
       if (response.ok) {
-        setMessage("Signup successful!"); // Set the success message
+        toast.success("Signup successful!", { position: "top-right" }); // Success toast
         setTimeout(() => {
           router.push(`/FormDetail?email=${email}`); // Pass email in query params
         }, 2000);  // 2000 ms = 2 seconds
       } else {
-        alert(data.message || "Signup failed!");
+        toast.error(data.message || "Signup failed!");
       }
     } catch (error) {
       console.error("Error during signup:", error);
-      alert("An error occurred. Please try again.");
+      toast.error("An error occurred. Please try again.");
     }
   };
   
@@ -125,7 +145,8 @@ const roleCategories = {
             type="text"
             placeholder="First Name"
             value={firstName}
-            onChange={(e) => setFirstName(e.target.value)}
+            onChange={(e) => setFirstName(e.target.value.trimStart())} // Prevent leading spaces
+
             required
             className="w-full px-2 py-2 border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-blue-500 text-sm"
           />
@@ -138,7 +159,7 @@ const roleCategories = {
             type="text"
             placeholder="Last Name"
             value={lastName}
-            onChange={(e) => setLastName(e.target.value)}
+            onChange={(e) => setLastName(e.target.value.trimStart())} // Prevent leading spaces
             required
             className="w-full px-2 py-2 border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-blue-500 text-sm"
           />
@@ -245,43 +266,66 @@ const roleCategories = {
       </div>
  
 
-      {/* Password and Repeat Password */}
       <div className="flex flex-col md:flex-row gap-4">
-        <div className="flex-1">
-          <label className="block text-sm font-medium text-gray-700 mb-1">
-            Password
-          </label>
+      {/* Password Field */}
+      <div className="flex-1 relative">
+        <label className="block text-sm font-medium text-gray-700 mb-1">
+          Password
+        </label>
+        <div className="relative">
           <input
-            type="password"
+            type={showPassword ? "text" : "password"}
             placeholder="Password"
             value={password}
             onChange={(e) => setPassword(e.target.value)}
             required
-            className="w-full px-2 py-2 border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-blue-500 text-sm"
+            className="w-full px-4 py-2 border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-blue-500 text-sm pr-10"
           />
+          <button
+            type="button"
+            className="absolute inset-y-0 right-3 flex items-center text-gray-500"
+            onClick={() => setShowPassword(!showPassword)}
+          >
+            {showPassword ? <EyeOff size={20} /> : <Eye size={20} />}
+          </button>
         </div>
-        <div className="flex-1">
-          <label className="block text-sm font-medium text-gray-700 mb-1">
-            Repeat Password
-          </label>
+      </div>
+
+      {/* Repeat Password Field */}
+      <div className="flex-1 relative">
+        <label className="block text-sm font-medium text-gray-700 mb-1">
+          Repeat Password
+        </label>
+        <div className="relative">
           <input
-            type="password"
+            type={showRepeatPassword ? "text" : "password"}
             placeholder="Repeat Password"
             value={repeatPassword}
             onChange={(e) => setRepeatPassword(e.target.value)}
             required
-            className="w-full px-2 py-2 border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-blue-500 text-sm"
+            className="w-full px-4 py-2 border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-blue-500 text-sm pr-10"
           />
+          <button
+            type="button"
+            className="absolute inset-y-0 right-3 flex items-center text-gray-500"
+            onClick={() => setShowRepeatPassword(!showRepeatPassword)}
+          >
+            {showRepeatPassword ? <EyeOff size={20} /> : <Eye size={20} />}
+          </button>
         </div>
       </div>
+    </div>
 
       {/* Submit Button */}
       <button
-        type="submit"
-        className="w-full py-2 bg-[#002f6c] text-white font-semibold rounded-lg hover:bg-blue-800 transition-colors text-sm"
-      >
-        Sign Up
-      </button>
+  type="submit"
+  className="w-full py-2 bg-[#002f6c] text-white font-semibold rounded-lg 
+              transition-all text-sm 
+             shadow-lg hover:shadow-xl"
+>
+  Sign Up
+</button>
+
     </form>
 
     <div className="flex items-center my-4">
@@ -292,8 +336,14 @@ const roleCategories = {
 
     {/* Social Sign Up Buttons */}
     <div className="flex flex-col sm:flex-row gap-3">
-      <button className="flex items-center justify-center w-full py-2 px-4 border border-gray-300 rounded-lg text-gray-700 hover:bg-[#f7f7f7] hover:text-black transition-colors">
-        <i className="fab fa-google mr-2 text-lg text-[#DB4437]"></i>
+      <button className="flex items-center justify-center w-full py-2 px-4 border border-gray-300 rounded-lg text-gray-700 hover:text-black transition-colors">
+       <Image
+         src="/assets/google-icon.png" // Replace with the correct path to your Google logo image
+         alt="Google Logo"
+         width={24} // Adjust the size as needed
+         height={24}
+         className="mr-3"
+       />
         Google
       </button>
       
@@ -304,7 +354,7 @@ const roleCategories = {
       <p className="text-sm text-gray-600">
         Already have an account?{" "}
         <Link
-          href="/Login"
+          href="/LoginPage"
           className="text-[#002f6c] font-semibold hover:underline"
         >
           Sign In

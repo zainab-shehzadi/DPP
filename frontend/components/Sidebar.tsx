@@ -25,14 +25,13 @@ interface SidebarProps {
   isSidebarOpen: boolean;
   toggleSidebar: () => void;
 }
-
-
 const Sidebar: React.FC<SidebarProps> = ({ isSidebarOpen, toggleSidebar }) => {
 
     const [dashboardOpen, setDashboardOpen] = useState(false);
   const [settingsOpen, setSettingsOpen] = useState(false);
   const [isMobileView, setIsMobileView] = useState(false);
   const [email, setEmail] = useState<string | null>(null); // Email from localStorage
+  const [activeItem, setActiveItem] = useState<string | null>(null);
 
   const router = useRouter(); // Moved inside the component
   
@@ -45,8 +44,12 @@ const Sidebar: React.FC<SidebarProps> = ({ isSidebarOpen, toggleSidebar }) => {
     setSettingsOpen(!settingsOpen);
     setDashboardOpen(false);
   };
-
+  useEffect(() => {
+    setActiveItem(window.location.pathname);
+  }, []);
+  
   const handleNavigation = (path: string) => {
+    setActiveItem(path); // Set the active item
     router.push(path);
   };
   const handleLogout = () => {
@@ -60,7 +63,7 @@ const Sidebar: React.FC<SidebarProps> = ({ isSidebarOpen, toggleSidebar }) => {
       sessionStorage.clear(); // Clear all sessionStorage (if used)
 
       // Redirect to Login page
-      router.push("/Login");
+      router.push("/LoginPage");
     } catch (error) {
       console.error("Error during logout:", error);
       alert("An error occurred. Please try again.");
@@ -82,6 +85,7 @@ useEffect(() => {
     setEmail(storedEmail); // Set the email state if found in cookies
   }
 }, []);
+
   const handleUserSettingsNavigation = async () => {
     if (!email) {
       console.error("Email is missing or not provided.");
@@ -163,49 +167,54 @@ useEffect(() => {
                 Dashboard
               </a>
               {dashboardOpen && (
-                <ul className="ml-4 space-y-4">
-                  <li>
-                    <a
-                      href="#"
-                      onClick={() => handleNavigation("/Dashboard")}
-                      className="flex items-center py-2 px-4 hover:bg-white hover:text-blue-900 rounded-md font-bold text-medium leading-6"
-                    >
-                      <FaUser className="mr-2" />
-                      Upload New 2567
-                    </a>
-                  </li>
-                  <li>
-                    <a
-                      href="#"
-                      onClick={() => handleNavigation("/HistoryPage")}
-                      className="flex items-center py-2 px-4 hover:bg-white hover:text-blue-900 rounded-md font-bold text-medium leading-6"
-                    >
-                      <FaBuilding className="mr-2" />
-                      History
-                    </a>
-                  </li>
-                  <li>
-                    <a
-                      href="#"
-                      onClick={() => handleNavigation("/TaskListPage")}
-                      className="flex items-center py-2 px-4 hover:bg-white hover:text-blue-900 rounded-md font-bold text-medium leading-6"
-                    >
-                      <FaUser className="mr-2" />
-                      Task Assigned
-                    </a>
-                  </li>
-                  <li>
-                    <a
-                      href="#"
-                      onClick={() => handleNavigation("/InsightPage")}
-                      className="flex items-center py-2 px-4 hover:bg-white hover:text-blue-900 rounded-md font-bold text-medium leading-6"
-                    >
-                      <FaCreditCard className="mr-2" />
-                      Insights
-                    </a>
-                  </li>
-                </ul>
-              )}
+  <ul className="ml-4 space-y-4">
+    <li>
+      <a
+        href="#"
+        onClick={() => handleNavigation("/Dashboard")}
+        className={`flex items-center py-2 px-4 rounded-md font-bold text-medium leading-6 
+          ${activeItem === "/Dashboard" ? "bg-white text-blue-900" : "hover:bg-white hover:text-blue-900"}`}
+      >
+        <FaUser className="mr-2" />
+        Upload New 2567
+      </a>
+    </li>
+    <li>
+      <a
+        href="#"
+        onClick={() => handleNavigation("/HistoryPage")}
+        className={`flex items-center py-2 px-4 rounded-md font-bold text-medium leading-6 
+          ${activeItem === "/HistoryPage" ? "bg-white text-blue-900" : "hover:bg-white hover:text-blue-900"}`}
+      >
+        <FaBuilding className="mr-2" />
+        History
+      </a>
+    </li>
+    <li>
+      <a
+        href="#"
+        onClick={() => handleNavigation("/TaskListPage")}
+        className={`flex items-center py-2 px-4 rounded-md font-bold text-medium leading-6 
+          ${activeItem === "/TaskListPage" ? "bg-white text-blue-900" : "hover:bg-white hover:text-blue-900"}`}
+      >
+        <FaUser className="mr-2" />
+        Task Assigned
+      </a>
+    </li>
+    <li>
+      <a
+        href="#"
+        onClick={() => handleNavigation("/InsightPage")}
+        className={`flex items-center py-2 px-4 rounded-md font-bold text-medium leading-6 
+          ${activeItem === "/InsightPage" ? "bg-white text-blue-900" : "hover:bg-white hover:text-blue-900"}`}
+      >
+        <FaCreditCard className="mr-2" />
+        Insights
+      </a>
+    </li>
+  </ul>
+)}
+
             </li>
             <li className="w-full">
               <a

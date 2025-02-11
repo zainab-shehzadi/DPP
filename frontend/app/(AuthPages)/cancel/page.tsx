@@ -18,7 +18,7 @@ const CancelPage = () => {
 
   const handleRedirect = () => {
     // Redirecting to the Pricing Page after canceling the payment
-    router.push('/SubscriptionPlan');
+    router.push('/Pricing');
   };
 
   return (

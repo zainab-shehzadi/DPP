@@ -25,7 +25,7 @@ const Login: React.FC = () => {
 
 
           {/* Login button */}
-          <Link href="/Login">
+          <Link href="/LoginPage">
             <button
               type="button"
               className="w-full py-3 bg-[#002f6c] text-white font-semibold rounded-lg  transition-colors shadow-lg"

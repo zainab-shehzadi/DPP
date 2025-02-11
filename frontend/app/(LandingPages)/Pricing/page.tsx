@@ -84,15 +84,17 @@ const SubscribeComponent: React.FC<SubscribeProps> = ({ planType, planCycle, pri
     }
   };
   return (
-    <div className="mt-4">
-     <button
-  onClick={handleSubmit}
-  className="mt-4 w-full bg-white text-black py-3 rounded-md border-2 border-black"
->
-  Subscribe to {planType} Plan for {price} ({planCycle})
-</button>
+   <div className="mt-4 relative overflow-hidden">
+  <button
+    onClick={handleSubmit}
+    className="relative mt-4 w-full bg-white text-black py-3 font-bold rounded-md border-2 border-black overflow-hidden group"
+  >
+    Get Started
+    {/* Ripple Effect */}
+    <span className="absolute inset-0 bg-black opacity-0 group-hover:opacity-10 transition duration-300"></span>
+  </button>
+</div>
 
-    </div>
   );
 };
 
@@ -147,7 +149,7 @@ const Pricing: React.FC = () => {
         <div className="flex justify-center items-center gap-6 mt-6">
           <span className="text-gray-600 text-base sm:text-lg">Bi-Annual</span>
           <div
-            className="relative w-20 h-10 bg-blue-900 rounded-full cursor-pointer flex items-center"
+            className="relative w-20 h-10 bg-[#002F6C] rounded-full cursor-pointer flex items-center"
             onClick={toggleBillingCycle}
           >
             <div
@@ -160,13 +162,13 @@ const Pricing: React.FC = () => {
         </div>
       </header>
 
-      {/* Pricing Cards Section */}
+      {/* Pricing Cards Section
       <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-8 max-w-7xl w-full">
         {plans.map((plan) => (
           <div
             key={plan.type}
             className={`p-6 sm:p-8 shadow-lg rounded-lg ${
-              plan.type === "Pro" ? "bg-blue-900 text-white relative" : "bg-white"
+              plan.type === "Pro" ? "bg-[#002F6C] text-white relative" : "bg-white"
             }`}
           >
             <h2 className="text-xl sm:text-2xl font-bold">{plan.type}</h2>
@@ -191,7 +193,61 @@ const Pricing: React.FC = () => {
             />
           </div>
         ))}
-      </div>
+      </div> */}
+      {/* Pricing Cards Section */}
+<div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-8 max-w-7xl w-full">
+  {plans.map((plan) => (
+    <div
+      key={plan.type}
+      className={`p-6 sm:p-8 shadow-lg rounded-lg ${
+        plan.type === "Pro" ? "bg-[#002F6C] text-white relative" : "bg-white"
+      }`}
+    >
+      <h2 className="text-xl sm:text-2xl font-bold">{plan.type}</h2>
+
+      {/* Pricing Section */}
+      <p className="mt-4 flex items-center space-x-2">
+        <span className="text-3xl sm:text-4xl font-extrabold">${plan.price}</span>
+
+        {/* Show Discount Badge when Annual */}
+        {billingCycle === "Annual" && (
+          <span
+            className={`text-white text-sm font-bold px-2 py-1 rounded-md ${
+              plan.type === "Pro" ? "bg-[#629E1B]" : "bg-gray-300"
+            }`}
+          >
+            -15%
+          </span>
+        )}
+      </p>
+
+      <p>per user/month, billed {billingCycle === "Annual" ? "annually" : "bi-annually"}</p>
+
+      {/* Features List */}
+      <ul className="mt-6 space-y-4 text-base sm:text-lg">
+        {plan.description
+          .trim()
+          .split("\n")
+          .map((item, idx) => (
+            <li key={idx} className="flex items-center space-x-2">
+              {/* Conditional tick color */}
+             
+              <span>{item.trim()}</span>
+            </li>
+          ))}
+      </ul>
+
+      {/* Subscribe Button */}
+      <SubscribeComponent
+        planType={plan.type}
+        planCycle={billingCycle}
+        price={plan.price}
+        description={plan.description}
+      />
+    </div>
+  ))}
+</div>
+
     </div>
   );
 };

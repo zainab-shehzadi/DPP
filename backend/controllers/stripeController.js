@@ -51,7 +51,7 @@ await user.save();
         },
       ],
       mode: "payment",
-      success_url: `${frontendUrl}/success`,
+      success_url: `${frontendUrl}/Dashboard`,
       cancel_url: `${frontendUrl}/cancel`,
     });
 

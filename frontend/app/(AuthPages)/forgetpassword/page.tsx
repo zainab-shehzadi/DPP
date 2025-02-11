@@ -4,18 +4,47 @@ import React, { useState } from "react";
 import { useRouter } from "next/navigation";
 import "@fortawesome/fontawesome-free/css/all.min.css";
 import Image2 from "@/components/imageright"; // Ensure the correct import path
+import { toast } from "react-toastify";
 
 const ForgotPassword: React.FC = () => {
   const [email, setEmail] = useState("");
-  const [message, setMessage] = useState("");
-  const [loading, setLoading] = useState(false);
+
 
   const router = useRouter();
 
+  // const handleForgotPassword = async (e: React.FormEvent) => {
+  //   e.preventDefault();
+  //   setMessage("");
+  //   setLoading(true);
+
+  //   try {
+  //     const response = await fetch(`${process.env.NEXT_PUBLIC_API_BASE_URL}/api/users/forgot-password`, {
+  //       method: "POST",
+  //       headers: { "Content-Type": "application/json" },
+  //       body: JSON.stringify({ email }),
+  //     });
+
+  //     const data = await response.json();
+
+  //     if (response.ok) {
+  //       setMessage("Password reset email sent successfully!");
+  //       setTimeout(() => {
+  //         router.push(`/EmailVerify?email=${encodeURIComponent(email)}`);
+  //       }, 1000);
+  //     } else {
+  //       setMessage(data.message || "Failed to send reset email.");
+  //     }
+  //   } catch (error) {
+  //     console.error("Error:", error);
+  //     setMessage("An error occurred. Please try again.");
+  //   } finally {
+  //     setLoading(false);
+  //   }
+  // };
+
   const handleForgotPassword = async (e: React.FormEvent) => {
     e.preventDefault();
-    setMessage("");
-    setLoading(true);
+   
 
     try {
       const response = await fetch(`${process.env.NEXT_PUBLIC_API_BASE_URL}/api/users/forgot-password`, {
@@ -27,22 +56,19 @@ const ForgotPassword: React.FC = () => {
       const data = await response.json();
 
       if (response.ok) {
-        setMessage("Password reset email sent successfully!");
+        toast.success("Password reset email sent successfully!", { position: "top-right" });
+
         setTimeout(() => {
           router.push(`/EmailVerify?email=${encodeURIComponent(email)}`);
         }, 1000);
       } else {
-        setMessage(data.message || "Failed to send reset email.");
+        toast.error(data.message || "Failed to send reset email.", { position: "top-right" });
       }
     } catch (error) {
       console.error("Error:", error);
-      setMessage("An error occurred. Please try again.");
-    } finally {
-      setLoading(false);
+      toast.error("An error occurred. Please try again.", { position: "top-right" });
     }
   };
-
-
   return (
     <div className="flex h-screen font-work-sans bg-black-50">
       {/* Left Side: Forgot Password Form */}
@@ -82,7 +108,7 @@ const ForgotPassword: React.FC = () => {
 
 
           {/* Back to Login Button */}
-          <Link href="/Login">
+          <Link href="/LoginPage">
             <button
               type="button"
               className="w-full px-3 py-2 border border-black-300 rounded-lg font-bold focus:outline-none mt-8 text-sm sm:text-base md:text-lg hover:bg-gray-100 transition-colors"

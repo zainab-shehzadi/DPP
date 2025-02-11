@@ -22,7 +22,7 @@ export function middleware(req: NextRequest) {
   }
 
   // Define public routes that don't require authentication
-  const publicRoutes = ["/Login", "/signup", "/forgetpassword", "/resetpassword"];
+  const publicRoutes = ["/LoginPage", "/signup", "/forgetpassword", "/resetpassword"];
 
   // Allow access to public routes (login, signup, reset, forgetpassword)
   if (publicRoutes.some((route) => url.pathname.startsWith(route))) {
@@ -35,7 +35,7 @@ export function middleware(req: NextRequest) {
     if (!token) {
       // If no token, redirect to Login
       console.log("No token found. Redirecting to /Login...");
-      url.pathname = "/Login";
+      url.pathname = "/LoginPage";
       return NextResponse.redirect(url);
     } else {
       // If token exists, allow access to Dashboard
@@ -55,7 +55,7 @@ export function middleware(req: NextRequest) {
       return NextResponse.next(); // Allow access to admin pages
     } else {
       console.log("Access denied. Admin role is required. Redirecting to /Login...");
-      url.pathname = "/Login"; // Redirect to login if user is not an admin or token is missing
+      url.pathname = "/LoginPage"; // Redirect to login if user is not an admin or token is missing
       return NextResponse.redirect(url); // Perform the redirect
     }
   }
@@ -68,7 +68,7 @@ export function middleware(req: NextRequest) {
     url.pathname.startsWith("/DailySummaries") ||
     url.pathname.startsWith("/TaskListPage") ||
     url.pathname.startsWith("/landing") ||
-    url.pathname.startsWith("/POCAI") ||
+    url.pathname.startsWith("/AboutUs") ||
     url.pathname.startsWith("/facilitySetting") ||
     url.pathname.startsWith("/profileSetting")
   ) {
@@ -77,14 +77,14 @@ export function middleware(req: NextRequest) {
       return NextResponse.next();
     } else {
       console.log("Access denied. User role is required. Redirecting to /Login...");
-      url.pathname = "/Login";
+      url.pathname = "/LoginPage";
       return NextResponse.redirect(url);
     }
   }
 
   // Default case: redirect to Login if no conditions are met
   console.log("Route not matched or user not authenticated. Redirecting to /Login...");
-  url.pathname = "/Login";
+  url.pathname = "/LoginPage";
   return NextResponse.redirect(url);
 }
 
@@ -92,7 +92,7 @@ export function middleware(req: NextRequest) {
 export const config = {
   matcher: [
     "/Dashboard", // Protect the Dashboard route
-    "/Login", // Public route
+    "/LoginPage", // Public route
     "/signup", // Public route
     "/reset", // Public route
     "/forgetpassword", // Public route

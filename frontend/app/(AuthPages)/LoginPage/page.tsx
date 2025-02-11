@@ -2,10 +2,10 @@
 
 import Link from "next/link";
 import React, { useState, useEffect } from "react";
-import { FaGoogle, FaFacebook } from "react-icons/fa";
 import { useRouter } from "next/navigation";
 import Image2 from "@/components/imageright"; // Ensure the correct import path
-
+import { toast } from "react-toastify";
+import Image from "next/image";
 const Login: React.FC = () => {
   const [email, setEmail] = useState("");
   const [password, setPassword] = useState("");
@@ -46,7 +46,7 @@ const Login: React.FC = () => {
   
       // Check if the login was successful
       if (response.ok) {
-        setMessage("Login successful!"); // Set the success message
+        toast.success("Login successful!", { position: "top-right" }); // Success toast
         console.log(data);
   
         setCookie("accesstoken", data.accessToken); 
@@ -74,16 +74,18 @@ const Login: React.FC = () => {
           } else if (priceCycle === null || priceCycle === "null") {
             // If priceCycle is null, redirect to Subscription Plan page
             setTimeout(() => {
-              router.push(`/SubscriptionPlan`);
+              router.push(`/Pricing`);
             }, 2000);
           }
         
         } else {
-          setMessage("Email or role is missing. Please log in again.");
+          toast.error("Email or role is missing. Please log in again.", { position: "top-right" });
+         
         }
         
         
       } else {
+        
         setMessage(data.message || "Login failed!");  
       }
   
@@ -99,73 +101,22 @@ const Login: React.FC = () => {
       if (!response.ok) {
         throw new Error("Failed to fetch Google Auth URL.");
       }
-  
+   
       const data = await response.json();
       if (data.authUrl) {
         // Redirect the user to the Google login page
         window.location.href = data.authUrl;
       } else {
-        console.error("Google Auth URL not provided in the response.");
+        toast.error("Google Auth URL not provided in the response.", { position: "top-right" });
+       
       }
     } catch (error) {
-      console.error("Error during Google login");
+      toast.error("Error during Google login.", { position: "top-right" });
+     
     }
   };
-  
 
   
-  // const handleSubmit = async (e: React.FormEvent) => {
-  //   e.preventDefault();
-  //   console.log("Email:", email);
-  //   console.log("Password:", password);
-  
-  //   try {
-  //     // Send login request to the backend
-  //     const response = await fetch(`${process.env.NEXT_PUBLIC_API_BASE_URL}/api/users/login`, {
-  //       method: "POST",
-  //       headers: {
-  //         "Content-Type": "application/json",
-  //       },
-  //       body: JSON.stringify({ email, password }),
-  //     });
-  
-  //     const data = await response.json();
-  //      console.log(data);
-  //     // Check if the login was successful
-  //     if (response.ok) {
-  //       setMessage("Login successful!"); // Set the success message
-  //       console.log(data);
-
-  //       // Save token, email, and role to cookies
-        
-  //       setCookie("token", data.token); // Store the token securely
-  //       setCookie("email", data.email); // Store the email
-  //       setCookie("role", data.role);   // Store the role
-  //       setCookie("DepartmentName", data.DepartmentName);
-  //       // Get email and role from cookies
-  //       const storedEmail = getCookie("email");
-  //       const storedRole = getCookie("role"); // Get the role from cookies
-  //       const dep = getCookie("DepartmentName");
-  //       console.log(dep);
-  //       if (storedEmail && storedRole) {
-  //         // Set a timer of 2 seconds (2000 ms) before redirecting to the Dashboard
-  //         setTimeout(() => {
-  //           router.push(`/SubscriptionPlan`);
-  //         }, 2000);  // 2000 ms = 2 seconds
-  //       } else {
-  //         setMessage("Email or role is missing. Please log in again.");  // Set the error message if email or role is missing
-  //       }
-  //     } else {
-  //       setMessage(data.message || "Login failed!");  // Set the error message if login fails
-  //     }
-
-  //   } catch (error) {
-  //     console.error("Error:", error);
-  //     setMessage("An error occurred. Please try again."); // Show error message on failure
-  //   }
-  // };
-
-  // Hide the message after 2 seconds
   useEffect(() => {
     if (message) {
       const timer = setTimeout(() => {
@@ -249,7 +200,16 @@ const Login: React.FC = () => {
   onClick={handleGoogleLogin}
   className="flex items-center justify-center w-full py-2 px-4 border border-gray-300 rounded-lg text-gray-700 hover:bg-[#ffffff] hover:text-black transition-colors"
 >
-  <FaGoogle className="mr-3 text-2xl text-[#df837a] hover:text-white" />
+
+
+<Image
+  src="/assets/google-icon.png" // Replace with the correct path to your Google logo image
+  alt="Google Logo"
+  width={24} // Adjust the size as needed
+  height={24}
+  className="mr-3"
+/>
+
   <span className="ml-2">Log In With Google</span>
 </button>
           </div>
@@ -261,7 +221,7 @@ const Login: React.FC = () => {
               Don't have an account?{" "}
               <Link
                 href="/signup"
-                className="text-[#002f6c] font-semibold hover:bg-[#002f6c] hover:text-white"
+                className="text-[#002f6c] font-bold "
               >
                 Sign Up
               </Link>

@@ -14,7 +14,7 @@ const MobileNavbar: React.FC = () => {
   const router = useRouter();
 
   const handleNavigateToPOCAI = () => {
-    router.push("/POCAI"); // Navigate to POCAI page
+    router.push("/AboutUs"); 
   };
 
   return (

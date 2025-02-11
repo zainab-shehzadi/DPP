@@ -67,7 +67,7 @@ const SubscribeComponent: React.FC<SubscribeProps> = ({ planType, planCycle, pri
         onClick={handleSubmit}
         className="mt-4 w-full bg-blue-500 text-white py-3 rounded-lg hover:bg-blue-600"
       >
-        Subscribe to {planType} Plan for {price} ({planCycle})
+        Subscribe to {planType} Plan for {price} 
       </button>
     </div>
   );

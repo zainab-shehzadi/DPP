@@ -123,7 +123,7 @@ const ResetPassword: React.FC = () => {
               {loading ? "Resetting..." : "Reset Password"}
             </button>
           </form>
-          <Link href="/login">
+          <Link href="/loginPage">
             <button
               type="button"
               className="w-full px-3 py-2 border border-black-300 rounded-lg font-bold focus:outline-none mt-6 text-sm sm:text-base md:text-lg hover:bg-gray-100 transition-colors"
