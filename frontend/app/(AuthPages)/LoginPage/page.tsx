@@ -18,7 +18,6 @@ const Login: React.FC = () => {
     const expires = new Date(Date.now() + days * 86400000).toUTCString();
     document.cookie = `${name}=${value}; path=/; expires=${expires}; secure`;
   };
-
   // Helper function to get cookies
   const getCookie = (name: string) => {
     const value = `; ${document.cookie}`;
@@ -26,6 +25,7 @@ const Login: React.FC = () => {
     if (parts.length === 2) return parts.pop()?.split(";").shift();
     return null;
   };
+
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
     console.log("Email:", email);
@@ -59,11 +59,9 @@ const Login: React.FC = () => {
 
         const storedEmail = getCookie("email");
         const storedRole = getCookie("role");
-        const priceType = getCookie("priceType");
+        //const priceType = getCookie("priceType");
         const priceCycle = getCookie("priceCycle");
-        const access_cookie =getCookie("accessToken");
-
-        console.log("sadfhksj" ,access_cookie);
+        
         if (storedEmail && storedRole) {
           // Check if priceCycle is "Annual" or "Bi-Annual"
           if (priceCycle === "Annual" || priceCycle === "Bi-Annual") {
@@ -94,6 +92,7 @@ const Login: React.FC = () => {
       setMessage("An error occurred. Please try again."); // Show error message on failure
     }
   };
+
   const handleGoogleLogin = async () => {
     try {
       // Fetch the Google Auth URL from the backend
@@ -115,6 +114,8 @@ const Login: React.FC = () => {
      
     }
   };
+
+
 
   
   useEffect(() => {

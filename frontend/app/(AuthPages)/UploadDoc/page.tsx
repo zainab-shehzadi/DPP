@@ -1,6 +1,6 @@
 "use client"; 
 import { useSearchParams } from 'next/navigation';
-import React, { useState, useEffect } from "react";
+import React, { useState, useEffect, useRef } from "react";
 import Sidebar from "@/components/Sidebar";
 import Image from "next/image";
 import {FaFileAlt, FaBell } from "react-icons/fa";
@@ -10,7 +10,11 @@ import { useRouter } from "next/navigation"; // For navigation after successful 
 import Notification from '@/components/Notification'
 import Cookies from "js-cookie";
 import { toast } from "react-toastify";
-
+interface DocumentType {
+  _id: string;
+  originalName: string;
+  fileUrl?: string; // Optional in case some documents lack a URL
+}
 export default function Dashboard() {
 
 
@@ -40,38 +44,117 @@ const [solution, setSolution] = useState(''); // Holds the solution text to disp
 const [dropdownOpen1, setDropdownOpen1] = useState(false); // Dropdown toggle
 const [selectedDate, setSelectedDate] = useState(new Date());
 const [accessToken123, setAccessToken] = useState<string | null>(null);
-
+const [documents, setDocuments] = useState<DocumentType[]>([]); // ✅ Specify type
+const [refreshToken, setrefreshToken] =useState<string| null>(null);
 const [dropdownOpen2, setDropdownOpen2] = useState(false); // State for dropdown visibility
 const [selectedDescription, setSelectedDescription] = useState<string | null>( null ); // Short description of the selected tag
+const dropdownRef = useRef<HTMLDivElement>(null);
+const [selectedDocument, setSelectedDocument] = useState(null);
+
 const [answer1, setAnswer1] = useState('');
 const [answer2, setAnswer2] = useState('');
 const [loading, setLoading] = useState(false);
-const [message, setMessage] = useState('');
+
 const router = useRouter();
 const id = searchParams.get("id");
 useEffect(() => {
-
   const storedAccessToken = Cookies.get("accessToken");
+  const storedRefreshToken = Cookies.get("refreshToken"); // Fix variable name
   const storedEmail = Cookies.get("email");
 
-  // Debugging: Log the tokens and email to the console
   if (storedAccessToken) {
     console.log("Access Token:", storedAccessToken);
-    setAccessToken(storedAccessToken); // Store the token in state
-  } else {
-  
-  }
-
+    setAccessToken(storedAccessToken);
+  } 
+  if (storedRefreshToken) { // ✅ Correct condition
+    console.log("Refresh Token:", storedRefreshToken);
+    setrefreshToken(storedRefreshToken); 
+  } 
   if (storedEmail) {
     console.log("Email:", storedEmail);
-    setEmail(storedEmail); // Store the email in state
+    setEmail(storedEmail);
   } else {
     console.error("Email not found in cookies.");
   }
 }, []);
+useEffect(() => {
+  const fetchDocuments = async () => {
+ 
+
+    try {
+      const safeEmail = email ?? ""; // Use empty string if email is null
+
+      const response = await fetch(
+        `${process.env.NEXT_PUBLIC_API_BASE_URL}/api/files/docs?email=${encodeURIComponent(safeEmail)}`
+      );
+
+      const data = await response.json();
+      console.log("API Response:", data);
+
+      if (!data.files || data.files.length === 0) {
+        console.warn("No files found.");
+        setDocuments([]); // Clear state if no files
+        return;
+      }
+
+      // ✅ Ensure correct structure
+      const userFiles: DocumentType[] = data.files.map(file => ({
+        id: file.id,
+        originalName: file.originalName || "Unnamed Document",
+        fileUrl: file.fileUrl || "#", // ✅ Prevent undefined URLs
+      }));
+
+      console.log("Fetched Documents:", userFiles);
+      setDocuments(userFiles);
+    } catch (error) {
+      console.error("Error fetching documents:", error);
+      alert("Error fetching documents: " + error.message);
+    }
+  };
+
+  fetchDocuments();
+}, [email]);
+  // ✅ Close dropdown when clicking outside
+  useEffect(() => {
+    const handleClickOutside = (event: MouseEvent) => {
+      if (dropdownRef.current && !dropdownRef.current.contains(event.target as Node)) {
+        setDropdownOpen(false);
+      }
+    };
+    document.addEventListener("mousedown", handleClickOutside);
+    return () => document.removeEventListener("mousedown", handleClickOutside);
+  }, []);
+  const fetchDocumentDetails = async (id) => {
+    try {
+      const safeEmail = email ?? ""; // Use empty string if email is null
+      console.log("Fetching details for document ID:", id);
+      console.log("Using email:", safeEmail);
   
-    // Access `accessToken` anywhere in the component
-console.log("Access Token in Component:", accessToken123);
+      setLoading(true);
+      const response = await fetch(
+        `${process.env.NEXT_PUBLIC_API_BASE_URL}/api/files/tags-with-descriptions?email=${encodeURIComponent(safeEmail)}&id=${encodeURIComponent(id)}`
+      );
+  
+      console.log("API Response Status:", response.status); // ✅ Log API response status
+  
+      if (!response.ok) {
+        console.error(`Failed to fetch document details: ${response.statusText}`);
+        setTagsData([]); // Reset tags data
+        return;
+      }
+  
+      const data = await response.json();
+      console.log("Fetched Document Data:", data); // ✅ Log API response JSON
+  
+      setTagsData(data.tags || []); // Ensure state updates correctly
+    } catch (error) {
+      console.error("Error fetching document details:", error);
+    } finally {
+      setLoading(false);
+      console.log("Loading state set to false."); // ✅ Log loading state change
+    }
+  };
+  
     const handleNavigateToTags = () => {
       router.push("/Tags"); // Navigate to the UploadDoc page
     };
@@ -90,7 +173,6 @@ console.log("Access Token in Component:", accessToken123);
     setSelectedDescription(shortDesc); // Update selected short description
     setSelectedLongDesc(longDesc); // Update selected long description
   };
- 
 
   const toggleDropdown2 = async () => {
     // Toggle dropdown visibility
@@ -149,27 +231,45 @@ console.log("Access Token in Component:", accessToken123);
       }
     }
   };
-
-  // Check if the user is authenticated
-const isAuthenticated = () => {
-  const accessToken = Cookies.get("accessToken"); // Use the access token stored in cookies
-  return !!accessToken; // Return true if the token exists
-};
-
-  const handleAssignTask = async () => {
-    if (!isAuthenticated()) {
-      toast.error("Please log in with Google to assign a task.", {
-        position: "top-right" 
-      });
+  const isAuthenticated = async () => {
+    try {
+      const safeEmail = email ?? ""; // Use empty string if email is null
+      
+      const response = await fetch(
+        `${process.env.NEXT_PUBLIC_API_BASE_URL}/api/users/get-access-token?email=${encodeURIComponent(safeEmail)}`,
+        {
+          method: "GET",
+          credentials: "include",
+        }
+      );
   
-      setTimeout(() => {
-        window.location.href = `${process.env.NEXT_PUBLIC_API_BASE_URL}/api/calendar/auth-url`;
-      }, 5000); // Redirect after showing the message
-      return;
+      if (!response.ok) throw new Error("Failed to fetch access token");
+  
+      const data = await response.json();
+      const accessToken = data.accessToken;
+      const refreshToken = data.refreshToken; // ✅ Fetch refresh token as well
+  
+      if (!accessToken) {
+        alert("Please log in with Google for assigned tasks.");
+        router.push("/LoginPage"); // Redirect to login page
+        return false;
+      }
+  
+      // ✅ Save both accessToken & refreshToken in cookies
+      Cookies.set("accessToken", accessToken, { expires: 7 });
+      Cookies.set("refreshToken", refreshToken, { expires: 30 }); // Refresh token valid for 7 days
+  
+      return true;
+    } catch (error) {
+      console.error("Error fetching tokens:", error);
+      alert("Please log in with Google for assigned tasks.");
+      router.push("/LoginPage"); // Redirect to login page
+      return false;
     }
+  };
+  const handleAssignTask = async () => {
+    isAuthenticated() ;
     
-  
-  
     if (!selectedTask || selectedTask.length === 0) {
       alert("Please select at least one task before assigning.");
       return;
@@ -179,7 +279,7 @@ const isAuthenticated = () => {
     console.log("Selected ID:", selectedID);
   
     try {
-      const accessToken = "ya29.a0AXeO80RDezErTxkIlTc-4ajFiGAA5UM5FM2n9iDWg9Xdq8ngWTFLGe2QmgReSsbs4VpUTOg99XmIZBYxOyDNIVO-AIb1sdnKXM-eFJl_xW2eX6e1mSBQKx1Kt-EwGlg485lYK1QiF3SoWq5k67qL4v-YdoARptgHR-I-FMsDaCgYKAeUSARESFQHGX2Mi84pFgZ2UD6xbFvMGCqPW9g0175";
+      const accessToken = refreshToken;
   
       // Prepare tasks
       const tasks = selectedTask.map((taskSummary, index) => {
@@ -258,8 +358,10 @@ const isAuthenticated = () => {
     }
   };
   const toggleDropdown1 = () => setDropdownOpen1(!dropdownOpen1);
-  const toggleDropdown = () => setDropdownOpen(!dropdownOpen);
-  const toggleSidebar = () => setIsSidebarOpen(!isSidebarOpen);
+  const toggleDropdown = () => {
+    setDropdownOpen(prev => !prev);
+    console.log("Dropdown toggled:", !dropdownOpen);
+  };  const toggleSidebar = () => setIsSidebarOpen(!isSidebarOpen);
   const handleShowMore = () => setVisibleCount((prev) => prev + 5); // Show more facilities
   const handleNavigateToPolicy = () => {
     setActiveTab("Policy"); // Switch to the "Policy" tab // Navigate to the PolicyGenerator page
@@ -307,12 +409,12 @@ const isAuthenticated = () => {
   
   const handleSubmit = async () => {
     setLoading(true);
-    setMessage(''); // Clear any previous messages
+  
   
     // Validate required fields
     if (!selectedTag || !selectedLongDesc || !selectedID || !answer1 || !answer2) {
       console.error('Missing input values.');
-      setMessage('All input fields are required.');
+     
       setLoading(false);
       return;
     }
@@ -357,11 +459,11 @@ const isAuthenticated = () => {
       const solution = result.tag.response?.solution || 'No solution available';
       console.log('Solution:', solution);
   
-      setMessage('Solution generated and saved successfully!');
+      //setMessage('Solution generated and saved successfully!');
       setSelectedTask(task);
       setSolution(solution);
     } catch (error) {
-      setMessage('Failed to generate solution. Please try again.');
+      //setMessage('Failed to generate solution. Please try again.');
     } finally {
       setLoading(false);
     }
@@ -404,16 +506,17 @@ const isAuthenticated = () => {
             <h3 className="text-base sm:text-lg md:text-xl lg:text-2xl font-bold text-blue-900">
               Facility
             </h3>
-            <div className="relative ml-4 sm:ml-6 lg:ml-10">
+            <div className="relative ml-2 sm:ml-4 lg:ml-6" ref={dropdownRef}>
       <button
         onClick={toggleDropdown}
-        className="flex items-center bg-[#244979] text-white font-semibold text-[11px] sm:text-[12px] md:text-[14px] leading-[14px] px-4 py-2 rounded-lg"
+        className="flex items-center bg-[#244979] text-white font-semibold text-sm px-3 py-2 rounded-lg"
       >
-        <span className="font-[Plus Jakarta Sans]">Lorem Ipsum</span>
+        <span className="font-[Plus Jakarta Sans]">Documents</span>
         <svg
-          className="w-3 h-3 sm:w-4 sm:h-4 ml-2"
+          className="w-4 h-4 ml-2 transition-transform duration-200"
           fill="currentColor"
           viewBox="0 0 20 20"
+          style={{ transform: dropdownOpen ? "rotate(180deg)" : "rotate(0deg)" }}
         >
           <path
             fillRule="evenodd"
@@ -423,28 +526,26 @@ const isAuthenticated = () => {
         </svg>
       </button>
 
+      {/* Dropdown Menu */}
       {dropdownOpen && (
-        <div className="absolute mt-2 w-40 sm:w-48 md:w-56 bg-white shadow-lg rounded-lg">
-          <a
-            href="#"
-            className="block px-4 py-2 text-gray-800 hover:bg-gray-200 text-xs sm:text-sm md:text-base"
-          >
-            Option 1
-          </a>
-          <a
-            href="#"
-            className="block px-4 py-2 text-gray-800 hover:bg-gray-200 text-xs sm:text-sm md:text-base"
-          >
-            Option 2
-          </a>
-          <a
-            href="#"
-            className="block px-4 py-2 text-gray-800 hover:bg-gray-200 text-xs sm:text-sm md:text-base"
-          >
-            Option 3
-          </a>
+        <div className="absolute right-0 mt-2 w-40 bg-white shadow-lg rounded-lg z-50 border border-gray-200">
+          {documents.length > 0 ? (
+            documents.map((doc) => (
+              <button
+                key={doc._id}
+                onClick={() => fetchDocumentDetails(doc._id)}
+                className="block w-full text-left px-4 py-2 text-gray-800 hover:bg-gray-200 text-xs sm:text-sm"
+              >
+                {doc.originalName}
+              </button>
+            ))
+          ) : (
+            <p className="px-4 py-2 text-gray-500 text-xs sm:text-sm">No documents found.</p>
+          )}
         </div>
       )}
+
+     
     </div>
           </div>
 

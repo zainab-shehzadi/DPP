@@ -79,6 +79,7 @@ const stripeRoutes = require("./routes/stripeRoutes");
 const facilityRoutes = require("./routes/facilityRoutes");
 const calendarRoutes = require("./routes/calendarRoutes");
 const mongoose = require('mongoose');
+const cookieParser = require("cookie-parser");
 
 dotenv.config();
 connectDB(); // Database connection
@@ -95,6 +96,7 @@ const Notification = mongoose.model('Notification', NotificationSchema);
 
 const app = express();
 const PORT = process.env.PORT || 5000;
+app.use(cookieParser()); // Enable cookie parsing
 
 // Configure CORS
 const corsOptions = {
@@ -103,6 +105,8 @@ const corsOptions = {
   allowedHeaders: ["Content-Type", "Authorization"], // Allowed headers
   credentials: true, // Allow credentials (cookies, etc.)
 };
+
+
 app.use(cors(corsOptions));
 
 // Middleware

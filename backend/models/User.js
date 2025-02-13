@@ -54,9 +54,11 @@ const userSchema = new mongoose.Schema(
 
     accessToken: {
       type: String,
+      default: null, // Ensure it's not undefined
     },
     refreshToken: {
       type: String,
+      default: null, // Ensure it's not undefined
     },
   },
   { timestamps: true }

@@ -12,20 +12,17 @@ const oAuth2Client = new google.auth.OAuth2(
   process.env.GOOGLE_REDIRECT_URI
 );
 
-// In-memory storage for simplicity (replace with database for production)
-let savedRefreshToken = "";
-
 // Route to generate Google OAuth URL
-router.get('/auth-url', (req, res) => {
-  console.log('token')
-  const SCOPES = ["https://www.googleapis.com/auth/calendar"];
-  const authUrl = oAuth2Client.generateAuthUrl({
-    access_type: 'offline', // Ensures we get a refresh token
-    scope: SCOPES,
-  });
+// router.get('/auth-url', (req, res) => {
+//   console.log('token')
+//   const SCOPES = ["https://www.googleapis.com/auth/calendar"];
+//   const authUrl = oAuth2Client.generateAuthUrl({
+//     access_type: 'offline', // Ensures we get a refresh token
+//     scope: SCOPES,
+//   });
 
-  res.status(200).json({ authUrl });
-});
+//   res.status(200).json({ authUrl });
+// });
 
 // router.get("/callback", async (req, res) => {
 //   const { code } = req.query;
@@ -53,34 +50,44 @@ router.get('/auth-url', (req, res) => {
 
 
 
-// // Route to handle Google OAuth callback
-// router.get('/callback', async (req, res) => {
-//   const { code } = req.query;
-  
-//   console.log('call back', code)
-  
-//   if (!code) {
-//     return res.status(400).json({ error: 'Authorization code not provided' });
+// router.post("/auth-url", async (req, res) => {
+//   const { email } = req.body; // Get email from request body
+
+//   if (!email) {
+//     return res.status(400).json({ error: "Email is required" });
 //   }
 
 //   try {
-//     // Exchange the authorization code for tokens
-//     const { tokens } = await oAuth2Client.getToken(code);
-//     oAuth2Client.setCredentials(tokens);
+  
+//     // Generate Google OAuth URL
+//     const authUrl = oAuth2Client.generateAuthUrl({
+//       access_type: "offline",
+//       scope: ["https://www.googleapis.com/auth/calendar"], // Add required scopes
+     
+//     });
 
-//     // Save the refresh token (in memory for this example)
-//     if (tokens.refresh_token) {
-//       savedRefreshToken = tokens.refresh_token;
-//       console.log('Refresh token saved:', savedRefreshToken);
-//     }
-
-//     res.status(200).json({ message: 'Authorization successful', tokens });
+//     res.status(200).json({ authUrl });
 //   } catch (error) {
-//     console.error('Error during token exchange:', error.message);
-//     res.status(500).json({ error: 'Failed to exchange token', details: error.message });
+//     console.error("Error generating Google Auth URL:", error);
+//     res.status(500).json({ error: "Failed to generate Google Auth URL" });
 //   }
 // });
 
+
+//Route to generate Google OAuth URL
+
+
+router.get('/auth-url', (req, res) => {
+  console.log('token')
+  const SCOPES = ["https://www.googleapis.com/auth/calendar"];
+  const authUrl = oAuth2Client.generateAuthUrl({
+    access_type: 'offline', // Ensures we get a refresh token
+    prompt: "consent",
+    scope: SCOPES,
+  });
+
+  res.status(200).json({ authUrl });
+});
 
 router.get("/callback", async (req, res) => {
   const { code } = req.query;
@@ -90,19 +97,39 @@ router.get("/callback", async (req, res) => {
   }
 
   try {
-    // Exchange the authorization code for tokens
+    // Exchange authorization code for tokens
     const { tokens } = await oAuth2Client.getToken(code);
+    oAuth2Client.setCredentials(tokens);
+    console.log("🔹 Tokens received from Google:", tokens); // ✅ Log token
+    // ✅ Fetch email from cookies
+    const email = req.cookies.email;
 
-    // Log the tokens for debugging purposes
+    if (!email) {
+      return res.status(400).json({ error: "Email not found in cookies" });
+    }
+
+    console.log("User Email from Cookie:", email);
     console.log("Access Token:", tokens.access_token);
     console.log("Refresh Token:", tokens.refresh_token);
 
-    // Send tokens in JSON response
-    res.status(200).json({
-      accessToken: tokens.access_token,
-      refreshToken: tokens.refresh_token, // Store this securely in the backend
-      expiresIn: tokens.expiry_date, // Optional: Token expiration time
-    });
+    const user = await User.findOneAndUpdate(
+      { email },
+      { 
+        accessToken: tokens.access_token, // ✅ Save access token
+        refreshToken: tokens.refresh_token // ✅ Save refresh token
+      },
+      { new: true, upsert: true } // ✅ Create a new user if not found
+    );
+    
+    if (user) {
+      console.log("Tokens updated successfully for:", email);
+    } else {
+      console.log("User not found, unable to update tokens:", email);
+    }
+    
+    // ✅ Redirect to dashboard with accessToken
+    const redirectUrl = `${process.env.FRONTEND_URL}/UploadDoc`;
+    res.redirect(redirectUrl);
   } catch (error) {
     console.error("Error during token exchange:", error.message);
     res.status(500).json({ error: "Failed to exchange token", details: error.message });
@@ -421,60 +448,6 @@ router.put('/updateTask', async (req, res) => {
     });
   }
 });
-
-
-
-// router.post("/save-tasks", async (req, res) => {
-//   const { tagId, tasks } = req.body;
-
-//   // console.log("saveTasksWithID called with tagId:", tagId, "and tasks:", tasks);
-
-//   // Validate input
-//   if (!tagId || !Array.isArray(tasks) || tasks.length === 0) {
-//     console.error("Validation failed. Received tagId:", tagId, "and tasks:", tasks);
-//     return res.status(400).json({
-//       success: false,
-//       error: "Invalid tag ID or tasks data. Ensure 'tagId' is provided and 'tasks' is a non-empty array.",
-//     });
-//   }
-
-//   try {
-//     // Format tasks
-//     const formattedTasks = tasks.map((task) => ({
-//       taskSummary: task.summary || "No summary provided",
-//       startDate: task.start?.dateTime ? new Date(task.start.dateTime) : new Date(),
-//       endDate: task.end?.dateTime ? new Date(task.end.dateTime) : new Date(),
-//       assignedTo: task.assignedTo || null,
-//       status: task.status || "pending",
-//     }));
-
-//     // console.log("Formatted tasks ready for insertion:", formattedTasks);
-
-//     // Check if a task document exists for the given tagId
-//     let existingTaskDoc = await Task.findOne({ tagId });
-
-//     if (existingTaskDoc) {
-//       // Append tasks to the existing document
-//       existingTaskDoc.Tasks.push(...formattedTasks);
-//       await existingTaskDoc.save();
-//       console.log("Tasks appended to the existing document:", existingTaskDoc);
-//       res.status(200).json({ success: true, data: existingTaskDoc });
-//     } else {
-//       // Create a new task document
-//       const newTaskDoc = new Task({ tagId, Tasks: formattedTasks });
-//       const savedTaskDoc = await newTaskDoc.save();
-//       console.log("New task document created and saved:", savedTaskDoc);
-//       res.status(200).json({ success: true, data: savedTaskDoc });
-//     }
-//   } catch (error) {
-//     console.error("Error saving tasks to the database:", error);
-
-//     res.status(500).json({
-//       success: false,
-//       error: "Failed to save tasks to the database. Please try again later.",
-//     });
-//   }
-// });
 
 
 
