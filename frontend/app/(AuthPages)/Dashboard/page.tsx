@@ -123,7 +123,7 @@ export default function Dashboard() {
   
       // Navigate to the UploadDoc page with the email
       //router.push(`/UploadDoc`);
-      router.push(`/UploadDoc?id=${uploadedFileId}`);
+      router.push(`/UploadDoc`);
     } catch (error: any) {
       // Log and handle errors
       console.error(

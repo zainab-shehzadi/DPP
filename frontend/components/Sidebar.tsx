@@ -4,7 +4,7 @@ import React, { useState, useEffect } from "react";
 import {
   FaTachometerAlt,
   FaHome,
-  FaClipboard ,
+  FaClipboard,
   FaUserPlus,
   FaFileAlt,
   FaClock,
@@ -13,11 +13,7 @@ import {
   FaBuilding,
   FaCreditCard,
 } from "react-icons/fa";
-interface SidebarProps {
 
-  isSidebarOpen: boolean;
- 
-}
 import MobileSidebar from "./MobileSidebar";
 import { useRouter } from "next/navigation"; // Correct import for App Router
 
@@ -25,29 +21,16 @@ interface SidebarProps {
   isSidebarOpen: boolean;
   toggleSidebar: () => void;
 }
-const Sidebar: React.FC<SidebarProps> = ({ isSidebarOpen, toggleSidebar }) => {
 
-    const [dashboardOpen, setDashboardOpen] = useState(false);
+const Sidebar: React.FC<SidebarProps> = ({ isSidebarOpen, toggleSidebar }) => {
+  const [dashboardOpen, setDashboardOpen] = useState(false);
   const [settingsOpen, setSettingsOpen] = useState(false);
   const [isMobileView, setIsMobileView] = useState(false);
   const [email, setEmail] = useState<string | null>(null); // Email from localStorage
   const [activeItem, setActiveItem] = useState<string | null>(null);
 
-  const router = useRouter(); // Moved inside the component
-  
-  const handleDashboardClick = () => {
-    setDashboardOpen(!dashboardOpen);
-    setSettingsOpen(false);
-  };
+  const router = useRouter();
 
-  const handleSettingsClick = () => {
-    setSettingsOpen(!settingsOpen);
-    setDashboardOpen(false);
-  };
-  useEffect(() => {
-    setActiveItem(window.location.pathname);
-  }, []);
-  
   const handleNavigation = (path: string) => {
     setActiveItem(path); // Set the active item
     router.push(path);
@@ -69,23 +52,21 @@ const Sidebar: React.FC<SidebarProps> = ({ isSidebarOpen, toggleSidebar }) => {
       alert("An error occurred. Please try again.");
     }
   };
+  useEffect(() => {
+    setActiveItem(window.location.pathname);
+  }, []);
 
- // Helper function to get cookies
- const getCookie = (name: string) => {
-  const value = `; ${document.cookie}`;
-  const parts = value.split(`; ${name}=`);
-  if (parts.length === 2) return parts.pop()?.split(";").shift();
-  return null;
-};
+  // Check if screen width is below 1020px
+  useEffect(() => {
+    const handleResize = () => {
+      setIsMobileView(window.innerWidth <= 1020);
+    };
 
-useEffect(() => {
-  // Retrieve email from cookies on component mount
-  const storedEmail = getCookie("email");
-  if (storedEmail) {
-    setEmail(storedEmail); // Set the email state if found in cookies
-  }
-}, []);
+    handleResize(); // Initialize state on mount
+    window.addEventListener("resize", handleResize);
 
+    return () => window.removeEventListener("resize", handleResize);
+  }, []);
   const handleUserSettingsNavigation = async () => {
     if (!email) {
       console.error("Email is missing or not provided.");
@@ -125,227 +106,245 @@ useEffect(() => {
       alert("Failed to verify user role. Please try again.");
     }
   };
-
-  // Check if screen width is below 1020px
-  useEffect(() => {
-    const handleResize = () => {
-      setIsMobileView(window.innerWidth <= 1020);
-    };
-
-    // Set initial value and add resize event listener
-    handleResize(); // Initialize state on mount
-    window.addEventListener("resize", handleResize);
-
-    // Clean up the event listener on component unmount
-    return () => window.removeEventListener("resize", handleResize);
-  }, []);
-
   return (
     <>
-      {/* Conditionally render Mobile Sidebar if screen width is <= 1020px */}
-      
+      {/* Conditionally render Mobile Sidebar */}
       {isMobileView ? (
         <MobileSidebar />
       ) : (
         <nav
-          className={`bg-[#002F6C] text-white w-full lg:w-64 flex flex-col items-center px-4 py-8 lg:fixed lg:h-full transition-transform transform ${
+          className={`bg-[#002F6C] text-white min-w-[250px] w-full lg:w-64 fixed lg:h-full transition-transform transform ${
             isSidebarOpen ? "translate-x-0" : "-translate-x-full"
           } lg:translate-x-0`}
         >
-          <div
-            className="mb-8 w-full h-24 bg-cover bg-center hidden lg:block"
-            style={{ backgroundImage: "url('/assets/logo.avif')" }}
-          ></div>
-          <ul className="space-y-5 w-full flex flex-col items-center">
-            <li className="w-full">
-              <a
-                href="#"
-                onClick={handleDashboardClick}
-                className="flex items-center py-2 px-4 hover:bg-white hover:text-blue-900 rounded-md font-bold text-medium leading-6"
-              >
-                <FaTachometerAlt className="mr-2" />
-                Dashboard
-              </a>
-              {dashboardOpen && (
-  <ul className="ml-4 space-y-4">
+          {/* Scrollable Sidebar Content */}
+          <div className="h-full flex flex-col overflow-y-auto max-h-screen scrollbar-thin scrollbar-thumb-gray-400 scrollbar-track-gray-100 px-4 py-4">
+            {/* Logo */}
+            <div
+              className="mb-4 w-full h-16 bg-cover bg-center hidden lg:block"
+              style={{ backgroundImage: "url('/assets/logo-dpp.jpg')" }}
+            ></div>
+
+            <ul className="space-y-2 w-full">
+              {/* Dashboard */}
+              <li className="w-full">
+                <a
+                  href="#"
+                  onClick={() => setDashboardOpen(!dashboardOpen)}
+                  className="flex items-center py-2 px-3 hover:bg-white hover:text-blue-900 rounded-md font-semibold text-xs lg:text-sm"
+                >
+                  <FaTachometerAlt className="mr-2" />
+                  Dashboard
+                </a>
+                {dashboardOpen && (
+  <ul className="ml-4 space-y-2"> {/* Reduced spacing for compact layout */}
+    
+    {/* Upload New 2567 */}
     <li>
       <a
         href="#"
         onClick={() => handleNavigation("/Dashboard")}
-        className={`flex items-center py-2 px-4 rounded-md font-bold text-medium leading-6 
-          ${activeItem === "/Dashboard" ? "bg-white text-blue-900" : "hover:bg-white hover:text-blue-900"}`}
+        className={`flex items-center py-2 px-3 rounded-md font-semibold text-xs lg:text-sm transition 
+          ${activeItem === "/Dashboard" ? "bg-white text-blue-900 shadow-md" : "hover:bg-white hover:text-blue-900"}`}
       >
         <FaUser className="mr-2" />
         Upload New 2567
       </a>
     </li>
+
+    {/* History */}
     <li>
       <a
         href="#"
         onClick={() => handleNavigation("/HistoryPage")}
-        className={`flex items-center py-2 px-4 rounded-md font-bold text-medium leading-6 
-          ${activeItem === "/HistoryPage" ? "bg-white text-blue-900" : "hover:bg-white hover:text-blue-900"}`}
+        className={`flex items-center py-2 px-3 rounded-md font-semibold text-xs lg:text-sm transition 
+          ${activeItem === "/HistoryPage" ? "bg-white text-blue-900 shadow-md" : "hover:bg-white hover:text-blue-900"}`}
       >
         <FaBuilding className="mr-2" />
         History
       </a>
     </li>
+
+    {/* Task Assigned */}
     <li>
       <a
         href="#"
         onClick={() => handleNavigation("/TaskListPage")}
-        className={`flex items-center py-2 px-4 rounded-md font-bold text-medium leading-6 
-          ${activeItem === "/TaskListPage" ? "bg-white text-blue-900" : "hover:bg-white hover:text-blue-900"}`}
+        className={`flex items-center py-2 px-3 rounded-md font-semibold text-xs lg:text-sm transition 
+          ${activeItem === "/TaskListPage" ? "bg-white text-blue-900 shadow-md" : "hover:bg-white hover:text-blue-900"}`}
       >
         <FaUser className="mr-2" />
         Task Assigned
       </a>
     </li>
+
+    {/* Insights */}
     <li>
       <a
         href="#"
         onClick={() => handleNavigation("/InsightPage")}
-        className={`flex items-center py-2 px-4 rounded-md font-bold text-medium leading-6 
-          ${activeItem === "/InsightPage" ? "bg-white text-blue-900" : "hover:bg-white hover:text-blue-900"}`}
+        className={`flex items-center py-2 px-3 rounded-md font-semibold text-xs lg:text-sm transition 
+          ${activeItem === "/InsightPage" ? "bg-white text-blue-900 shadow-md" : "hover:bg-white hover:text-blue-900"}`}
       >
         <FaCreditCard className="mr-2" />
         Insights
       </a>
     </li>
+
   </ul>
 )}
 
-            </li>
-            <li className="w-full">
-              <a
-                href="#"
-                onClick={() => handleNavigation("/landing")}
-                className="flex items-center py-2 px-4 hover:bg-white hover:text-blue-900 rounded-md font-bold text-medium leading-6"
-              >
-                <FaHome className="mr-2" />
-                Homepage
-              </a>
-            </li>
-           
-           
-          
-            <li className="w-full">
-              <a
-                href="#"
-                onClick={() => handleNavigation("/AddNewUser")}
-                className="flex items-center py-2 px-4 hover:bg-white hover:text-blue-900 rounded-md font-bold text-medium leading-6"
-              >
-                <FaUserPlus className="mr-2" />
-                Add New User
-              </a>
-            </li>
-            <li className="w-full">
-                    <a
-                      href="#"
-                      onClick={() => handleNavigation("/InsightPage")}
-                      className="flex items-center py-2 px-4 hover:bg-white hover:text-blue-900 rounded-md font-bold text-medium leading-6"
-                    >
-                      <FaCreditCard className="mr-2" />
-                      Insights
-                    </a>
-                  </li>
-            <li className="w-full">
-              <a
-                href="#"
-                onClick={() => handleNavigation("/TaskDetailPage")}
-                className="flex items-center py-2 px-4 hover:bg-white hover:text-blue-900 rounded-md font-bold text-medium leading-6"
-              >
-                <FaUserPlus className="mr-2" />
-                Task List
-              </a>
-            </li>
-            <li className="w-full">
+              </li>
+
+              {/* Homepage */}
+              <li className="w-full">
+                <a
+                  href="#"
+                  onClick={() => handleNavigation("/landing")}
+                  className="flex items-center py-2 px-3 hover:bg-white hover:text-blue-900 rounded-md font-semibold text-xs lg:text-sm"
+                >
+                  <FaHome className="mr-2" />
+                  Homepage
+                </a>
+              </li>
+
+              {/* Add New User */}
+              <li className="w-full">
+                <a
+                  href="#"
+                  onClick={() => handleNavigation("/AddNewUser")}
+                  className="flex items-center py-2 px-3 hover:bg-white hover:text-blue-900 rounded-md font-semibold text-xs lg:text-sm"
+                >
+                  <FaUserPlus className="mr-2" />
+                  Add New User
+                </a>
+              </li>
+
+              {/* Insights */}
+              <li className="w-full">
+                <a
+                  href="#"
+                  onClick={() => handleNavigation("/InsightPage")}
+                  className="flex items-center py-2 px-3 hover:bg-white hover:text-blue-900 rounded-md font-semibold text-xs lg:text-sm"
+                >
+                  <FaCreditCard className="mr-2" />
+                  Insights
+                </a>
+              </li>
+
+              {/* Task List */}
+              <li className="w-full">
+                <a
+                  href="#"
+                  onClick={() => handleNavigation("/TaskDetailPage")}
+                  className="flex items-center py-2 px-3 hover:bg-white hover:text-blue-900 rounded-md font-semibold text-xs lg:text-sm"
+                >
+                  <FaClipboard className="mr-2" />
+                  Task List
+                </a>
+              </li>
+
+              {/* Daily Summaries */}
+              <li className="w-full">
+                <a
+                  href="#"
+                  onClick={() => handleNavigation("/DailySummaries")}
+                  className="flex items-center py-2 px-3 hover:bg-white hover:text-blue-900 rounded-md font-semibold text-xs lg:text-sm"
+                >
+                  <FaClock className="mr-2" />
+                  Daily Summaries
+                </a>
+              </li>
+
+              {/* Settings */}
+              <li className="w-full">
+                <a
+                  href="#"
+                  onClick={() => setSettingsOpen(!settingsOpen)}
+                  className="flex items-center py-2 px-3 hover:bg-white hover:text-blue-900 rounded-md font-semibold text-xs lg:text-sm"
+                >
+                  <FaCog className="mr-2" />
+                  Settings
+                </a>
+                {settingsOpen && (
+  <ul className="ml-4 space-y-2"> {/* Reduced spacing for better fit */}
+    
+    {/* Profile Settings */}
+    <li>
       <a
         href="#"
-        onClick={() => handleNavigation("/DailySummaries")}
-        className="flex items-center py-2 px-4 hover:bg-white hover:text-blue-900 rounded-md font-bold text-medium leading-6"
+        onClick={handleUserSettingsNavigation} // ✅ Corrected handler
+        className="flex items-center py-2 px-3 hover:bg-white hover:text-blue-900 rounded-md font-semibold text-xs lg:text-sm transition"
       >
-        <FaClock className="mr-2" /> {/* Updated to clock icon */}
-        Daily Summaries
+        <FaUser className="mr-2" />
+        Profile Settings
       </a>
     </li>
-            <li className="w-full">
-              <a
-                href="#"
-                onClick={handleSettingsClick}
-                className="flex items-center py-2 px-4 hover:bg-white hover:text-blue-900 rounded-md font-bold text-medium leading-6"
-              >
-                <FaCog className="mr-2" />
-                Settings
-              </a>
-              {settingsOpen && (
-                <ul className="ml-4 space-y-4">
-                  <li>
-                    <a
-                      href="#"
-                      
-                      onClick={handleUserSettingsNavigation} // Updated handler for User Settings
-                      className="flex items-center py-2 px-4 hover:bg-white hover:text-blue-900 rounded-md font-bold text-medium leading-6"
-                    >
-                      <FaUser className="mr-2" />
-                      Profile Settings
-                    </a>
-                  </li>
-                  <li>
-                    <a
-                      href="#"
-                  
-                      onClick={() => handleNavigation("/facilitySetting")}
-                      className="flex items-center py-2 px-4 hover:bg-white hover:text-blue-900 rounded-md font-bold text-medium leading-6"
-                    >
-                      <FaBuilding className="mr-2" />
-                      Facility Settings
-                    </a>
-                  </li>
-                  <li>
+
+    {/* Facility Settings */}
+    <li>
+      <a
+        href="#"
+        onClick={() => handleNavigation("/facilitySetting")}
+        className="flex items-center py-2 px-3 hover:bg-white hover:text-blue-900 rounded-md font-semibold text-xs lg:text-sm transition"
+      >
+        <FaBuilding className="mr-2" />
+        Facility Settings
+      </a>
+    </li>
+
+    {/* User Settings */}
+    <li>
       <a
         href="#"
         onClick={() => handleNavigation("/UserSetting")}
-        className="flex items-center py-2 px-4 hover:bg-white hover:text-blue-900 rounded-md font-bold text-medium leading-6"
+        className="flex items-center py-2 px-3 hover:bg-white hover:text-blue-900 rounded-md font-semibold text-xs lg:text-sm transition"
       >
         <FaUser className="mr-2" />
         User Settings
       </a>
     </li>
-                  <li>
-                    <a
-                      href="#"
-                      className="flex items-center py-2 px-4 hover:bg-white hover:text-blue-900 rounded-md font-bold text-medium leading-6"
-                    >
-                      <FaCreditCard className="mr-2" />
-                      Billing
-                    </a>
-                  </li>
-                </ul>
-              )}
-            </li>
-            <li className="w-full">
+
+    {/* Billing */}
+    <li>
       <a
         href="#"
-        onClick={() => handleNavigation("/landing")}
-        className="flex items-center py-2 px-4 hover:bg-white hover:text-blue-900 rounded-md font-bold text-medium leading-6"
+        onClick={() => handleNavigation("/Billing")} // ✅ Added correct navigation
+        className="flex items-center py-2 px-3 hover:bg-white hover:text-blue-900 rounded-md font-semibold text-xs lg:text-sm transition"
       >
-        <FaClipboard className="mr-2" /> {/* Updated icon */}
-        Survey Prep
+        <FaCreditCard className="mr-2" />
+        Billing
       </a>
     </li>
 
-    <li className="w-full">
-      <a
-        href="#"
-        onClick={handleLogout}
-        className="flex items-center py-2 px-4 hover:bg-white hover:text-blue-900 rounded-md font-bold text-medium leading-6"
-      >
-        <FaClipboard className="mr-2" />
-        Logout
-      </a>
-    </li>
-          </ul>
+  </ul>
+)}
+
+              </li>
+
+              {/* Logout */}
+              <li className="w-full">
+                <a
+                  href="#"
+                  onClick={() => handleNavigation("/landing")}
+                  className="flex items-center py-2 px-3 hover:bg-white hover:text-blue-900 rounded-md font-semibold text-xs lg:text-sm"
+                >
+                  <FaClipboard className="mr-2" />
+                  Survey Prep
+                </a>
+              </li>
+              <li className="w-full">
+                <a
+                  href="#"
+                  onClick={() => handleLogout()}
+                  className="flex items-center py-2 px-3 hover:bg-white hover:text-blue-900 rounded-md font-semibold text-xs lg:text-sm"
+                >
+                  <FaClipboard className="mr-2" />
+                  Logout
+                </a>
+              </li>
+            </ul>
+          </div>
         </nav>
       )}
     </>

@@ -224,13 +224,7 @@ const handleSubmit = async (e:any) => {
     if (!Array.isArray(newTasks)) newTasks = [newTasks];
 
     setSolution(result.tag?.response?.solution);
-    // setSelectedPolicies(newPolicies);
-    // setSelectedTasks(newTasks);
 
- 
-    
-    console.log("🔄 Extracted Solution (Ensured Array):", newSolution);
-    // setSolution(newSolution);
 
     if (result.tags) {
       const formattedTags = result.tags.map((tag) => ({
@@ -249,7 +243,9 @@ const handleSubmit = async (e:any) => {
       // ✅ Show alert with updated `tagsData`
       //alert(`🟢 Updated Tags Data:\n${JSON.stringify(formattedTags, null, 2)}`);
     }
-
+// Reset answer fields after submission
+setAnswer1("");
+setAnswer2("");
     setIsSidebarOpen(false);
     toast.success("Solution generated and tags updated successfully!");
   } catch (error) {
@@ -770,20 +766,20 @@ const handleSubmit = async (e:any) => {
 <div className="grid grid-cols-2 gap-4 mb-4 mt-20">
   {tagsData.map((item, index) => (
     <div
-      key={index}
+    key={item.id || index}
       className="flex items-center justify-between bg-[#CCE2FF]  rounded-lg px-4 py-2 shadow-sm cursor-pointer hover:bg-blue-300 transition "
-      onClick={() =>
-        handleTagClick(
-          item.id,
-          item.tag,
-          
-        )
+      onClick={() => {
+        handleTagClick(item.tag, item.id);
+        setDropdownOpen2(false); // ✅ Close dropdown on click
+      }
       } // Handle tag click
     >
       <span className="font-semibold text-gray-700">{item.tag}</span>
       <span className="text-gray-500">⋮</span>
     </div>
   ))}
+
+
 </div>
 
 
