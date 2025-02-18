@@ -5,14 +5,118 @@ const User = require("../models/User");
 
 
 const generate6DigitToken = () => {
-  return Math.floor(100000 + Math.random() * 900000); // Generates a random 6-digit number
+  return Math.floor(100000 + Math.random() * 900000); 
 };
 // Function to generate JWT token
 const generateToken = (id) => {
   return jwt.sign({ id }, process.env.JWT_SECRET, {
-    expiresIn: "30d", // Token validity
+    expiresIn: "30d", 
   });
 };
+
+// // Register User and Store in Database
+// const registerUser = async (req, res) => {
+//   const {
+//     DepartmentName,
+//     firstName,
+//     lastName,
+//     position,
+//     email,
+//     role,
+//     password,
+//     confirmPassword,
+//   } = req.body;
+
+
+//   try {
+//     console.log("Incoming data:", {
+//       DepartmentName,
+//       firstName,
+//       lastName,
+//       position,
+//       email,
+//       role,
+//       password,
+//       confirmPassword,
+//     });
+    
+
+//     // Validate all required fields
+//     if (
+//       !DepartmentName ||
+//       !position ||
+//       !firstName ||
+//       !lastName ||
+//       !email ||
+//       !role ||
+//       !password ||
+//       !confirmPassword
+//     ) {
+//       console.log("Validation failed: Missing required fields.");
+//       return res.status(400).json({ message: "All fields are required" });
+//     }
+
+//     // Check if passwords match
+//     if (password !== confirmPassword) {
+//       console.log("Validation failed: Passwords do not match.");
+//       return res.status(400).json({ message: "Passwords do not match" });
+//     }
+
+//     // Check if the user already exists
+//     const userExists = await User.findOne({ email });
+//     if (userExists) {
+//       console.log("Validation failed: User already exists with email:", email);
+//       return res.status(400).json({ message: "User already exists" });
+//     }
+
+//     // Hash the password
+//     console.log("Hashing password...");
+//     const salt = await bcrypt.genSalt(10);
+//     const hashedPassword = await bcrypt.hash(password, salt);
+//     console.log("Password hashed successfully.");
+
+//     // Create and store the user in the database
+//     console.log("Creating user in the database...");
+//     const user = await User.create({
+//       DepartmentName,
+//       Position: position, // Map `position` to `Position` in schema
+//       firstname: firstName,
+//       lastname: lastName,
+//       email,
+//       role,
+//       password: hashedPassword,
+//     });
+
+//     // Respond with the created user data
+//     if (user) {
+//       console.log("User created successfully:", {
+//         _id: user.id,
+//         DepartmentName: user.DepartmentName,
+//         Position: user.Position,
+//         firstname: user.firstname,
+//         lastname: user.lastname,
+//         email: user.email,
+//         role: user.role,
+//       });
+//       res.status(201).json({
+//         _id: user.id,
+//         DepartmentName: user.DepartmentName,
+//         Position: user.Position,
+//         firstname: user.firstname,
+//         lastname: user.lastname,
+//         email: user.email,
+//         role: user.role,
+//         token: generateToken(user.id), // Assuming a JWT token generator
+//       });
+//     } else {
+//       console.log("User creation failed: Invalid user data.");
+//       res.status(400).json({ message: "Invalid user data" });
+//     }
+//   } catch (error) {
+//     console.error("Error creating user:", error.message);
+//     res.status(500).json({ message: "Internal Server Error" });
+//   }
+// };
 
 // Register User and Store in Database
 const registerUser = async (req, res) => {
@@ -27,9 +131,6 @@ const registerUser = async (req, res) => {
     confirmPassword,
   } = req.body;
 
-
-  console.log("Position being sent:", position);
-
   try {
     console.log("Incoming data:", {
       DepartmentName,
@@ -41,9 +142,7 @@ const registerUser = async (req, res) => {
       password,
       confirmPassword,
     });
-    
 
-    // Validate all required fields
     if (
       !DepartmentName ||
       !position ||
@@ -77,16 +176,17 @@ const registerUser = async (req, res) => {
     const hashedPassword = await bcrypt.hash(password, salt);
     console.log("Password hashed successfully.");
 
-    // Create and store the user in the database
+ 
     console.log("Creating user in the database...");
     const user = await User.create({
       DepartmentName,
-      Position: position, // Map `position` to `Position` in schema
+      Position: position, 
       firstname: firstName,
       lastname: lastName,
       email,
       role,
       password: hashedPassword,
+      status: "onboarding", 
     });
 
     // Respond with the created user data
@@ -99,6 +199,7 @@ const registerUser = async (req, res) => {
         lastname: user.lastname,
         email: user.email,
         role: user.role,
+        status: user.status,
       });
       res.status(201).json({
         _id: user.id,
@@ -108,7 +209,8 @@ const registerUser = async (req, res) => {
         lastname: user.lastname,
         email: user.email,
         role: user.role,
-        token: generateToken(user.id), // Assuming a JWT token generator
+        status: user.status,
+        token: generateToken(user.id),
       });
     } else {
       console.log("User creation failed: Invalid user data.");
@@ -119,7 +221,6 @@ const registerUser = async (req, res) => {
     res.status(500).json({ message: "Internal Server Error" });
   }
 };
-
 
 // const loginUser = async (req, res) => {
 //   const { email, password } = req.body;
@@ -187,7 +288,6 @@ const loginUser = async (req, res) => {
     res.status(500).json({ message: error.message });
   }
 };
-
 const forgotPassword = async (req, res) => {
   const { email } = req.body;
 
@@ -201,12 +301,11 @@ const forgotPassword = async (req, res) => {
       return res.status(404).json({ message: "User not found" });
     }
 
-    // Generate a 6-digit token
+   
     const resetToken = generate6DigitToken();
     console.log(resetToken);
-    // Save the plain token and expiration in the user document
-    user.resetPasswordSlug = resetToken; // Save plain token directly
-    user.resetPasswordExpires = Date.now() + 3600000; // Valid for 1 hour
+    user.resetPasswordSlug = resetToken; 
+    user.resetPasswordExpires = Date.now() + 3600000; 
     await user.save();
 
     // Send email with the reset token
@@ -235,35 +334,47 @@ const forgotPassword = async (req, res) => {
     res.status(500).json({ message: "Failed to send verification code" });
   }
 };
-
-
 const verifyToken = async (req, res) => {
   const { email, token } = req.body;
 
+  console.log("Received request:", { email, token }); // Log incoming request
+
   if (!email || !token) {
-    return res.status(400).json({ message: "Email and token are required" });
+    return res.status(400).json({ message: "Email and token are required." });
   }
 
   try {
-    // Find the user by email
-    const user = await User.findOne({ email });
+    // Find the user by email (case-insensitive)
+    const user = await User.findOne({ email: email.toLowerCase() });
+
     if (!user) {
-      return res.status(404).json({ message: "User not found" });
+      return res.status(404).json({ message: "User not found." });
     }
 
-    // Check if the provided token matches the stored token and if it hasn't expired
-    if (
-      user.resetPasswordSlug !== token ||
-      user.resetPasswordExpires < Date.now()
-    ) {
-      return res.status(400).json({ message: "Invalid or expired token" });
+    // Ensure the token is valid and not expired
+    if (!user.resetPasswordSlug || user.resetPasswordSlug !== token) {
+      return res.status(400).json({ message: "Invalid token." });
     }
 
-    // Token is valid, proceed to reset password
-    res.status(200).json({ message: "Token verified successfully!" });
+    if (!user.resetPasswordExpires || user.resetPasswordExpires < Date.now()) {
+      return res.status(400).json({ message: "Token has expired." });
+    }
+
+  
+
+    // Update user's status to "verified"
+    user.status = "verified";
+    await user.save();
+
+    // Token is valid, status updated successfully
+    res.status(200).json({ 
+      message: "Token verified successfully!",
+      userStatusUpdated: user.status, // Confirm status update
+    });
+
   } catch (error) {
     console.error("Error in verifyToken:", error);
-    res.status(500).json({ message: "Failed to verify token" });
+    res.status(500).json({ message: "Internal server error. Failed to verify token." });
   }
 };
 
@@ -296,9 +407,6 @@ const resetPassword = async (req, res) => {
     res.status(500).json({ message: "Internal server error" }); // Always return JSON
   }
 };
-
-
-// Get all users
 const getAllUsers = async (req, res) => {
   try {
     const users = await User.find().select('-password'); // Exclude the password field
@@ -307,8 +415,6 @@ const getAllUsers = async (req, res) => {
     res.status(500).json({ message: 'Error fetching users', error: error.message });
   }
 };
-
-
 const createUser = async (req, res) => {
   try {
     const { firstname, lastname, email, role, position, DepartmentName } = req.body;
@@ -360,9 +466,6 @@ const createUser = async (req, res) => {
     res.status(500).json({ message: "Error adding user", error: error.message });
   }
 };
-
-
-// Controller Function to Delete a User
 const deleteUser = async (req, res) => {
   try {
     const { id } = req.params;
@@ -385,9 +488,6 @@ const deleteUser = async (req, res) => {
     res.status(500).json({ message: "Failed to delete user", error: error.message });
   }
 };
-
-
-// Controller to fetch user details by email
 const getUserByEmail = async (req, res) => {
   try {
     const { email } = req.params;
@@ -420,8 +520,6 @@ const getUserByEmail = async (req, res) => {
     });
   }
 };
-
-
 const getUserRole = async (req, res) => {
   try {
     const { email } = req.params;
@@ -443,8 +541,6 @@ const getUserRole = async (req, res) => {
     res.status(500).json({ message: "Failed to fetch user role", error: error.message });
   }
 };
-
-
 const editUserByEmail = async (req, res) => {
   try {
     const { email } = req.params;
@@ -485,9 +581,6 @@ const editUserByEmail = async (req, res) => {
     });
   }
 };
-
-
-
 module.exports =
  { registerUser,
    loginUser,

@@ -48,24 +48,23 @@ router.get("/get-access-token", async (req, res) => {
 
 
 router.get("/role/:email", getUserRole);
-// Route to get user by email
+
 router.get("/email/:email", getUserByEmail);
-// User Signup Route
+
 router.post("/signup", registerUser);
-// User Login Route
+
 router.post("/login", loginUser);
 
 router.put("/email/:email", editUserByEmail);
-//delete password
+
 router.delete("/:id", deleteUser);
-//Forgot Password Route
+
 router.post("/forgot-password", forgotPassword);
 
-//Verify Token Route
 router.post("/verify-token", verifyToken);
 
 router.post("/reset-password", resetPassword);
-//Protected Route Example (only accessible with a valid token)
+
 router.get("/profile", protect, (req, res) => {
   res.json({ message: `Welcome ${req.user.email}` });
 });

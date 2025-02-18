@@ -332,11 +332,10 @@ useEffect(() => {
       // Prepare tasks
       const tasks = selectedTask.map((taskSummary, index) => {
         const startTime = new Date();
-        startTime.setHours(startTime.getHours() + index * 2); // Each task starts 2 hours after the previous task
+        startTime.setHours(startTime.getHours() + index * 2); 
         
         const endTime = new Date(startTime);
-        endTime.setHours(startTime.getHours() + 48); // Set the end time to 48 hours (2 days) from the start time
-        
+        endTime.setHours(startTime.getHours() + 48); 
   
         return {
           summary: taskSummary,

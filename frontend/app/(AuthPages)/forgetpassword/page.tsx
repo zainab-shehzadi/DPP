@@ -12,35 +12,6 @@ const ForgotPassword: React.FC = () => {
 
   const router = useRouter();
 
-  // const handleForgotPassword = async (e: React.FormEvent) => {
-  //   e.preventDefault();
-  //   setMessage("");
-  //   setLoading(true);
-
-  //   try {
-  //     const response = await fetch(`${process.env.NEXT_PUBLIC_API_BASE_URL}/api/users/forgot-password`, {
-  //       method: "POST",
-  //       headers: { "Content-Type": "application/json" },
-  //       body: JSON.stringify({ email }),
-  //     });
-
-  //     const data = await response.json();
-
-  //     if (response.ok) {
-  //       setMessage("Password reset email sent successfully!");
-  //       setTimeout(() => {
-  //         router.push(`/EmailVerify?email=${encodeURIComponent(email)}`);
-  //       }, 1000);
-  //     } else {
-  //       setMessage(data.message || "Failed to send reset email.");
-  //     }
-  //   } catch (error) {
-  //     console.error("Error:", error);
-  //     setMessage("An error occurred. Please try again.");
-  //   } finally {
-  //     setLoading(false);
-  //   }
-  // };
 
   const handleForgotPassword = async (e: React.FormEvent) => {
     e.preventDefault();
@@ -59,7 +30,7 @@ const ForgotPassword: React.FC = () => {
         toast.success("Password reset email sent successfully!", { position: "top-right" });
 
         setTimeout(() => {
-          router.push(`/EmailVerify?email=${encodeURIComponent(email)}`);
+          router.push(`/EmailVerify`);
         }, 1000);
       } else {
         toast.error(data.message || "Failed to send reset email.", { position: "top-right" });

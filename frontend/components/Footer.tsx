@@ -1,4 +1,6 @@
 import Image from "next/image";
+import Link from "next/link";
+
 import React from "react";
 import {
   Phone,
@@ -28,15 +30,29 @@ const Footer = () => {
           </span>
         </div>
 
-        <div className="flex flex-col gap-10">
-          <h2 className="text-lg font-semibold">Quick Links</h2>
-          <ul>
-            <li>Home</li>
-            <li>Prooducts</li>
-            <li>About</li>
-            <li>Contact</li>
-          </ul>
-        </div>
+      
+<div className="flex flex-col gap-10">
+  <h2 className="text-lg font-semibold">Quick Links</h2>
+  <ul className="space-y-2">
+    <li>
+      <Link href="/" className="hover:text-blue-600 transition">
+        Home
+      </Link>
+    </li>
+    <li>
+  
+        Products
+      
+    </li>
+    <li>
+      <Link href="/AboutUs" className="hover:text-blue-600 transition">
+        About
+      </Link>
+    </li>
+    <li>Contact</li>
+  </ul>
+</div>
+
 
         <div className="flex flex-col gap-5">
           <h2 className="text-lg font-semibold">

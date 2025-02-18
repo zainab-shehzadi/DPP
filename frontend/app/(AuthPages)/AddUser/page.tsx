@@ -1,9 +1,9 @@
 "use client"; // <-- Mark this file as a client component
-
+import { useRouter } from 'next/navigation'; // Import the useRouter hook
 import Image from "next/image";
 import { FaBell } from "react-icons/fa";
 import React, { useState } from "react";
-
+import { toast } from "react-toastify";
 import Sidebar from "@/components/Sidebar";
 
 export default function Dashboard() {
@@ -37,7 +37,7 @@ export default function Dashboard() {
     "Nursing Department": ["Nursing Development Coordinator"],
     "Quality Assurance Department": ["Nursing Development Coordinator"],
   };
-
+  const router = useRouter(); // Initialize the router
   // Leadership and Supporting Roles
   const roleCategories = {
     leadership: ["Director", "Manager", "Supervisor"],
@@ -86,7 +86,8 @@ export default function Dashboard() {
       const data = await response.json();
 
       if (response.ok) {
-        alert("User successfully added.");
+        toast.success("User successfully added.!", { position: "top-right" });
+        
         setFormData({
           firstname: "",
           lastname: "",
@@ -95,6 +96,7 @@ export default function Dashboard() {
           position: "",
           DepartmentName: "",
         });
+        router.push("/AddNewUser"); // Change the route as necessary
       } else {
         alert(`Error: ${data.message}`);
       }
@@ -152,12 +154,12 @@ export default function Dashboard() {
 
 
 {/* Progress Bar */}
-<div className="w-full sm:w-3/4 h-12 sm:h-20 bg-[#002F6C] mt-2 rounded-lg mx-auto"></div>
-        {/* Add User Form */}
-        <div className="w-full sm:w-3/4 lg:w-2/3 mx-auto mt-6 sm:mt-8">
-          <section className="bg-white p-4 sm:p-6 lg:p-8 rounded-lg shadow-md">
+<div className="w-full sm:w-3/4 h-6 sm:h-12 lg:h-10 bg-[#002F6C] mt-2 rounded-lg mx-auto mb-8"></div>
+{/* Add User Form */}
+        <div className="w-full sm:w-3/4 lg:w-3/3 mx-auto mt-6 sm:mt-8">
+          <section className="bg-white p-4 sm:p-6 lg:p-8 ">
             <div className="text-center mb-10">
-              <h3 className="font-bold text-2xl sm:text-3xl lg:text-4xl">
+              <h3 className="font-bold text-2xl sm:text-2xl lg:text-3xl">
                 Add User
               </h3>
               <p className="text-gray-900 text-sm sm:text-base lg:text-lg opacity-40 mb-4">

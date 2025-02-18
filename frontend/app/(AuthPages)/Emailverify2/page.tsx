@@ -50,14 +50,17 @@ const EmailVerify: React.FC = () => {
       });
       
 
-      const data = await response.json();
+
+    const data = await response.json();
+const status = data.userStatusUpdated; // Correct key name from response
+Cookies.set("VerifyStatus", status);
 
       if (response.ok) {
         setMessage("Verification successful!");
         setTimeout(() => {
-          // Redirect to resetpassword with the email query parameter
-          router.push(`/resetpassword`);
-        }, 1000); // Optional delay for better UX
+         
+          router.push(`/LoginPage`);
+        }, 1000); 
       } else {
         setMessage(data.message || "Verification failed. Please try again.");
       }

@@ -4,7 +4,8 @@ import React, { useState,  useEffect } from "react";
 import "@fortawesome/fontawesome-free/css/all.min.css";
 import Image2 from "@/components/imageright"; // Ensure this path is correct
 import { useRouter } from "next/navigation"; // Correct import for App Router
-
+import { toast } from "react-toastify";
+import Cookies from "js-cookie"; 
 const ResetPassword: React.FC = () => {
   const [password, setPassword] = useState("");
   const [confirmPassword, setConfirmPassword] = useState("");
@@ -12,9 +13,10 @@ const ResetPassword: React.FC = () => {
   const [loading, setLoading] = useState(false);
   const [email, setEmail] = useState<string | null>(null); // Email from localStorage
   const router = useRouter();
+  
   useEffect(() => {
     // Retrieve email from localStorage on component mount
-    const storedEmail = localStorage.getItem("email");
+    const storedEmail = Cookies.get("email");
     setEmail(storedEmail);
   }, []);
 
@@ -52,14 +54,13 @@ const ResetPassword: React.FC = () => {
       }
   
       const data = await response.json();
-      const successMessage = data.message || "Password reset successful!";
-      setMessage(successMessage);
-      alert(successMessage);
+    
+   toast.success("Password reset successful!", { position: "top-right" }); // Success toast
       setTimeout(() => {
-        router.push("/Login");
+        router.push("/reset");
       }, 1000);
     } catch (error) {
-      console.error("Error resetting password:", error);
+      toast.error("Error resetting password");
       setMessage("Failed to reset password. Please try again.");
     } finally {
       setLoading(false);

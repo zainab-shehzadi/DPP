@@ -8,7 +8,7 @@ import React, { useState, useEffect } from "react";
 import Image2 from "@/components/imageright"; // Ensure the correct import path
 import { useRouter, useSearchParams } from "next/navigation";
 import { toast } from "react-toastify";
-
+import Cookies from "js-cookie"; 
 const Signup: React.FC = () => {
   const [facilityName, setFacilityName] = useState("");
   const [facilityAddress, setFacilityAddress] = useState("");
@@ -53,17 +53,17 @@ const Signup: React.FC = () => {
           }),
         }
       );
-
-      console.log("API Response:", response); // Debugging: Log response object
-
+  
       if (!response.ok) {
         throw new Error("Failed to save facility.");
       }
 
       const data = await response.json();
-      console.log("Facility saved successfully:", data); // Debugging: Log response data
+const status = data.userStatusUpdated; // Correct key name from response
+Cookies.set("VerifyStatus", status);
+
       toast.success("Facility saved successfully!", { position: "top-right" });
-      router.push(`/LoginPage?email=${encodeURIComponent(email || "")}`);
+      router.push(`/verifyemail`);
     } catch (error) {
       console.error("Error saving facility:", error);
       toast.error("Failed to save facility. Please try again.", {

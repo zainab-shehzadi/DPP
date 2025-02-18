@@ -292,59 +292,6 @@ if (users.length > 0) {
   }
 });
 
-// router.post("/taskdetail", async (req, res) => {
-
-//   const { department } = req.body;
-//   console.log("Request body received:", req.body); // Log the entire request body
-
-//   // Validate request
-//   if (!department) {
-//     console.warn("Department is missing in the request body."); // Log a warning for missing department
-//     return res.status(400).json({
-//       success: false,
-//       message: "Department is required to fetch tasks.",
-//     });
-//   }
-
-//   try {
-//     console.log(`Fetching tasks for department: ${department}`); // Log the department being queried
-
-//     // Find tasks where the department matches
-//     const taskDocuments = await Task.find({
-//       "Tasks.DepartmentName": department,
-//     });
-
-//     console.log("Query result:", taskDocuments); // Log the query result
-
-//     // Extract and filter tasks for the department
-//     const filteredTasks = taskDocuments.flatMap((taskDoc) =>
-//       taskDoc.Tasks.filter((task) => task.DepartmentName === department)
-//     );
-
-//     console.log("Filtered tasks:", filteredTasks); // Log the filtered tasks
-
-//     // If no tasks found, return an appropriate message
-//     if (!filteredTasks || filteredTasks.length === 0) {
-//       console.warn(`No tasks found for department: ${department}`); // Log a warning for no results
-//       return res.status(404).json({
-//         success: false,
-//         message: `No tasks found for department: ${department}`,
-//       });
-//     }
-
-//     // Respond with the filtered tasks
-//     return res.status(200).json({
-//       success: true,
-//       tasks: filteredTasks,
-//     });
-//   } catch (error) {
-//     console.error("Error fetching tasks:", error); // Log the error stack
-//     return res.status(500).json({
-//       success: false,
-//       message: "An error occurred while fetching tasks.",
-//     });
-//   }
-// });
 
 router.post("/taskdetail", async (req, res) => {
   const { department } = req.body;

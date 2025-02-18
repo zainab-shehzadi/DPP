@@ -46,10 +46,9 @@ const Login: React.FC = () => {
   
       // Check if the login was successful
       if (response.ok) {
-        toast.success("Login successful!", { position: "top-right" }); // Success toast
+        toast.success("Login successful! Redirecting......", { position: "top-right" }); // Success toast
         console.log(data);
   
-        setCookie("accesstoken", data.accessToken); 
         setCookie("token", data.token); 
         setCookie("email", data.email); 
         setCookie("role", data.role);   
@@ -59,7 +58,6 @@ const Login: React.FC = () => {
 
         const storedEmail = getCookie("email");
         const storedRole = getCookie("role");
-        //const priceType = getCookie("priceType");
         const priceCycle = getCookie("priceCycle");
         
         if (storedEmail && storedRole) {
@@ -73,7 +71,7 @@ const Login: React.FC = () => {
             // If priceCycle is null, redirect to Subscription Plan page
             setTimeout(() => {
               router.push(`/Pricing`);
-            }, 2000);
+            }, 3000);
           }
         
         } else {
@@ -151,7 +149,7 @@ const Login: React.FC = () => {
 
             {/* Password Input Field */}
             <div className="mb-4">
-              <label className="block text-sm sm:text-base font-bold text-gray-700 mb-2">
+              <label className="block text-sm sm:text-base font-bold text-gray-700 mb-1">
                 Password
               </label>
               <input
@@ -165,7 +163,7 @@ const Login: React.FC = () => {
             </div>
 
             {/* Forgot Password Link */}
-            <div className="text-right mb-1">
+            <div className="text-right ">
               <Link
                 href="/forgetpassword"
                 className="text-sm sm:text-base text-blue-900 hover:underline"
@@ -183,7 +181,7 @@ const Login: React.FC = () => {
             </button>
           </form>
 
-          <div className="flex items-center my-6">
+          <div className="flex items-center my-4">
             <hr className="flex-grow border-gray-300" />
             <span className="px-4 text-gray-500">or</span>
             <hr className="flex-grow border-gray-300" />

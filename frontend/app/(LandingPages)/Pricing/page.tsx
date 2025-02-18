@@ -1,9 +1,10 @@
 "use client";
 
-import React, { useState ,useEffect} from "react";
+import React, { useState ,useEffect,} from "react";
 import { loadStripe } from "@stripe/stripe-js";
-
-
+import { useRouter } from "next/navigation"; 
+import Cookies from "js-cookie"; 
+import { toast } from "react-toastify";
 type SubscribeProps = {
   planType: string;
   planCycle: string;
@@ -12,26 +13,26 @@ type SubscribeProps = {
 };
 
 const SubscribeComponent: React.FC<SubscribeProps> = ({ planType, planCycle, price, description }) => {
-  const [email, setEmail] = useState<string | null>(null); // Email from localStorage
+  const [email, setEmail] = useState<string | null>(null);
+  const router = useRouter();
 
-
-    // Helper function to get cookies
-    const getCookie = (name: string) => {
-      const value = `; ${document.cookie}`;
-      const parts = value.split(`; ${name}=`);
-      if (parts.length === 2) return parts.pop()?.split(";").shift();
-      return null;
-    };
   
     useEffect(() => {
       // Retrieve email from cookies on component mount
-      const storedEmail = getCookie("email");
+      const storedEmail =  Cookies.get("email");
+
       if (storedEmail) {
         setEmail(storedEmail); // Set the email state if found in cookies
       }
     }, []);
   const handleSubmit = async () => {
     try {
+      const token = Cookies.get("token"); 
+      if (!token) {
+        toast.error("User is not authenticated. Redirecting to login...");
+        router.push("/LoginPage"); 
+        return;
+      }
       const stripe = await loadStripe(process.env.NEXT_PUBLIC_STRIPE_PUBLIC_KEY as string);
   
       if (!stripe) {

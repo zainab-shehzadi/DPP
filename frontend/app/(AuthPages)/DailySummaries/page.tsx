@@ -127,7 +127,7 @@ const renderTasksForColumn = (column: string) => {
       if (response.ok && data.success) {
         console.log("Tasks fetched successfully:", data.tasks);
   
-        // Update tasks based on their status
+      
         const updatedTasks = data.tasks.map((task) => {
           let column = "Closed"; // Default to "Closed"
           if (task.status === "pending") {
@@ -140,11 +140,11 @@ const renderTasksForColumn = (column: string) => {
   
           return {
             ...task,
-            column: column, // Set the column based on the task status
+            column: column, 
           };
         });
   
-        setTasks(updatedTasks); // Update the state with the fetched tasks
+        setTasks(updatedTasks); 
       } else {
         console.error(
           "Failed to fetch tasks:",

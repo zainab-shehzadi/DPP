@@ -1,12 +1,11 @@
 const Facility = require("../models/FacilitySignup");
 const FacilitySignup = require('../models/FacilitySignup');
 const nodemailer = require('nodemailer');
+const User = require("../models/User");
 
-
-// Create a new facility
 const createFacility = async (req, res) => {
   try {
-    const {email, facilityName, facilityAddress, noOfBeds } = req.body;
+    const { email, facilityName, facilityAddress, noOfBeds } = req.body;
 
     // Validate required fields
     if (!email || !facilityName || !facilityAddress || !noOfBeds) {
@@ -22,7 +21,24 @@ const createFacility = async (req, res) => {
     });
 
     await facility.save();
-    res.status(201).json({ message: "Facility saved successfully.", facility });
+
+    // Update user's status from "onboarding" to "pending"
+    const updatedUser = await User.findOneAndUpdate(
+      { email, status: "onboarding" }, // Find user with this email and status "onboarding"
+      { $set: { status: "pending" } }, // Update status to "pending"
+      { new: true } // Return the updated user document
+    );
+
+    if (!updatedUser) {
+      return res.status(400).json({ message: "User not found or already updated." });
+    }
+
+    res.status(201).json({
+      message: "Facility saved successfully.",
+      facility,
+      userStatusUpdated: updatedUser.status, // Confirm status update
+    });
+
   } catch (error) {
     console.error("Error saving facility:", error);
     res.status(500).json({ message: "Failed to save facility.", error: error.message });

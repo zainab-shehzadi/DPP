@@ -8,6 +8,7 @@ import Sidebar from "@/components/Sidebar";
 import { useRouter ,useSearchParams } from "next/navigation"; // Correct import for App Router
 import Notification from '@/components/Notification'
 import Cookies from "js-cookie"; // Import js-cookie to manage cookies
+import { Cookie } from "next/font/google";
 
 interface Sidebar {
   userId: string | null; // Allow string or null
@@ -61,7 +62,8 @@ export default function Dashboard() {
       window.history.replaceState({}, document.title, cleanUrl);
     }
       // Retrieve email from cookies on component mount
-      const storedEmail = getCookie("email");
+      const storedEmail = Cookies.get("email");
+     
       if (storedEmail) {
         setEmail(storedEmail); // Set the email state if found in cookies
       }
@@ -95,9 +97,9 @@ export default function Dashboard() {
     formData.append("email", email); // Add the email
   
     try {
-      setUploadStatus("Uploading...");
+     
   
-    
+
       const response = await axios.post(
         `${process.env.NEXT_PUBLIC_API_BASE_URL}/api/files/upload`,
         formData,
@@ -143,7 +145,8 @@ export default function Dashboard() {
     setFile(uploadedFile); // Save the file in state
     setUploadStatus(`File "${uploadedFile.name}" is ready to upload.`); // Update the upload status
   };
-  
+  const name = Cookies.get("firstname") || "Guest"; // Default to "Guest" if undefined
+
 
   return (
     <div className="flex flex-col lg:flex-row">
@@ -164,9 +167,9 @@ export default function Dashboard() {
   {/* Main Content */}
   <div className="lg:ml-64 p-4 sm:p-8 md:px-12 lg:px-16 xl:px-20 w-full">
     <header className="flex items-center justify-between mb-6 w-full flex-wrap">
-      <h2 className="text-lg sm:text-2xl lg:text-3xl font-bold">
-        Hello, <span className="text-blue-900">User</span>
-      </h2>
+    <h2 className="text-lg sm:text-2xl lg:text-3xl font-bold">
+  Hello, <span className="text-blue-900">{name}</span>
+</h2>
       <div className="flex items-center space-x-2 sm:space-x-4 mt-2 sm:mt-0">
       < Notification/>
         <div className="flex items-center border border-gray-300 p-1 sm:p-2 rounded-md space-x-2">
@@ -190,47 +193,7 @@ export default function Dashboard() {
         <h3 className="text-xs sm:text-sm md:text-lg lg:text-xl font-bold text-blue-900">
           Facility
         </h3>
-        <div className="relative">
-          <button
-            onClick={toggleDropdown}
-            className="flex items-center bg-blue-900 text-white font-semibold text-xs sm:text-sm md:text-base px-3 sm:px-4 py-1 sm:py-2 rounded-lg"
-          >
-            <span className="font-[Plus Jakarta Sans]">Lorem Ipsum</span>
-            <svg
-              className="w-3 h-3 sm:w-4 sm:h-4 ml-2"
-              fill="currentColor"
-              viewBox="0 0 20 20"
-            >
-              <path
-                fillRule="evenodd"
-                d="M5.293 7.293a1 1 0 011.414 0L10 10.586l3.293-3.293a1 1 0 111.414 1.414l-4 4a1 1 0 01-1.414 0l-4-4a1 1 0 010-1.414z"
-                clipRule="evenodd"
-              ></path>
-            </svg>
-          </button>
-          {dropdownOpen && (
-            <div className="absolute mt-2 w-full sm:w-48 bg-white shadow-lg rounded-lg">
-              <a
-                href="#"
-                className="block px-2 sm:px-4 py-1 sm:py-2 text-gray-800 hover:bg-gray-200 text-xs sm:text-sm md:text-base"
-              >
-                Option 1
-              </a>
-              <a
-                href="#"
-                className="block px-2 sm:px-4 py-1 sm:py-2 text-gray-800 hover:bg-gray-200 text-xs sm:text-sm md:text-base"
-              >
-                Option 2
-              </a>
-              <a
-                href="#"
-                className="block px-2 sm:px-4 py-1 sm:py-2 text-gray-800 hover:bg-gray-200 text-xs sm:text-sm md:text-base"
-              >
-                Option 3
-              </a>
-            </div>
-          )}
-        </div>
+      
       </div>
 
       {/* Facility Tabs */}

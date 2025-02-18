@@ -56,10 +56,16 @@ const userSchema = new mongoose.Schema(
       type: String,
       default: null, // Ensure it's not undefined
     },
+
     refreshToken: {
       type: String,
       default: null, // Ensure it's not undefined
     },
+    status: { 
+      type: String, 
+      enum: ["onboarding", "pending", "verified"], // Restrict status values
+      default: null, // Default is null
+    }
   },
   { timestamps: true }
 );

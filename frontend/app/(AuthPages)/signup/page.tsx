@@ -5,8 +5,7 @@ import "@fortawesome/fontawesome-free/css/all.min.css";
 import Image2 from "@/components/imageright"; // Ensure the correct import path
 import { Eye, EyeOff } from "lucide-react";
 import { toast } from "react-toastify";
-import Image from "next/image";
-
+import Cookies from "js-cookie"; 
 import { useRouter } from "next/navigation";
 const Signup: React.FC = () => {
   const [DepartmentName, setDepartmentName] = useState("");
@@ -43,6 +42,8 @@ const Signup: React.FC = () => {
     "Quality Assurance Department" :["Nursing Development Coordinator"],
 
   };
+
+
 
  // Leadership and Supporting Roles
 const roleCategories = {
@@ -100,7 +101,10 @@ const roleCategories = {
       });
   
       const data = await response.json();
-  
+      const status = data.status;
+     Cookies.set("VerifyStatus", status);
+     Cookies.set("email", email);
+     Cookies.set("name", firstName);
       if (response.ok) {
         toast.success("Signup successful!", { position: "top-right" }); // Success toast
         setTimeout(() => {
@@ -129,9 +133,9 @@ const roleCategories = {
   return (
     <div className="flex h-screen font-work-sans bg-gray-50">
       {/* Left Side: Sign-Up Form */}
-      <div className="flex flex-1 justify-center items-center bg-white min-h-screen">
+      <div className="flex flex-1 justify-center items-center bg-white min-h-screen mb-2">
   <div className="w-full max-w-lg px-4 py-6 sm:px-6 sm:py-8 lg:px-8 lg:py-10 text-left">
-    <h2 className="text-2xl sm:text-3xl font-bold text-gray-800 mb-4">
+    <h2 className="text-2xl sm:text-2xl font-bold text-gray-800 mb-2">
       Sign Up
     </h2>
     <form onSubmit={handleSubmit} className="flex flex-col gap-3">
@@ -167,7 +171,7 @@ const roleCategories = {
       </div>
  {/* Department Name */}
  <div>
-        <label className="block text-sm font-medium text-gray-700 mb-1">
+        <label className="block text-sm font-medium text-gray-700 mb-0">
           Department Name
         </label>
         <select
@@ -328,26 +332,8 @@ const roleCategories = {
 
     </form>
 
-    <div className="flex items-center my-4">
-      <hr className="flex-grow border-gray-300" />
-      <span className="px-2 text-sm text-gray-500">or</span>
-      <hr className="flex-grow border-gray-300" />
-    </div>
 
     {/* Social Sign Up Buttons */}
-    <div className="flex flex-col sm:flex-row gap-3">
-      <button className="flex items-center justify-center w-full py-2 px-4 border border-gray-300 rounded-lg text-gray-700 hover:text-black transition-colors">
-       <Image
-         src="/assets/google-icon.png" // Replace with the correct path to your Google logo image
-         alt="Google Logo"
-         width={24} // Adjust the size as needed
-         height={24}
-         className="mr-3"
-       />
-        Google
-      </button>
-      
-    </div>
 
     {/* Sign In Link */}
     <div className="mt-4 text-center">

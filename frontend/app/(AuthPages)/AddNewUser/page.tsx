@@ -72,16 +72,16 @@ const Dashboard = () => {
         </div>
 
         {/* Progress Bar */}
-        <div className="w-full sm:w-3/4 h-6 sm:h-12 lg:h-20 bg-[#002F6C] mt-2 rounded-lg mx-auto mb-8"></div>
+        <div className="w-full sm:w-3/4 h-6 sm:h-12 lg:h-10 bg-[#002F6C] mt-2 rounded-lg mx-auto mb-8"></div>
 
         {/* Add User Section */}
         <div className="w-full sm:w-3/4 mx-auto text-center mb-10">
-          <h3  className="font-bold text-black-800 opacity-80 text-2xl sm:text-3xl lg:text-4xl"
+          <h3  className="font-bold text-black-800 opacity-80 text-2xl sm:text-2xl lg:text-3xl"
         style={{ fontFamily: 'Plus Jakarta Sans, sans-serif' }}
       >
         Add User
           </h3>
-          <p className="text-gray-900 text-sm sm:text-base lg:text-lg leading-[25.2px] opacity-40 mb-4" style={{ fontFamily: 'Plus Jakarta Sans, sans-serif' }}>
+          <p className="text-gray-900 text-sm sm:text-base lg:text-md leading-[25.2px] opacity-40 mb-4" style={{ fontFamily: 'Plus Jakarta Sans, sans-serif' }}>
             Click the button below to Add User
           </p>
           <Link href="/AddUser">

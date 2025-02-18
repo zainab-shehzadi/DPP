@@ -10,6 +10,7 @@ import { useRouter, usePathname } from "next/navigation"; // Import usePathname
 const Navbar = () => {
   const router = useRouter();
   const pathname = usePathname(); // Get current route
+  const isDisabled = true; // Change this dynamically
 
   const handleNavigate = (path: string) => {
     router.push(path);
@@ -27,11 +28,13 @@ const Navbar = () => {
           Home
         </li>
         <li
-          className={`nav-item cursor-pointer ${pathname === "/Product" ? "font-bold text-blue-600" : ""}`}
-          onClick={() => handleNavigate("/Product")}
-        >
-          Product
-        </li>
+  className={`nav-item cursor-pointer 
+    ${pathname === "/Product" ? "font-bold text-blue-600" : ""}
+    ${isDisabled ? "pointer-events-none opacity-50 text-gray-400" : ""}`}
+>
+  Product
+</li>
+
         <li
           className={`nav-item cursor-pointer hover:underline ${pathname === "/HomePage" ? "font-extrabold text-blue-600" : ""}`}
           onClick={() => handleNavigate("/AboutUs")}

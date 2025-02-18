@@ -4,7 +4,7 @@ import Image from "next/image";
 import { FaBell } from "react-icons/fa";
 import React, { useState, useEffect } from "react";
 import Sidebar from "@/components/Sidebar";
-
+import { toast } from "react-toastify";
 // Define the User interface
 interface User {
   _id: string;
@@ -53,7 +53,8 @@ const Dashboard = () => {
     leadership: ["Director", "Manager", "Supervisor"],
     supporting: ["Staff", "Assistant", "Liaison"],
   };
-
+  const [isDeleteModalOpen, setIsDeleteModalOpen] = useState(false);
+  const [userToDelete, setUserToDelete] = useState<string | null>(null);
   const leadershipRoles = roleCategories.leadership;
   const supportingRoles = roleCategories.supporting;
 
@@ -76,7 +77,16 @@ const Dashboard = () => {
       .catch((error) => console.error('Error fetching data:', error));
   }, []);
 
-  const handleDelete = async (id: string) => {
+ 
+  const handleDeleteClick = (id: string) => {
+    setUserToDelete(id); // Store the ID of the user to delete
+    setIsDeleteModalOpen(true); // Open the confirmation modal
+  };
+  
+  const handleDelete = async (id: string | null) => {
+    setIsDeleteModalOpen(false); 
+    if (!id) return;
+  
     console.log("Deleting user with ID:", id);
     try {
       const response = await fetch(
@@ -90,24 +100,22 @@ const Dashboard = () => {
         throw new Error(`Failed to delete user with ID: ${id}`);
       }
       setUsers(users.filter((user) => user._id !== id));
-      alert("User deleted successfully!");
+      toast.success("User deleted successfully!");
+      setIsDeleteModalOpen(false); // Close the confirmation modal after successful deletion
     } catch (error) {
       console.error("Error deleting user:", error);
       alert("Failed to delete user. Please try again.");
     }
   };
-
-  const handleUpdate = (user: User) => {
-    setSelectedUser(user); // Set the selected user to edit
-    setIsModalOpen(true); // Open the modal
-  };
-
-  const handleModalClose = () => {
-    setIsModalOpen(false); // Close the modal
-    setSelectedUser(null); // Reset the selected user
-  };
   
-
+  const handleUpdate = (user: User) => {
+    setSelectedUser(user); 
+    setIsModalOpen(true); 
+  };
+  const handleModalClose = () => {
+    setIsModalOpen(false);
+    setSelectedUser(null); 
+  };
   const handleUpdateSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
   
@@ -141,18 +149,16 @@ const Dashboard = () => {
           user.email === selectedUser.email ? { ...user, ...selectedUser } : user
         )
       );
+toast.success("user updated successfully");
   
-      // Set the success message and close the modal after 2 seconds
-      setSuccessMessage("User updated successfully!");
-  
-      // Close modal after 2 seconds
       setTimeout(() => {
         setIsModalOpen(false);
-        setSuccessMessage(""); // Clear success message
+        setSuccessMessage(""); 
       }, 1000);
     } catch (error) {
       console.error("Error updating user:", error);
-      alert("Failed to update user. Please try again.");
+      toast.error("Failed to update user. Please try again.");
+      setIsModalOpen(false);
     }
   };
 
@@ -186,223 +192,246 @@ const Dashboard = () => {
         </div>
 
         {/* Progress Bar */}
-        <div className="w-full sm:w-3/4 h-6 sm:h-12 lg:h-20 bg-[#002F6C] mt-2 rounded-lg mx-auto mb-8"></div>
-        <div className="overflow-x-auto mx-auto max-w-[1130px]">
-          <table className="min-w-full text-left border-collapse border border-[#F2F2F2]">
-            <thead>
-              <tr className="bg-gray-100 text-black border-b border-[#F2F2F2]">
-                <th className="px-6 py-6 text-left font-semibold">Select</th>
-                <th className="px-6 py-6 text-left font-semibold">User ID</th>
-                <th className="px-6 py-4 text-left font-semibold">Date</th>
-                <th className="px-6 py-4 text-left font-semibold">User Name</th>
-                <th className="px-6 py-4 text-left font-semibold">Email Address</th>
-                <th className="px-6 py-4 text-left font-semibold text-sm sm:text-base">Action</th>
-              </tr>
-            </thead>
-            <tbody>
-              {users.map((user) => (
-                <tr key={user._id} className="hover:bg-gray-100 border-b border-[#F2F2F2] text-gray-900">
-                  <td className="py-5 px-8">
-                    <input
-                      type="checkbox"
-                      id={`select-user-${user._id}`}
-                      name="select-user"
-                      className="w-5 h-5 rounded border-gray-300"
-                    />
-                  </td>
-                  <td className="py-4 px-6 text-blue-700 font-medium">#{user._id}</td>
-                  <td className="py-4 px-6 text-gray-500">{user.createdAt}</td>
-                  <td className="py-4 px-6 text-gray-500">{user.firstname}</td>
-                  <td className="py-4 px-6 text-gray-500">{user.email}</td>
-                  <td className="py-4 px-4 sm:px-6 text-center">
-                    <button
-                      className="text-blue-500 hover:text-blue-700 mr-4"
-                      onClick={() => handleUpdate(user)} // Open the update modal with selected user
-                      title="Update User"
-                    >
-                      <Image
-                        src="/assets/update.png"
-                        alt="Update"
-                        width={16}
-                        height={16}
-                        style={{ width: "auto", height: "auto" }}
-                      />
-                    </button>
-                    <button
-                      className="text-red-500 hover:text-red-700"
-                      onClick={() => handleDelete(user._id)}
-                      title="Delete User"
-                    >
-                      <Image
-                        src="/assets/delete.png"
-                        alt="Delete"
-                        width={16}
-                        height={16}
-                        style={{ width: "auto", height: "auto" }}
-                      />
-                    </button>
-                  </td>
-                </tr>
-              ))}
-            </tbody>
-          </table>
-        </div>
+        <div className="w-full sm:w-3/4 h-6 sm:h-12 lg:h-18 bg-[#002F6C] mt-2 rounded-lg mx-auto mb-8"></div>
+        <div className="overflow-x-auto mx-auto max-w-[1000px]">
+  <table className="min-w-full text-left border-collapse border border-[#F2F2F2]">
+    <thead>
+      <tr className="bg-gray-100 text-black border-b border-[#F2F2F2]">
+        <th className="px-6 py-6 text-left font-semibold text-sm">Select</th>
+        <th className="px-6 py-6 text-left font-semibold text-sm">User ID</th>
+        <th className="px-6 py-4 text-left font-semibold text-sm">Date</th>
+        <th className="px-6 py-4 text-left font-semibold text-sm">User Name</th>
+        <th className="px-6 py-4 text-left font-semibold text-sm">Email Address</th>
+        <th className="px-6 py-4 text-left font-semibold text-sm">Action</th>
+      </tr>
+    </thead>
+    <tbody>
+      {users.map((user) => (
+        <tr key={user._id} className="hover:bg-gray-100 border-b border-[#F2F2F2] text-gray-900">
+          <td className="py-5 px-8">
+            <input
+              type="checkbox"
+              id={`select-user-${user._id}`}
+              name="select-user"
+              className="w-5 h-5 rounded border-gray-300"
+            />
+          </td>
+          <td className="py-4 px-6 text-blue-700 font-medium text-sm">#{user._id}</td>
+          <td className="py-4 px-6 text-gray-500 text-sm">{user.createdAt}</td>
+          <td className="py-4 px-6 text-gray-500 text-sm">{user.firstname}</td>
+          <td className="py-4 px-6 text-gray-500 text-sm">{user.email}</td>
+          <td className="py-4 px-4 sm:px-6 text-center">
+            <button
+              className="text-blue-500 hover:text-blue-700 mr-4"
+              onClick={() => handleUpdate(user)} // Open the update modal with selected user
+              title="Update User"
+            >
+              <Image
+                src="/assets/update.png"
+                alt="Update"
+                width={16}
+                height={16}
+                style={{ width: "auto", height: "auto" }}
+              />
+            </button>
+            <button
+  className="text-red-500 hover:text-red-700"
+  onClick={() => handleDeleteClick(user._id)} // Open confirmation modal
+  title="Delete User"
+>
+  <Image
+    src="/assets/delete.png"
+    alt="Delete"
+    width={16}
+    height={16}
+    style={{ width: "auto", height: "auto" }}
+  />
+</button>
+{/* Delete Confirmation Modal */}
+{isDeleteModalOpen && (
+  <div className="fixed inset-0 bg-gray-800 bg-opacity-50 flex justify-center items-center z-50">
+    <div className="bg-white p-8 rounded-lg shadow-lg w-full max-w-md space-y-6">
+      <h2 className="text-xl font-semibold text-gray-800 text-center">
+        Are you sure you want to delete this user?
+      </h2>
+
+      <div className="flex justify-end space-x-4 mt-4">
+        <button
+          onClick={() => setIsDeleteModalOpen(false)} // Close the modal without deleting
+          className="bg-gray-300 text-gray-700 py-2 px-6 rounded-md hover:bg-gray-400"
+        >
+          No
+        </button>
+        <button
+          onClick={() => handleDelete(userToDelete)} // Call delete function with the user ID
+          className="bg-red-500 text-white py-2 px-6 rounded-md hover:bg-red-700"
+        >
+          Yes
+        </button>
       </div>
+    </div>
+  </div>
+)}
+
+          </td>
+        </tr>
+      ))}
+    </tbody>
+  </table>
+</div>
+
+      </div>
+
 
    {/* Update Modal */}
-   {isModalOpen && selectedUser && (
-      <div className="fixed inset-0 bg-gray-800 bg-opacity-50 flex justify-center items-center z-50">
-        <div className="bg-white p-8 rounded-lg shadow-lg w-full max-w-lg space-y-6">
-          <h2 className="text-2xl font-semibold text-gray-800 text-center">Update User</h2>
+{isModalOpen && selectedUser && (
+  <div className="fixed inset-0 bg-gray-800 bg-opacity-50 flex justify-center items-center z-50">
+    <div className="bg-white p-8 rounded-lg shadow-lg w-full max-w-lg space-y-6 overflow-y-auto max-h-[80vh]">
+      <h2 className="text-2xl font-semibold text-gray-800 text-center">Update User</h2>
 
-          {/* Success Message */}
-          {successMessage && (
-            <div
-              className="mb-4 rounded-lg bg-green-100 px-4 py-2 text-green-700 border border-green-500"
-              role="alert"
-            >
-              {successMessage}
-            </div>
-          )}
-
-
-            <form onSubmit={handleUpdateSubmit} className="space-y-4">
-               {/* Email */}
- <div className="mb-4">
-              <label htmlFor="email" className="block text-sm font-medium text-gray-700">
-                Email
-              </label>
-              <input
-                type="email"
-                id="email"
-                value={selectedUser.email}
-                onChange={(e) => setSelectedUser({ ...selectedUser, email: e.target.value })}
-                className="w-full p-3 mt-1 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-blue-500 focus:border-transparent"
-                placeholder="Enter email"
-              />
-            </div>
-       
-  {/* First Name */}
-  <div className="mb-4">
-    <label htmlFor="firstname" className="block text-sm font-medium text-gray-700">
-      First Name
-    </label>
-    <input
-      type="text"
-      id="firstname"
-      value={selectedUser.firstname}
-      onChange={(e) =>
-        setSelectedUser({ ...selectedUser, firstname: e.target.value })
-      }
-      className="w-full p-3 mt-1 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-blue-500 focus:border-transparent"
-      placeholder="Enter first name"
-    />
-  </div>
-
-  {/* Last Name */}
-  <div className="mb-4">
-    <label htmlFor="lastname" className="block text-sm font-medium text-gray-700">
-      Last Name
-    </label>
-    <input
-      type="text"
-      id="lastname"
-      value={selectedUser.lastname || ""}
-      onChange={(e) =>
-        setSelectedUser({ ...selectedUser, lastname: e.target.value })
-      }
-      className="w-full p-3 mt-1 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-blue-500 focus:border-transparent"
-      placeholder="Enter last name"
-    />
-  </div>
-
-  {/* Department */}
-  <div>
-    <label className="block text-gray-700">Department</label>
-    <select
-      value={departmentName}
-      onChange={(e) => setDepartmentName(e.target.value)}
-      className="mt-2 w-full p-2 rounded-md bg-[#e2f3ff]"
-    >
-      <option value="" disabled>
-        Select a Department
-      </option>
-      {Object.keys(departmentPositions).map((dept) => (
-        <option key={dept} value={dept}>
-          {dept}
-        </option>
-      ))}
-    </select>
-  </div>
-
-  {/* Position */}
-  <div>
-    <label className="block text-gray-700">Position</label>
-    <select
-      value={position}
-      onChange={(e) => setPosition(e.target.value)}
-      className="mt-2 w-full p-2 rounded-md bg-[#e2f3ff]"
-    >
-      <option value="" disabled>
-        {positions.length ? "Select a Position" : "Select a Department First"}
-      </option>
-      {positions.map((pos) => (
-        <option key={pos} value={pos}>
-          {pos}
-        </option>
-      ))}
-    </select>
-  </div>
-
-  {/* Role */}
-  <div>
-    <label className="block text-gray-700">Role</label>
-    <select
-      value={role}
-      onChange={(e) => setRole(e.target.value)}
-      className="mt-2 w-full p-2 rounded-md bg-[#e2f3ff]"
-    >
-      <option value="" disabled>
-        Select a Role
-      </option>
-      <optgroup label="Leadership Roles">
-        {leadershipRoles.map((roleOption) => (
-          <option key={roleOption} value={roleOption}>
-            {roleOption}
-          </option>
-        ))}
-      </optgroup>
-      <optgroup label="Supporting Roles">
-        {supportingRoles.map((roleOption) => (
-          <option key={roleOption} value={roleOption}>
-            {roleOption}
-          </option>
-        ))}
-      </optgroup>
-    </select>
-  </div>
-
-  {/* Buttons */}
-  <div className="flex justify-end space-x-4">
-    <button
-      type="button"
-      onClick={handleModalClose}
-      className="bg-gray-300 text-gray-700 py-2 px-6 rounded-md hover:bg-gray-400"
-    >
-      Cancel
-    </button>
-    <button
-      type="submit"
-      className="bg-blue-900 text-white py-2 px-6 rounded-md hover:bg-blue-700"
-    >
-      Save Changes
-    </button>
-  </div>
-</form>
-
+      {/* Success Message */}
+      {successMessage && (
+        <div
+          className="mb-4 rounded-lg bg-green-100 px-4 py-2 text-green-700 border border-green-500"
+          role="alert"
+        >
+          {successMessage}
         </div>
-      </div>
-    )}
+      )}
+
+      <form onSubmit={handleUpdateSubmit} className="space-y-4">
+        {/* Email */}
+        <div className="mb-4">
+          <label htmlFor="email" className="block text-sm font-medium text-gray-700">
+            Email
+          </label>
+          <input
+            type="email"
+            id="email"
+            value={selectedUser.email}
+            onChange={(e) => setSelectedUser({ ...selectedUser, email: e.target.value })}
+            className="w-full p-3 mt-1 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-blue-500 focus:border-transparent"
+            placeholder="Enter email"
+          />
+        </div>
+
+        {/* First Name */}
+        <div className="mb-4">
+          <label htmlFor="firstname" className="block text-sm font-medium text-gray-700">
+            First Name
+          </label>
+          <input
+            type="text"
+            id="firstname"
+            value={selectedUser.firstname}
+            onChange={(e) => setSelectedUser({ ...selectedUser, firstname: e.target.value })}
+            className="w-full p-3 mt-1 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-blue-500 focus:border-transparent"
+            placeholder="Enter first name"
+          />
+        </div>
+
+        {/* Last Name */}
+        <div className="mb-4">
+          <label htmlFor="lastname" className="block text-sm font-medium text-gray-700">
+            Last Name
+          </label>
+          <input
+            type="text"
+            id="lastname"
+            value={selectedUser.lastname || ""}
+            onChange={(e) => setSelectedUser({ ...selectedUser, lastname: e.target.value })}
+            className="w-full p-3 mt-1 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-blue-500 focus:border-transparent"
+            placeholder="Enter last name"
+          />
+        </div>
+
+        {/* Department */}
+        <div>
+          <label className="block text-gray-700">Department</label>
+          <select
+            value={departmentName}
+            onChange={(e) => setDepartmentName(e.target.value)}
+            className="mt-2 w-full p-2 rounded-md bg-[#e2f3ff]"
+          >
+            <option value="" disabled>
+              Select a Department
+            </option>
+            {Object.keys(departmentPositions).map((dept) => (
+              <option key={dept} value={dept}>
+                {dept}
+              </option>
+            ))}
+          </select>
+        </div>
+
+        {/* Position */}
+        <div>
+          <label className="block text-gray-700">Position</label>
+          <select
+            value={position}
+            onChange={(e) => setPosition(e.target.value)}
+            className="mt-2 w-full p-2 rounded-md bg-[#e2f3ff]"
+          >
+            <option value="" disabled>
+              {positions.length ? "Select a Position" : "Select a Department First"}
+            </option>
+            {positions.map((pos) => (
+              <option key={pos} value={pos}>
+                {pos}
+              </option>
+            ))}
+          </select>
+        </div>
+
+        {/* Role */}
+        <div>
+          <label className="block text-gray-700">Role</label>
+          <select
+            value={role}
+            onChange={(e) => setRole(e.target.value)}
+            className="mt-2 w-full p-2 rounded-md bg-[#e2f3ff]"
+          >
+            <option value="" disabled>
+              Select a Role
+            </option>
+            <optgroup label="Leadership Roles">
+              {leadershipRoles.map((roleOption) => (
+                <option key={roleOption} value={roleOption}>
+                  {roleOption}
+                </option>
+              ))}
+            </optgroup>
+            <optgroup label="Supporting Roles">
+              {supportingRoles.map((roleOption) => (
+                <option key={roleOption} value={roleOption}>
+                  {roleOption}
+                </option>
+              ))}
+            </optgroup>
+          </select>
+        </div>
+
+        {/* Buttons */}
+        <div className="flex justify-end space-x-4">
+          <button
+            type="button"
+            onClick={handleModalClose}
+            className="bg-gray-300 text-gray-700 py-2 px-6 rounded-md hover:bg-gray-400"
+          >
+            Cancel
+          </button>
+          <button
+            type="submit"
+            className="bg-blue-900 text-white py-2 px-6 rounded-md hover:bg-blue-700"
+          >
+            Save Changes
+          </button>
+        </div>
+      </form>
+    </div>
+  </div>
+)}
+
 
     </div>
   );

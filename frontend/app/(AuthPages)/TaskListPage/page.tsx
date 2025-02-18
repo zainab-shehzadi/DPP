@@ -3,18 +3,19 @@
 import Image from 'next/image';
 import { FaBell } from 'react-icons/fa';
 import React, { useState, useEffect } from "react";
-
+import Cookies from "js-cookie";
 import Sidebar from "@/components/Sidebar";
+import { toast } from "react-toastify";
 interface Task {
-  _id: string | number; //
-  task: string; // Task name
-  taskSummary: string; // Summary of the task
-  assignedTo: Array<{ firstname: string }>; // Array of assigned participants
-  dateAdded: string; // Date the task was added
-  startDate: string; // Start date of the task
-  endDate: string; // End date or deadline of the task
+  _id: string | number; 
+  task: string; 
+  taskSummary: string;
+  assignedTo: Array<{ firstname: string }>; 
+  dateAdded: string; 
+  startDate: string; 
+  endDate: string; 
   status: string;
-  column: string; // Column (e.g., "To Do", "In Progress", etc.)
+  column: string; 
 }
 
 export default function Dashboard() {
@@ -27,14 +28,14 @@ export default function Dashboard() {
   const [tasks, setTasks] = useState<Task[]>([
     {
       _id: "",  
-      task: "", // Task name
-      taskSummary: "", // Task summary
+      task: "", 
+      taskSummary: "",
       assignedTo: [{ firstname: "" }], 
-      dateAdded: "", // Task added date
-      startDate: "", // Start date
-      endDate: "", // End date or deadline
+      dateAdded: "", 
+      startDate: "",
+      endDate: "", 
       status: "",
-      column: "To Do", // Default column
+      column: "To Do", 
     },
   ]);
   const toggleDropdown = () => setDropdownOpen(!dropdownOpen);
@@ -46,26 +47,9 @@ export default function Dashboard() {
   };
   
   
-  // Helper function to get cookies
-  const getCookie = (name: string) => {
-    const value = `; ${document.cookie}`;
-    const parts = value.split(`; ${name}=`);
-    if (parts.length === 2) {
-      return parts.pop()?.split(";").shift() || null;
-    }
-    return null;
-  };
   useEffect(() => {
-    const departmentFromCookie = getCookie("DepartmentName");
-    console.log("Department from cookies:", departmentFromCookie);
-
-    if (departmentFromCookie) {
-      setDepartment(departmentFromCookie);
-    } else {
-      console.warn("Department cookie not found.");
-    }
-  }, []);
-  useEffect(() => {
+    const department =Cookies.get("DepartmentName");
+    setDepartment(department);
     if (department) {
       console.log("Fetching tasks for department:", department);
       fetchTasks();
@@ -75,12 +59,12 @@ export default function Dashboard() {
   }, [department]);
 
 const moveTaskToColumn = async (_id: string, column: string) => {
-  // Map the column name to status
+  
   const statusMap: { [key: string]: string } = {
     "To Do": "pending",
     "In Progress": "in-progress",
     "Closed": "completed",
-    "Frozen": "frozen", // Add this if `frozen` is a valid status in your backend.
+    "Frozen": "frozen", 
   };
 
   const status = statusMap[column];
@@ -114,7 +98,7 @@ const renderTasksForColumn = (column: string) => {
   return tasks
     .filter((task) => task.column === column)
     .map((task) => {
-      const uniqueKey = task._id; // Use task ID directly
+      const uniqueKey = task._id; 
       return (
         <div
           key={uniqueKey}
@@ -173,62 +157,54 @@ const renderTasksForColumn = (column: string) => {
       );
     });
 };
-  const fetchTasks = async () => {
-    try {
-      // Check if department is set
-      if (!department) {
-        console.error("Department is not specified.");
-        return;
-      }
+const fetchTasks = async () => {
   
-      // Make a POST request to the API with the department in the request body
-      const response = await fetch(
-        `${process.env.NEXT_PUBLIC_API_BASE_URL}/api/calendar/taskdetail`,
-        {
-          method: "POST",
-          headers: {
-            "Content-Type": "application/json",
-          },
-          body: JSON.stringify({ department }), // Pass the department as JSON
+  try {
+    // Make a POST request to the API with the department in the request body
+    const response = await fetch(
+      `${process.env.NEXT_PUBLIC_API_BASE_URL}/api/calendar/taskdetail`, 
+      {
+        method: "POST",
+        headers: {
+          "Content-Type": "application/json",
+        },
+        body: JSON.stringify({ department }), // Pass the department as JSON
+      }
+    );
+
+    // Parse the JSON response
+    const data = await response.json();
+
+    // Check for a successful response
+    if (response.ok && data.success) {
+      toast.success("Tasks fetched successfully:", data.tasks);
+
+      // Update tasks based on their status
+      const updatedTasks = data.tasks.map((task) => {
+        let column = "Closed"; // Default to "Closed"
+        if (task.status === "pending") {
+          column = "To Do";
+        } else if (task.status === "in-progress") {
+          column = "In Progress";
+        } else if (task.status === "completed") {
+          column = "Closed";
         }
-      );
-  
-      // Parse the JSON response
-      const data = await response.json();
-  
-      // Check for a successful response
-      if (response.ok && data.success) {
-        console.log("Tasks fetched successfully:", data.tasks);
-  
-        // Update tasks based on their status
-        const updatedTasks = data.tasks.map((task) => {
-          let column = "Closed"; // Default to "Closed"
-          if (task.status === "pending") {
-            column = "To Do";
-          } else if (task.status === "in-progress") {
-            column = "In Progress";
-          } else if (task.status === "completed") {
-            column = "Closed";
-          }
-  
-          return {
-            ...task,
-            column: column, // Set the column based on the task status
-          };
-        });
-  
-        setTasks(updatedTasks); // Update the state with the fetched tasks
-      } else {
-        console.error(
-          "Failed to fetch tasks:",
-          data.message || response.statusText
-        );
-      }
-    } catch (error) {
-      console.error("Error fetching tasks:", error); // Log any errors
+
+        return {
+          ...task,
+          column: column, // Assign the appropriate column based on status
+        };
+      });
+
+      setTasks(updatedTasks); // Update the state with the fetched tasks
+    } else {
+      //toast.error("Failed to fetch tasks. Please try again.");
     }
-  };
-  
+  } catch (error) {
+    toast.error("An error occurred while fetching tasks. Please try again.");
+  }
+};
+
 
   return (
     <div className="flex flex-col lg:flex-row">
@@ -265,7 +241,7 @@ const renderTasksForColumn = (column: string) => {
         <div className="flex items-center space-x-4 mt-4 lg:mt-8 ml-4 lg:ml-10 justify-between mb-6">
           <div className="flex items-center space-x-4">
             <h3 className="text-base sm:text-lg md:text-xl lg:text-2xl font-bold text-blue-900">Facility</h3>
-            <div className="relative ml-4 sm:ml-6 lg:ml-10">
+            {/* <div className="relative ml-4 sm:ml-6 lg:ml-10">
               <button 
                 onClick={toggleDropdown} 
                 className="flex items-center bg-blue-900 text-white font-semibold text-[11px] leading-[14px] px-4 py-2 rounded-lg"
@@ -282,7 +258,7 @@ const renderTasksForColumn = (column: string) => {
                   <a href="#" className="block px-4 py-2 text-gray-800 hover:bg-gray-200 text-sm sm:text-base md:text-lg">Option 3</a>
                 </div>
               )}
-            </div>
+            </div> */}
           </div>
         </div>
 
@@ -290,48 +266,47 @@ const renderTasksForColumn = (column: string) => {
 
         {/* Task Detail Container */}
         <div className="bg-white p-6 rounded-lg shadow-md mx-auto mt-8 sm:mt-10 w-full max-w-[1400px]" style={{ borderRadius: '16px', border: '1px solid #E0E0E0' }}>
-          {/* Header Information */}
-          <div className="flex flex-wrap gap-2 mb-8 justify-between items-stretch">
-            {/* Date and Participants Box */}
-<div className="bg-[#F6F6F6] p-6 rounded-[17px] flex flex-col justify-center w-full sm:w-[48%] lg:w-[324px] h-auto sm:h-[120px] mb-4 sm:mb-0">
-  <p className="font-bold text-sm">
-    Date added: <span className="font-normal">{selectedTask ? new Date(selectedTask.startDate).toLocaleDateString() : "N/A"}</span>
-  </p>
-  <p className="font-bold text-sm mt-2">
-    Deadline: <span className="font-normal">{selectedTask ? new Date(selectedTask.endDate).toLocaleDateString() : "N/A"}</span>
-  </p>
-  <p className="font-bold text-sm mt-2">
-    Participants: <span className="font-normal">
-      {selectedTask && Array.isArray(selectedTask.assignedTo) && selectedTask.assignedTo.length > 0
-        ? selectedTask.assignedTo.map((person, idx) => (
-            <span key={idx}>{person.firstname || "Unknown"}{idx < selectedTask.assignedTo.length - 1 ? ", " : ""}</span>
-          ))
-        : "No participants"}
-    </span>
-  </p>
-</div>
-{/* Description Box */}
-<div className="bg-[#F6F6F6] p-6 rounded-[17px] flex items-center justify-center w-full sm:w-full md:w-[65%] lg:w-[50%] xl:w-[821px] h-auto sm:h-[120px] mb-4 sm:mb-0">
-  <p className="text-gray-800 text-left text-sm md:text-base lg:text-left font-bold text-lg md:text-xl">
-    {selectedTask ? selectedTask.taskSummary : "Select a task to view details."}
-  </p>
+       
+{/* Header Information */}
+<div className="flex flex-wrap gap-2 mb-8 justify-between items-stretch">
+  {/* Date and Participants Box */}
+  <div className="bg-[#F6F6F6] p-6 rounded-[17px] flex flex-col justify-center w-full sm:w-[32%] h-auto sm:h-[120px] mb-4 sm:mb-0">
+    <p className="font-bold text-sm">
+      Date added: <span className="font-normal">{selectedTask ? new Date(selectedTask.startDate).toLocaleDateString() : "N/A"}</span>
+    </p>
+    <p className="font-bold text-sm mt-2">
+      Deadline: <span className="font-normal">{selectedTask ? new Date(selectedTask.endDate).toLocaleDateString() : "N/A"}</span>
+    </p>
+    <p className="font-bold text-sm mt-2">
+      Participants: <span className="font-normal">
+        {selectedTask && Array.isArray(selectedTask.assignedTo) && selectedTask.assignedTo.length > 0
+          ? selectedTask.assignedTo.map((person, idx) => (
+              <span key={idx}>{person.firstname || "Unknown"}{idx < selectedTask.assignedTo.length - 1 ? ", " : ""}</span>
+            ))
+          : "No participants"}
+      </span>
+    </p>
+  </div>
+  {/* Description Box */}
+  <div className="bg-[#F6F6F6] p-6 rounded-[17px] flex items-center justify-center w-full sm:w-[32%] h-auto sm:h-[120px] mb-4 sm:mb-0">
+    <p className="text-gray-800 text-left  font-bold text-lg md:text-md">
+      {selectedTask ? selectedTask.taskSummary : "Select a task to view details."}
+    </p>
+  </div>
+  {/* Task Summary Box */}
+  <div className="bg-[#F6F6F6] p-4 rounded-[17px] flex flex-col justify-center w-full sm:w-[32%] h-auto sm:h-[120px]">
+    <p className="font-bold text-sm mb-1">
+      All tasks: <span className="font-normal">{tasks.length}</span>
+    </p>
+    <p className="font-bold text-sm mb-1">
+      Done: <span className="font-normal">{tasks.filter(task => task.column === "Closed").length}</span>
+    </p>
+    <p className="font-bold text-sm">
+      Frozen: <span className="font-normal">{tasks.filter(task => task.column === "Frozen").length}</span>
+    </p>
+  </div>
 </div>
 
-
-            {/* Task Summary Box */}
-            <div className="bg-[#F6F6F6] p-4 rounded-[17px] flex flex-col justify-center w-full sm:w-[48%] lg:w-[187px] h-auto sm:h-[120px]">
-  <p className="font-bold text-sm mb-1">
-    All tasks: <span className="font-normal">{tasks.length}</span>
-  </p>
-  <p className="font-bold text-sm mb-1">
-    Done: <span className="font-normal">{tasks.filter(task => task.column === "Closed").length}</span>
-  </p>
-  <p className="font-bold text-sm">
-    Frozen: <span className="font-normal">{tasks.filter(task => task.column === "Frozen").length}</span>
-  </p>
-</div>
-
-          </div>
 
           {/* Task Columns */}
           <div className="grid grid-cols-1 lg:grid-cols-4 gap-6">

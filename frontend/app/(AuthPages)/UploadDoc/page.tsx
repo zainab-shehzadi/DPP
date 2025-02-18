@@ -1,16 +1,10 @@
 
-
-
-
-
-
-
 "use client"; 
 import { useSearchParams } from 'next/navigation';
 import React, { useState, useEffect, useRef } from "react";
 import Sidebar from "@/components/Sidebar";
-import Image from "next/image";
-import {FaFileAlt, FaBell } from "react-icons/fa";
+
+import {FaFileAlt} from "react-icons/fa";
 import DatePicker from "react-datepicker";
 import "react-datepicker/dist/react-datepicker.css";
 import { useRouter } from "next/navigation"; // For navigation after successful reset
@@ -42,9 +36,7 @@ const [selectedTag, setSelectedTag] = useState<string | null>(null);
 const [selectedID, setSelectedID] = useState<number | null>(null); 
 const [selectedLongDesc, setSelectedLongDesc] = useState<string | null>(null);
 const [selectedPolicy, setSelectedPPolicy] = useState<string | null>(null);
-
-
-const [selectedTask, setSelectedTask] = useState<any[]>([]);
+const [selectedTask, setSelectedTask] = useState<any[]>([]); // Ensure it's an array
 const [selectedFacility, setSelectedFacility] = useState<string>(""); 
 const [email, setEmail] = useState<string | null>(null); 
 const [visibleCount, setVisibleCount] = useState<number>(4);
@@ -66,7 +58,6 @@ const [answer2, setAnswer2] = useState('');
 const [loading, setLoading] = useState(false);
 
 const router = useRouter();
-const id = searchParams.get("id");
 useEffect(() => {
   const storedAccessToken = Cookies.get("accessToken");
   const storedRefreshToken = Cookies.get("refreshToken"); // Fix variable name
@@ -102,7 +93,7 @@ useEffect(() => {
       const data = await res.json();
 
       console.log("API Response:", data); // Debugging log
-      // alert("API Response: " + JSON.stringify(data, null, 2)); // Show in alert
+    
 
       // Ensure response is an array
       if (Array.isArray(data)) {
@@ -118,7 +109,7 @@ useEffect(() => {
   fetchDocuments();
 }, []);
 
-  // ✅ Close dropdown when clicking outside
+
   useEffect(() => {
     const handleClickOutside = (event: MouseEvent) => {
       if (dropdownRef.current && !dropdownRef.current.contains(event.target as Node)) {
@@ -128,17 +119,17 @@ useEffect(() => {
     document.addEventListener("mousedown", handleClickOutside);
     return () => document.removeEventListener("mousedown", handleClickOutside);
   }, []);
+  const handleNavigateToTags = () => {
+    router.push("/Tags"); // Navigate to the UploadDoc page
+  };
   const fetchDocumentDetails = async (id) => {
     try {
         console.log(`📤 Fetching Details for Document ID: ${id}`);
 
         const safeEmail = email ?? "";
         const apiUrl = `${process.env.NEXT_PUBLIC_API_BASE_URL}/api/files/tags-with-descriptions?email=${encodeURIComponent(safeEmail)}&id=${encodeURIComponent(id)}`;
-
-        console.log("🌐 API URL:", apiUrl);
-
         const response = await fetch(apiUrl);
-        console.log("📥 API Response Status:", response.status);
+      
 
         if (!response.ok) {
             console.error(`❌ Failed to fetch document details: ${response.statusText}`);
@@ -148,8 +139,7 @@ useEffect(() => {
         }
 
         const data = await response.json();
-        console.log("✅ Fetched Document Data:", JSON.stringify(data, null, 2));
-        
+       
 
         // 🔍 Check API response structure
         if (!data.tags || !Array.isArray(data.tags)) {
@@ -186,6 +176,133 @@ useEffect(() => {
         console.log("⏳ Loading state set to false.");
     }
 };
+  const isAuthenticated = async () => {
+    try {
+      const safeEmail = email ?? ""; 
+      
+      const response = await fetch(
+        `${process.env.NEXT_PUBLIC_API_BASE_URL}/api/users/get-access-token?email=${encodeURIComponent(safeEmail)}`,
+        {
+          method: "GET",
+          credentials: "include",
+        }
+      );
+  
+      if (!response.ok) throw new Error("Failed to fetch access token");
+  
+      const data = await response.json();
+      const accessToken = data.accessToken;
+      const refreshToken = data.refreshToken; 
+  
+      if (!accessToken) {
+        toast.error("Please log in with Google for assigned tasks.");
+        router.push("/LoginPage");
+        return false;
+      }
+  
+      Cookies.set("accessToken", accessToken, { expires: 7 });
+      Cookies.set("refreshToken", refreshToken, { expires: 30 }); // Refresh token valid for 7 days
+  
+      return true;
+    } catch (error) {
+      console.error("Error fetching tokens:", error);
+      alert("Please log in with Google for assigned tasks.");
+      router.push("/LoginPage"); 
+      return false;
+    }
+  };
+
+
+const handleAssignTask = async () => {
+  isAuthenticated() ;
+  
+  if (!selectedTask || selectedTask.length === 0) {
+    alert("Please select at least one task before assigning.");
+    return;
+  }
+
+  console.log("Selected tasks:", selectedTask);
+  console.log("Selected ID:", selectedID);
+
+  try {
+    const accessToken = accessToken123;
+     
+
+    // Prepare tasks
+    const tasks = selectedTask.map((taskSummary, index) => {
+      const startTime = new Date();
+      startTime.setHours(startTime.getHours() + index * 2); 
+      
+      const endTime = new Date(startTime);
+      endTime.setHours(startTime.getHours() + 48); 
+
+      return {
+        summary: taskSummary,
+        status: "pending",
+        start: { dateTime: startTime.toISOString(), timeZone: "UTC" },
+        end: { dateTime: endTime.toISOString(), timeZone: "UTC" },
+      };
+    });
+
+    console.log("Prepared tasks:", tasks);
+
+    // Save tasks to the database
+    const saveResponse = await fetch(
+      `${process.env.NEXT_PUBLIC_API_BASE_URL}/api/calendar/save-tasks`,
+      {
+        method: "POST",
+        headers: {
+          "Content-Type": "application/json",
+        },
+        body: JSON.stringify({ tagId: selectedID, tasks }),
+      }
+    );
+
+    console.log("Sending request to API:", `${process.env.NEXT_PUBLIC_API_BASE_URL}/api/calendar/save-tasks`);
+
+    if (!saveResponse.ok) {
+      const error = await saveResponse.json();
+      console.error("Failed to save tasks:", error);
+      alert("Failed to save tasks to the database.");
+      return;
+    }
+
+    const savedTasks = await saveResponse.json();
+    console.log("Tasks saved successfully:", savedTasks);
+
+    // Create events in Google Calendar
+    for (let task of tasks) {
+      console.log("Creating event for task:", task);
+
+      const calendarResponse = await fetch(
+        `${process.env.NEXT_PUBLIC_API_BASE_URL}/api/calendar/create-event`,
+        {
+          method: "POST",
+          headers: {
+            "Content-Type": "application/json",
+            Authorization: `Bearer ${accessToken}`,
+          },
+          body: JSON.stringify(task),
+        }
+      );
+
+      if (!calendarResponse.ok) {
+        const error = await calendarResponse.json();
+        console.error("Failed to create event:", error);
+        alert("Failed to create one or more events. Check the console for details.");
+        continue; // Skip to the next task
+      }
+
+      const calendarData = await calendarResponse.json();
+      console.log("Event created successfully:", calendarData);
+    }
+
+    alert("Tasks assigned and events created successfully.");
+  } catch (error) {
+    console.error("Error during task assignment:", error);
+    alert("An error occurred while assigning tasks. Check the console for details.");
+  }
+};
 const handleSubmit = async (e:any) => {
   e.preventDefault();
   if (solution && Array.isArray(solution) && solution.length > 0) {
@@ -212,19 +329,19 @@ const handleSubmit = async (e:any) => {
     });
 
     if (!response.ok) throw new Error(`API Error - Status: ${response.status}`);
-
-  
     const result = await response.json();
     let newSolution = result.tag?.response?.solution || [];
     let newPolicies = result.tag?.response?.policies || [];
     let newTasks = result.tag?.response?.task || [];
-
+    
+    // Ensure all are arrays
     if (!Array.isArray(newSolution)) newSolution = [newSolution];
     if (!Array.isArray(newPolicies)) newPolicies = [newPolicies];
     if (!Array.isArray(newTasks)) newTasks = [newTasks];
-
-    setSolution(result.tag?.response?.solution);
-
+    
+    setSolution(newSolution);
+    setSelectedTask(newTasks);
+    
 
     if (result.tags) {
       const formattedTags = result.tags.map((tag) => ({
@@ -240,8 +357,7 @@ const handleSubmit = async (e:any) => {
       setTagsData(formattedTags);
       console.log("Updated Tags Data:", formattedTags);
 
-      // ✅ Show alert with updated `tagsData`
-      //alert(`🟢 Updated Tags Data:\n${JSON.stringify(formattedTags, null, 2)}`);
+     
     }
 // Reset answer fields after submission
 setAnswer1("");
@@ -254,44 +370,7 @@ setAnswer2("");
     setLoading(false);
   }
 };
-  // const handleTagClick = (tag, shortDesc, longDesc, id, solution, policies) => {
-  //   console.log("handleTagClick triggered with:", {
-  //     tag,
-  //     shortDesc,
-  //     longDesc,
-  //     id,
-  //     solution,
-  //     policies,
-  //   });
-  
-  //   // alert(
-  //   //   `Tag Clicked:\nID: ${id || "Not Found"}\nTag: ${tag}\nShort Description: ${shortDesc || "Not Found"}\nLong Description: ${longDesc || "Not Found"}\nID: ${id || "Not Found"}\nSolution: ${solution || "Not Found"}\nPolicies: ${policies || "Not Found"}`
-  //   // );
-  
-  //   setSelectedTag(tag);
-  //   setSelectedID(id);
-  //   setSelectedDescription(shortDesc || "No description available");
-  //   setSelectedLongDesc(longDesc || "No long description available");
-  //   setSolution(solution && solution.trim() !== "" ? solution : "❌ No Solution");
-  //   setSelectedPPolicy(policies || "No policies available");
-  //   setDropdownOpen2(false);
-  
-  //   setTimeout(() => {
-  //     // alert(
-  //     //   `Updated State Values:\nTag: ${selectedTag}\nID: ${selectedID}\nShort Desc: ${selectedDescription}\nLong Desc: ${selectedLongDesc}\nSolution: ${solution}\nPolicies: ${selectedPolicy}`
-  //     // );
-  
-  //     console.log("Updated state values:", {
-  //       selectedTag,
-  //       selectedID,
-  //       selectedDescription,
-  //       selectedLongDesc,
-  //       solution,
-  //       selectedPolicy: policies,
-  //     });
-  //   }, 500); // Wait for state to update
-  // };
-  
+
   const handleTagClick = async (tagName, tagId) => {
    
 
@@ -535,7 +614,7 @@ setAnswer2("");
   
   {/* Left Container */}
   <div
-  className="bg-white shadow-lg p-4 sm:p-6 flex flex-col justify-between w-full lg:w-[600px] h-auto rounded-lg border border-[#E0E0E0] mx-auto"
+  className="bg-white shadow-lg p-4 sm:p-6 flex flex-col justify-between w-full lg:w-[400px] h-auto rounded-lg border border-[#E0E0E0] mx-auto"
 >
   <div>
     <h4 className="font-bold text-blue-900 text-lg mb-4">Tags</h4>
@@ -638,7 +717,7 @@ setAnswer2("");
         fontFamily: "'Plus Jakarta Sans', sans-serif",
       }}
     >
-      {solution && solution.length > 0 ? solution : "No solution."} {/* Show existing solution or default message */}
+      {solution && solution.length > 0 ? solution : "No found solution."} {/* Show existing solution or default message */}
     </p>
   </div>
 
@@ -842,6 +921,41 @@ setAnswer2("");
   </>
 )}
 
+
+
+{/* Bottom Buttons */}
+<div className="flex justify-end space-x-4 mt-4">
+<button
+  onClick={handleAssignTask}
+  className={`flex items-center justify-center border border-[#002F6C] text-[#002F6C] px-4 py-2 rounded-lg text-sm shadow-md transition-colors duration-300 ${
+    loading ? 'cursor-not-allowed opacity-50' : 'hover:bg-gray-100'
+  }`}
+  disabled={loading}
+>
+  <svg
+    xmlns="http://www.w3.org/2000/svg"
+    fill="none"
+    viewBox="0 0 24 24"
+    strokeWidth={1.5}
+    stroke="currentColor"
+    className="w-4 h-4 mr-2"
+  >
+    <path
+      strokeLinecap="round"
+      strokeLinejoin="round"
+      d="M15 10l4.553 4.553-4.553 4.553m-6-9L4.447 14.553 9 19"
+    />
+  </svg>
+  {loading ? 'Assigning...' : 'Assign Task'}
+</button>
+
+<button
+            onClick={handleNavigateToTags}
+            className="flex items-center justify-center bg-[#002F6C] text-white px-4 py-2 rounded-lg text-sm shadow-md transition-colors duration-300"
+          >
+            Approve
+</button>
+</div>
       </div>
     </div>
   );

@@ -8,19 +8,18 @@ const Image: React.FC = () => {
   className="flex flex-1 bg-white bg-center relative mb-10 hide-on-small"
   style={{
     backgroundImage: "url('/assets/pic.png')",
-    
     backgroundSize: "cover",
     backgroundPosition: "center",
     height: "120vh",
   }}
 >
-  <div className="quote ">
+  <div className="quote">
     <p>The future belongs to those who</p>
     <p>
       <span className="highlight">believe</span> in the{" "}
       <span className="highlight">beauty of their dreams.</span>
     </p>
-    <p style={{ textAlign: "right", marginTop: "20px" }}>— Eleanor Roosevelt</p>
+    <p style={{ textAlign: "right", marginTop: "15px" }}>— Eleanor Roosevelt</p>
   </div>
 
   <style jsx>{`
@@ -28,27 +27,25 @@ const Image: React.FC = () => {
       position: absolute;
       left: 100px;
       top: 50px;
-      font-size: 2.4rem; /* Default font size for large screens */
+      font-size: 2rem; /* Reduced from 2.4rem */
       color: black;
-      line-height: 1.6; /* Adjusted for better spacing */
+      line-height: 1.5;
       font-family: Arial, sans-serif;
       font-weight: 500;
       margin: 0;
     }
 
     .highlight {
-      color: #80b93d; /* Green color for highlighted words */
+      color: #80b93d;
       font-weight: bold;
     }
 
-    /* Responsive Design */
-
-    /* Large Screens (Default) */
+    /* Large Screens */
     @media (max-width: 1300px) {
       .quote {
         left: 70px;
         top: 40px;
-        font-size: 2rem;
+        font-size: 1.6rem; /* Reduced */
       }
     }
 
@@ -57,24 +54,25 @@ const Image: React.FC = () => {
       .quote {
         left: 50px;
         top: 30px;
-        font-size: 1.6rem;
+        font-size: 1.3rem; /* Reduced */
       }
     }
- /* Medium Screens */
+
     @media (max-width: 900px) {
       .quote {
         left: 50px;
         top: 30px;
-        font-size: 1.5rem;
+        font-size: 1.3rem; /* Reduced */
       }
     }
+
     /* Tablets */
     @media (max-width: 768px) {
       .quote {
         left: 20px;
         top: 20px;
-        font-size: 1.4rem;
-        text-align: center; /* Center-align for tablets */
+        font-size: 1.3rem; /* Reduced */
+        text-align: center;
         width: 90%;
       }
     }
@@ -84,8 +82,8 @@ const Image: React.FC = () => {
       .quote {
         left: 10px;
         top: 10px;
-        font-size: 1.2rem;
-        text-align: center; /* Center-align for smaller devices */
+        font-size: 1.1rem; /* Reduced */
+        text-align: center;
         width: 90%;
       }
     }
@@ -93,19 +91,20 @@ const Image: React.FC = () => {
     /* Phones */
     @media (max-width: 500px) {
       .hide-on-small {
-        display: none; /* Hide the entire div below 500px */
+        display: none;
       }
     }
 
     /* Very Small Screens */
     @media (max-width: 320px) {
       .quote {
-        font-size: 1rem;
+        font-size: 0.9rem; /* Reduced */
         line-height: 1.4;
       }
     }
   `}</style>
 </div>
+
 
 
 
