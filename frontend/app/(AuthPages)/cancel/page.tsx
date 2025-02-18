@@ -13,7 +13,7 @@ const CancelPage = () => {
   }, []);
 
   if (!isMounted) {
-    return null; // Prevent rendering until the component is mounted on the client-side
+    return null; 
   }
 
   const handleRedirect = () => {
