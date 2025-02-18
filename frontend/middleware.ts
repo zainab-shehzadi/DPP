@@ -3,6 +3,8 @@ import type { NextRequest } from "next/server";
 import Cookies from "js-cookie"; 
 export function middleware(req: NextRequest) {
   const url = req.nextUrl.clone(); 
+
+
   const token = req.cookies.get("token")?.value; // Token stored in cookies
   const role = req.cookies.get("role")?.value; // Role stored in cookies
   const email = Cookies.get("email");
@@ -14,7 +16,10 @@ export function middleware(req: NextRequest) {
     url.pathname = "/landing"; 
     return NextResponse.redirect(url);
   }
+
+
   const publicRoutes = ["/LoginPage", "/signup", "/forgetpassword", "/resetpassword","/reset"];
+
   if (publicRoutes.some((route) => url.pathname.startsWith(route))) {
     
    
@@ -37,10 +42,29 @@ export function middleware(req: NextRequest) {
      
     }
   }
+ 
   if (publicRoutes.some((route) => url.pathname.startsWith(route))) {
     console.log(`Public route accessed: ${url.pathname}`);
     return NextResponse.next(); 
   }
+
+
+  
+  if (url.pathname.startsWith("/Dashboard")) {
+    if (!token) {
+    
+      console.log("No token found. Redirecting to /Login...");
+      url.pathname = "/LoginPage";
+      return NextResponse.redirect(url);
+    } else {
+    
+      console.log("Token found. Proceeding to Dashboard...");
+      return NextResponse.next();
+    }
+  }
+  
+
+
   if (
     url.pathname.startsWith("/UserSetting") ||
     url.pathname.startsWith("/AddNewUser") ||

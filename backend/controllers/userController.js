@@ -222,39 +222,6 @@ const registerUser = async (req, res) => {
   }
 };
 
-// const loginUser = async (req, res) => {
-//   const { email, password } = req.body;
-
-//   try {
-//     // Check for user in the database
-//     const user = await User.findOne({ email });
-
-//     if (user && (await bcrypt.compare(password, user.password))) {
-//       // Create the response data
-//       const responseData = {
-//         _id: user.id,
-//         email: user.email,
-//         role: user.role, // Include the user's role
-//         DepartmentName : user.DepartmentName,
-//         token: generateToken(user.id), // Generate JWT token
-//       };
-
-//       // Log the response data to the console
-//       console.log("Response Data: ", responseData); // This will show the data in the server console
-
-//       // Send the response with user data
-//       res.status(200).json(responseData);
-//     } else {
-//       // If credentials are invalid, send an error
-//       res.status(401).json({ message: "Invalid email or password" });
-//     }
-//   } catch (error) {
-//     // Handle any errors during the process
-//     res.status(500).json({ message: error.message });
-//   }
-// };
-
-
 const loginUser = async (req, res) => {
   const { email, password } = req.body;
 
@@ -432,17 +399,17 @@ const createUser = async (req, res) => {
       return res.status(400).json({ message: "Email already exists" });
     }
 
-    // Hash the default password "123" using bcrypt
-    const saltRounds = 10; // You can adjust the salt rounds as needed
-    const hashedPassword = await bcrypt.hash("123", saltRounds);
+  
+    const saltRounds = 10; 
+    const hashedPassword = await bcrypt.hash("12345678", saltRounds);
 
     const user = new User({
       firstname,
       lastname,
       email,
       role,
-      Position: position, // Map `position` to `Position` in schema
-      password: hashedPassword, // Store the hashed password
+      Position: position, 
+      password: hashedPassword, 
       DepartmentName: DepartmentName,
     });
 

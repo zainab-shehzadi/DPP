@@ -5,83 +5,18 @@ const router = express.Router();
 const Task = require("../models/taskSchema");
 
 const User = require("../models/User");
-// OAuth2 Client setup
+
 const oAuth2Client = new google.auth.OAuth2(
   process.env.GOOGLE_CLIENT_ID,
   process.env.GOOGLE_CLIENT_SECRET,
   process.env.GOOGLE_REDIRECT_URI
 );
 
-// Route to generate Google OAuth URL
-// router.get('/auth-url', (req, res) => {
-//   console.log('token')
-//   const SCOPES = ["https://www.googleapis.com/auth/calendar"];
-//   const authUrl = oAuth2Client.generateAuthUrl({
-//     access_type: 'offline', // Ensures we get a refresh token
-//     scope: SCOPES,
-//   });
-
-//   res.status(200).json({ authUrl });
-// });
-
-// router.get("/callback", async (req, res) => {
-//   const { code } = req.query;
-
-//   if (!code) {
-//     return res.status(400).json({ error: "Authorization code not provided" });
-//   }
-
-//   try {
-//     // Exchange the authorization code for tokens
-//     const { tokens } = await oAuth2Client.getToken(code);
-
-//     // Log the tokens for debugging purposes
-//     console.log("Access Token:", tokens.access_token);
-//     console.log("Refresh Token:", tokens.refresh_token);
-
-//     // Redirect to the dashboard with the access token as a query parameter
-//     const redirectUrl = `${process.env.FRONTEND_URL}/Dashboard?accessToken=${encodeURIComponent(tokens.access_token)}`;
-//     res.redirect(redirectUrl);
-//   } catch (error) {
-//     console.error("Error during token exchange:", error.message);
-//     res.status(500).json({ error: "Failed to exchange token", details: error.message });
-//   }
-// });
-
-
-
-// router.post("/auth-url", async (req, res) => {
-//   const { email } = req.body; // Get email from request body
-
-//   if (!email) {
-//     return res.status(400).json({ error: "Email is required" });
-//   }
-
-//   try {
-  
-//     // Generate Google OAuth URL
-//     const authUrl = oAuth2Client.generateAuthUrl({
-//       access_type: "offline",
-//       scope: ["https://www.googleapis.com/auth/calendar"], // Add required scopes
-     
-//     });
-
-//     res.status(200).json({ authUrl });
-//   } catch (error) {
-//     console.error("Error generating Google Auth URL:", error);
-//     res.status(500).json({ error: "Failed to generate Google Auth URL" });
-//   }
-// });
-
-
-//Route to generate Google OAuth URL
-
-
 router.get('/auth-url', (req, res) => {
   console.log('token')
   const SCOPES = ["https://www.googleapis.com/auth/calendar"];
   const authUrl = oAuth2Client.generateAuthUrl({
-    access_type: 'offline', // Ensures we get a refresh token
+    access_type: 'offline', 
     prompt: "consent",
     scope: SCOPES,
   });
@@ -97,11 +32,10 @@ router.get("/callback", async (req, res) => {
   }
 
   try {
-    // Exchange authorization code for tokens
+
     const { tokens } = await oAuth2Client.getToken(code);
     oAuth2Client.setCredentials(tokens);
-    console.log("🔹 Tokens received from Google:", tokens); // ✅ Log token
-    // ✅ Fetch email from cookies
+ 
     const email = req.cookies.email;
 
     if (!email) {
@@ -115,10 +49,10 @@ router.get("/callback", async (req, res) => {
     const user = await User.findOneAndUpdate(
       { email },
       { 
-        accessToken: tokens.access_token, // ✅ Save access token
-        refreshToken: tokens.refresh_token // ✅ Save refresh token
+        accessToken: tokens.access_token, 
+        refreshToken: tokens.refresh_token 
       },
-      { new: true, upsert: true } // ✅ Create a new user if not found
+      { new: true, upsert: true } 
     );
     
     if (user) {
@@ -127,7 +61,6 @@ router.get("/callback", async (req, res) => {
       console.log("User not found, unable to update tokens:", email);
     }
     
-    // ✅ Redirect to dashboard with accessToken
     const redirectUrl = `${process.env.FRONTEND_URL}/UploadDoc`;
     res.redirect(redirectUrl);
   } catch (error) {
@@ -139,35 +72,31 @@ router.get("/callback", async (req, res) => {
 router.post('/create-event', async (req, res) => {
   console.log('Received request to create event...');
 
-  const { summary, start, end } = req.body; // Extract only required fields
+  const { summary, start, end } = req.body; 
   const authHeader = req.headers.authorization;
 
   if (!authHeader) {
     return res.status(401).json({ error: 'Authorization header is missing' });
   }
 
-  // Extract the access token from the Authorization header
+
   const accessToken = authHeader.split(' ')[1];
   if (!accessToken) {
     return res.status(401).json({ error: 'Access token is missing' });
   }
 
   try {
-    // Set the access token in OAuth2 client
+    
     oAuth2Client.setCredentials({ access_token: accessToken });
-
-    // Google Calendar API instance
     const calendar = google.calendar({ version: 'v3', auth: oAuth2Client });
-
-    // Event details with simplified structure
     const event = {
-      summary, // Task title
-      start,   // Start time
-      end,     // End time
+      summary, 
+      start,   
+      end,    
       
     };
 
-    // Insert the event into the primary calendar
+  
     const result = await calendar.events.insert({
       calendarId: 'primary',
       resource: event,
@@ -176,7 +105,7 @@ router.post('/create-event', async (req, res) => {
     console.log('Event created successfully:', result.data);
     res.status(200).json({
       message: 'Event created successfully!',
-      status: 'pending', // Initial status
+      status: 'pending',
       event: {
         id: result.data.id,
         summary: result.data.summary,
@@ -187,7 +116,7 @@ router.post('/create-event', async (req, res) => {
   } catch (error) {
     console.error('Error creating event:', error.message);
 
-    // Handle token-related errors
+
     if (error.code === 401 || error.message.toLowerCase().includes('invalid')) {
       return res.status(401).json({
         error: 'Invalid or expired access token',
@@ -205,7 +134,7 @@ router.post('/create-event', async (req, res) => {
 router.post("/save-tasks", async (req, res) => {
   const { tagId, tasks } = req.body;
 
-  // Validate input
+
   if (!tagId || !Array.isArray(tasks) || tasks.length === 0) {
     console.error("Validation failed. Received tagId:", tagId, "and tasks:", tasks);
     return res.status(400).json({
@@ -215,68 +144,66 @@ router.post("/save-tasks", async (req, res) => {
   }
 
   try {
-    // Process each task
+   
     for (const task of tasks) {
       console.log("Processing task:", task);
 
-      // Check if task.summary exists and contains a hyphen (assuming department is in summary)
+   
       if (task.summary && task.summary.includes('-')) {
-         // Extract the part after ':' and before '-'
+
         const taskPart = task.summary.split(':')[1]?.split('-')[0]?.trim();
         const DepartmentName = task.summary.split('-')[1]?.trim();
-        task.TaskPart = taskPart || "No task"; // Store the task portion
-        task.DepartmentName = DepartmentName || "No department"; // Add DepartmentName to the task object
+        task.TaskPart = taskPart || "No task";
+        task.DepartmentName = DepartmentName || "No department"; 
         if (DepartmentName) {
           console.log("Extracted department:", DepartmentName);
 
-        // Fetch users from the department
 const users = await User.find({ DepartmentName });
 
 console.log("Users found in the department:", users);
 
-// If users found for the department, assign task to them
+
 if (users.length > 0) {
   task.assignedTo = users.map(user => ({
-    userId: user._id,        // Store the user's ObjectId
-    firstname: user.firstname // Store the user's firstname
+    userId: user._id,       
+    firstname: user.firstname 
   }));
   console.log("Assigned users:", task.assignedTo); 
 } else {
-  task.assignedTo = null; // No users found, setting assignedTo to null
+  task.assignedTo = null; 
   console.log("No users found in the department. Setting assignedTo to null.");
 }
 
         } else {
           console.log("No department extracted from task.summary.");
-          task.assignedTo = null;  // No valid department extracted, assigning null
+          task.assignedTo = null;  
         }
       } else {
         console.log("No valid department found in task.summary.");
-        task.assignedTo = null;  // No department or format issue, assigning null
+        task.assignedTo = null;  
       }
     }
 
-    // Format tasks before saving
+
     const formattedTasks = tasks.map((task) => ({
       taskSummary: task.TaskPart || "No summary provided",
       DepartmentName: task.DepartmentName,
       startDate: task.start?.dateTime ? new Date(task.start.dateTime) : new Date(),
       endDate: task.end?.dateTime ? new Date(task.end.dateTime) : new Date(),
-      assignedTo: task.assignedTo || null, // Use the updated assignedTo field with both userId and firstname
-      status: task.status || "pending", // Default to pending if no status
+      assignedTo: task.assignedTo || null, 
+      status: task.status || "pending", 
     }));
 
-    // Check if a task document exists for the given tagId
+  
     let existingTaskDoc = await Task.findOne({ tagId });
 
     if (existingTaskDoc) {
-      // Append tasks to the existing document
+    
       existingTaskDoc.Tasks.push(...formattedTasks);
       await existingTaskDoc.save();
       console.log("Tasks appended to the existing document:", existingTaskDoc);
       res.status(200).json({ success: true, data: existingTaskDoc });
     } else {
-      // Create a new task document if no existing one is found
       const newTaskDoc = new Task({ tagId, Tasks: formattedTasks });
       const savedTaskDoc = await newTaskDoc.save();
       console.log("New task document created and saved:", savedTaskDoc);
@@ -295,11 +222,11 @@ if (users.length > 0) {
 
 router.post("/taskdetail", async (req, res) => {
   const { department } = req.body;
-  console.log("Request body received:", req.body); // Log the entire request body
+  console.log("Request body received:", req.body); 
 
-  // Validate request
+
   if (!department) {
-    console.warn("Department is missing in the request body."); // Log a warning for missing department
+    console.warn("Department is missing in the request body."); 
     return res.status(400).json({
       success: false,
       message: "Department is required to fetch tasks.",
@@ -307,44 +234,41 @@ router.post("/taskdetail", async (req, res) => {
   }
 
   try {
-    console.log(`Fetching tasks for department: ${department}`); // Log the department being queried
+    console.log(`Fetching tasks for department: ${department}`); 
 
-    // Find tasks where the department matches
     const taskDocuments = await Task.find({
       "Tasks.DepartmentName": department,
     });
 
-    console.log("Query result:", taskDocuments); // Log the query result
-
-    // Extract and filter tasks for the department
+    console.log("Query result:", taskDocuments);
     const filteredTasks = taskDocuments.flatMap((taskDoc) =>
       taskDoc.Tasks.filter((task) => task.DepartmentName === department)
     );
 
-    // Map tasks to include their `_id` field explicitly if needed
+   
     const tasksWithId = filteredTasks.map((task) => ({
-      ...task.toObject(), // Convert Mongoose object to plain JavaScript object if needed
+      ...task.toObject(), 
       _id: task._id,
     }));
 
-    console.log("Filtered tasks with IDs:", tasksWithId); // Log the filtered tasks with IDs
+    console.log("Filtered tasks with IDs:", tasksWithId);
 
-    // If no tasks found, return an appropriate message
+ 
     if (!tasksWithId || tasksWithId.length === 0) {
-      console.warn(`No tasks found for department: ${department}`); // Log a warning for no results
+      console.warn(`No tasks found for department: ${department}`);
       return res.status(404).json({
         success: false,
         message: `No tasks found for department: ${department}`,
       });
     }
 
-    // Respond with the filtered tasks
+
     return res.status(200).json({
       success: true,
       tasks: tasksWithId,
     });
   } catch (error) {
-    console.error("Error fetching tasks:", error); // Log the error stack
+    console.error("Error fetching tasks:", error); 
     return res.status(500).json({
       success: false,
       message: "An error occurred while fetching tasks.",
@@ -354,9 +278,8 @@ router.post("/taskdetail", async (req, res) => {
 
 router.put('/updateTask', async (req, res) => {
   const { id, status } = req.body;
-  // Validate input
   if (!id || !status) {
-    console.warn('Validation failed. Missing id or status:', { id, status }); // Warn if input is invalid
+    console.warn('Validation failed. Missing id or status:', { id, status });
     return res.status(400).json({
       success: false,
       message: 'Task ID and status are required.',
@@ -364,15 +287,15 @@ router.put('/updateTask', async (req, res) => {
   }
 
   try {
-    // Update the task tatus in the database
+ 
     const updatedTask = await Task.findOneAndUpdate(
-      { 'Tasks._id': id }, // Match the task by its _id
-      { $set: { 'Tasks.$.status': status } }, // Use positional operator to update the status
-      { new: true } // Return the updated document
+      { 'Tasks._id': id }, 
+      { $set: { 'Tasks.$.status': status } },
+      { new: true } 
     );
 
     if (!updatedTask) {
-      console.warn('Task not found for id:', id); // Warn if the task wasn't found
+      console.warn('Task not found for id:', id);
       return res.status(404).json({
         success: false,
         message: 'Task not found.',
@@ -387,8 +310,7 @@ router.put('/updateTask', async (req, res) => {
       updatedTask,
     });
   } catch (error) {
-    console.error('Error updating task status:', error); // Log the error stack
-
+    console.error('Error updating task status:', error); 
     res.status(500).json({
       success: false,
       message: 'Failed to update task status. Please try again later.',

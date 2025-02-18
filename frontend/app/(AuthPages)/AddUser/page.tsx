@@ -8,8 +8,10 @@ import Sidebar from "@/components/Sidebar";
 
 export default function Dashboard() {
   const [formData, setFormData] = useState({
-    firstname: "",
-    lastname: "",
+    firstName: "",
+    lastName: "",
+    password: "",
+    confirmPassword:"",
     email: "",
     role: "",
     position: "",
@@ -68,43 +70,66 @@ export default function Dashboard() {
       }));
     }
   };
+// Submit handler
+const handleSubmit = async () => {
+  console.log("Form Data Submitted:", formData); 
 
-  // Submit handler
-  const handleSubmit = async () => {
-    try {
-      const response = await fetch(
-        `${process.env.NEXT_PUBLIC_API_BASE_URL}/api/users/add`,
-        {
-          method: "POST",
-          headers: {
-            "Content-Type": "application/json",
-          },
-          body: JSON.stringify(formData),
-        }
-      );
+  if (
+    !formData.firstName ||
+    !formData.lastName ||
+    !formData.email ||
+    !formData.password ||
+    !formData.confirmPassword ||
+    !formData.role ||
+    !formData.position ||
+    !formData.DepartmentName
+  ) {
+    toast.error("Please fill in all required fields!", { position: "top-right" });
+    return;
+  }
+  if (formData.password !== formData.confirmPassword) {
+    toast.error("Passwords do not match!", { position: "top-right" });
+    return; 
+  }
 
-      const data = await response.json();
-
-      if (response.ok) {
-        toast.success("User successfully added.!", { position: "top-right" });
-        
-        setFormData({
-          firstname: "",
-          lastname: "",
-          email: "",
-          role: "",
-          position: "",
-          DepartmentName: "",
-        });
-        router.push("/AddNewUser"); // Change the route as necessary
-      } else {
-        alert(`Error: ${data.message}`);
+  try {
+    const response = await fetch(
+      `${process.env.NEXT_PUBLIC_API_BASE_URL}/api/users/signup`,
+      {
+        method: "POST",
+        headers: {
+          "Content-Type": "application/json",
+        },
+        body: JSON.stringify(formData),
       }
-    } catch (error) {
-      console.error("Error adding user:", error);
-      alert("Error adding user. Please try again.");
+    );
+
+    const data = await response.json();
+
+    if (response.ok) {
+      toast.success("User successfully added!", { position: "top-right" });
+
+      
+      setFormData({
+        firstName: "",
+        lastName: "",
+        password: "",
+        confirmPassword: "",
+        email: "",
+        role: "",
+        position: "",
+        DepartmentName: "",
+      });
+
+      router.push("/AddNewUser"); // Change the route as necessary
+    } else {
+      alert(`Error: ${data.message}`);
     }
-  };
+  } catch (error) {
+    console.error("Error adding user:", error);
+    alert("Error adding user. Please try again.");
+  }
+};
 
   // Sidebar toggle
   const toggleSidebar = () => setIsSidebarOpen(!isSidebarOpen);
@@ -169,30 +194,57 @@ export default function Dashboard() {
 
             <div className="grid grid-cols-1 sm:grid-cols-2 gap-4 sm:gap-6 mb-10">
               {/* First Name */}
-              <div>
-                <label className="block text-gray-700 font-medium">First Name</label>
-                <input
-                  type="text"
-                  name="firstname"
-                  value={formData.firstname}
-                  onChange={handleChange}
-                  placeholder="Your First Name"
-                  className="mt-2 w-full p-2 rounded-md bg-[#F9F9F9] border"
-                />
-              </div>
+     
+<div>
+  <label className="block text-gray-700 font-medium">First Name</label>
+  <input
+    type="text"
+    name="firstName" // Fixed: Should match formData key
+    value={formData.firstName}
+    onChange={handleChange}
+    placeholder="Your First Name"
+    className="mt-2 w-full p-2 rounded-md bg-[#F9F9F9] border"
+  />
+</div>
 
-              {/* Last Name */}
+{/* Last Name */}
+<div>
+  <label className="block text-gray-700 font-medium">Last Name</label>
+  <input
+    type="text"
+    name="lastName" // Fixed: Should match formData key
+    value={formData.lastName}
+    onChange={handleChange}
+    placeholder="Your Last Name"
+    className="mt-2 w-full p-2 rounded-md bg-[#F9F9F9] border"
+  />
+</div>
+
+
               <div>
-                <label className="block text-gray-700 font-medium">Last Name</label>
-                <input
-                  type="text"
-                  name="lastname"
-                  value={formData.lastname}
-                  onChange={handleChange}
-                  placeholder="Your Last Name"
-                  className="mt-2 w-full p-2 rounded-md bg-[#F9F9F9] border"
-                />
-              </div>
+  <label className="block text-gray-700 font-medium">Password</label>
+  <input
+    type="password"
+    name="password"
+    value={formData.password}
+    onChange={handleChange}
+    placeholder="Your password"
+    className="mt-2 w-full p-2 rounded-md bg-[#F9F9F9] border"
+  />
+</div>
+
+{/* Confirm Password */}
+<div>
+  <label className="block text-gray-700 font-medium">Confirm Password</label>
+  <input
+    type="password"
+    name="confirmPassword"
+    value={formData.confirmPassword}
+    onChange={handleChange}
+    placeholder="Your confirm password"
+    className="mt-2 w-full p-2 rounded-md bg-[#F9F9F9] border"
+  />
+</div>
 
               {/* Email */}
               <div>
@@ -276,8 +328,10 @@ export default function Dashboard() {
                   </optgroup>
                 </select>
               </div>
-            </div>
 
+
+            </div>
+              
             {/* Submit Button */}
             <div className="text-center">
               <button

@@ -1,6 +1,5 @@
 
 "use client"; 
-import { useSearchParams } from 'next/navigation';
 import React, { useState, useEffect, useRef } from "react";
 import Sidebar from "@/components/Sidebar";
 
@@ -15,7 +14,7 @@ import { constants } from 'node:crypto';
 interface DocumentType {
   _id: string;
   originalName: string;
-  fileUrl?: string; // Optional in case some documents lack a URL
+  fileUrl?: string; 
 }
 export default function Dashboard() {
 
@@ -31,7 +30,6 @@ export default function Dashboard() {
   }[]>([]);
   
 const [facilities, setFacilities] = useState<string[]>([]); 
-const searchParams = useSearchParams(); 
 const [selectedTag, setSelectedTag] = useState<string | null>(null); 
 const [selectedID, setSelectedID] = useState<number | null>(null); 
 const [selectedLongDesc, setSelectedLongDesc] = useState<string | null>(null);
@@ -187,9 +185,6 @@ useEffect(() => {
           credentials: "include",
         }
       );
-  
-      if (!response.ok) throw new Error("Failed to fetch access token");
-  
       const data = await response.json();
       const accessToken = data.accessToken;
       const refreshToken = data.refreshToken; 
@@ -199,9 +194,8 @@ useEffect(() => {
         router.push("/LoginPage");
         return false;
       }
-  
       Cookies.set("accessToken", accessToken, { expires: 7 });
-      Cookies.set("refreshToken", refreshToken, { expires: 30 }); // Refresh token valid for 7 days
+      Cookies.set("refreshToken", refreshToken, { expires: 30 }); 
   
       return true;
     } catch (error) {
@@ -220,15 +214,8 @@ const handleAssignTask = async () => {
     alert("Please select at least one task before assigning.");
     return;
   }
-
-  console.log("Selected tasks:", selectedTask);
-  console.log("Selected ID:", selectedID);
-
   try {
     const accessToken = accessToken123;
-     
-
-    // Prepare tasks
     const tasks = selectedTask.map((taskSummary, index) => {
       const startTime = new Date();
       startTime.setHours(startTime.getHours() + index * 2); 
@@ -243,10 +230,6 @@ const handleAssignTask = async () => {
         end: { dateTime: endTime.toISOString(), timeZone: "UTC" },
       };
     });
-
-    console.log("Prepared tasks:", tasks);
-
-    // Save tasks to the database
     const saveResponse = await fetch(
       `${process.env.NEXT_PUBLIC_API_BASE_URL}/api/calendar/save-tasks`,
       {
@@ -268,9 +251,8 @@ const handleAssignTask = async () => {
     }
 
     const savedTasks = await saveResponse.json();
-    console.log("Tasks saved successfully:", savedTasks);
+    toast.success("Tasks saved successfully:", savedTasks);
 
-    // Create events in Google Calendar
     for (let task of tasks) {
       console.log("Creating event for task:", task);
 
@@ -290,17 +272,16 @@ const handleAssignTask = async () => {
         const error = await calendarResponse.json();
         console.error("Failed to create event:", error);
         alert("Failed to create one or more events. Check the console for details.");
-        continue; // Skip to the next task
+        continue; 
       }
 
       const calendarData = await calendarResponse.json();
-      console.log("Event created successfully:", calendarData);
+      toast.success("Event created successfully:", calendarData);
     }
 
-    alert("Tasks assigned and events created successfully.");
+    toast.success("Tasks assigned and events created successfully.");
   } catch (error) {
-    console.error("Error during task assignment:", error);
-    alert("An error occurred while assigning tasks. Check the console for details.");
+    toast.error("An error occurred while assigning tasks. Check the console for details.");
   }
 };
 const handleSubmit = async (e:any) => {
@@ -333,8 +314,7 @@ const handleSubmit = async (e:any) => {
     let newSolution = result.tag?.response?.solution || [];
     let newPolicies = result.tag?.response?.policies || [];
     let newTasks = result.tag?.response?.task || [];
-    
-    // Ensure all are arrays
+
     if (!Array.isArray(newSolution)) newSolution = [newSolution];
     if (!Array.isArray(newPolicies)) newPolicies = [newPolicies];
     if (!Array.isArray(newTasks)) newTasks = [newTasks];
@@ -359,7 +339,6 @@ const handleSubmit = async (e:any) => {
 
      
     }
-// Reset answer fields after submission
 setAnswer1("");
 setAnswer2("");
     setIsSidebarOpen(false);
@@ -375,7 +354,7 @@ setAnswer2("");
    
 
     try {
-        // ✅ Construct URL with query parameters
+   
         const apiUrl = `${process.env.NEXT_PUBLIC_API_BASE_URL}/api/files/tag-details?tagId=${tagId}&tagName=${encodeURIComponent(tagName)}`;
         console.log("📡 API Request URL:", apiUrl);
 
@@ -391,12 +370,11 @@ setAnswer2("");
         const result = await response.json();
         console.log("✅ API Response:", result);
 
-        // ✅ Extract solution, policies, and tasks from API response
+
         let newSolution = result.solution || [];
         let newPolicies = result.policies || [];
         let newTasks = result.task || [];
 
-        // ✅ Ensure values are always arrays
         if (!Array.isArray(newSolution)) newSolution = [newSolution];
         if (!Array.isArray(newPolicies)) newPolicies = [newPolicies];
         if (!Array.isArray(newTasks)) newTasks = [newTasks];
@@ -463,10 +441,10 @@ setAnswer2("");
         documents.map((doc, index) => {
           return (
             <button
-              key={doc._id || index} // Use index as fallback
+              key={doc._id || index} 
               onClick={() => {
-                fetchDocumentDetails(doc._id); // Fetch details
-                setDropdownOpen(false); // Close dropdown
+                fetchDocumentDetails(doc._id);
+                setDropdownOpen(false); 
               }}
               className="block w-full text-left px-4 py-2 text-gray-800 hover:bg-gray-200 text-xs sm:text-sm"
             >
@@ -531,19 +509,19 @@ setAnswer2("");
     {activeTab === "POC AI Ally" && (
       <div
         className="absolute h-[3px] bg-blue-900 rounded-full transition-all duration-300"
-        style={{ width: "33.33%" }} // Adjusted to handle 3 tabs
+        style={{ width: "33.33%" }} 
       ></div>
     )}
     {activeTab === "Tags" && (
       <div
         className="absolute h-[3px] bg-blue-900 rounded-full transition-all duration-300"
-        style={{ width: "33.33%", left: "33.33%" }} // Adjusted for 2nd tab
+        style={{ width: "33.33%", left: "33.33%" }} 
       ></div>
     )}
     {activeTab === "Policy" && (
       <div
         className="absolute h-[3px] bg-blue-900 rounded-full transition-all duration-300"
-        style={{ width: "33.33%", left: "66.66%" }} // Adjusted for 3rd tab
+        style={{ width: "33.33%", left: "66.66%" }}
       ></div>
     )}
   </div>
