@@ -49,14 +49,14 @@ const Login: React.FC = () => {
       <div className="flex flex-1 justify-center items-center bg-white">
         <div className="w-full max-w-md px-6 py-6 text-left">
         <h2 className="text-3xl font-bold text-gray-800 mb-4">
-            verify your Email
+            Verify your Email
           </h2>
 
-          <p className="text-medium text-gray-600 mb-10">
+          <p className="text-medium text-gray-600 font-bold mb-10">
   We have sent an email with code information to {email}.
 </p>
 
-<p className="text-sm text-black-500 mb-5" style={{ marginTop: '12rem' }}>
+<p className="text-sm text-black-500 font-bold mb-5" style={{ marginTop: '12rem' }}>
   Didn’t receive the email? Check spam or promotion folder or
 </p>
 
