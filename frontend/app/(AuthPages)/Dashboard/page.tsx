@@ -42,30 +42,25 @@ export default function Dashboard() {
     
 
     useEffect(() => {
-
-       // Retrieve the access token from query parameters
     const accessToken = searchParams.get("accessToken");
-
     if (accessToken) {
       console.log("Access Token from Query Params:", accessToken);
-
-      // Store the access token in cookies
       Cookies.set("accessToken", accessToken, {
-        expires: 1, // Expires in 1 day
-        secure: process.env.NODE_ENV === "production", // Use HTTPS in production
-        sameSite: "Strict", // Prevent cross-site attacks
+        expires: 1, 
+        secure: process.env.NODE_ENV === "production", 
+        sameSite: "Strict", 
       });
 
-      // Optionally remove the accessToken from the URL to clean up
+      
       const currentUrl = window.location.href;
       const cleanUrl = currentUrl.split("?")[0];
       window.history.replaceState({}, document.title, cleanUrl);
     }
-      // Retrieve email from cookies on component mount
+      
       const storedEmail = Cookies.get("email");
-     
+    
       if (storedEmail) {
-        setEmail(storedEmail); // Set the email state if found in cookies
+        setEmail(storedEmail); 
       }
     }, []);
   
@@ -93,8 +88,8 @@ export default function Dashboard() {
     }
   
     const formData = new FormData();
-    formData.append("file", file); // Add the file
-    formData.append("email", email); // Add the email
+    formData.append("file", file); 
+    formData.append("email", email); 
   
     try {
      
