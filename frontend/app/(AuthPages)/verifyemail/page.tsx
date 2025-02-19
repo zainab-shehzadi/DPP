@@ -52,10 +52,9 @@ const Login: React.FC = () => {
             Verify your Email
           </h2>
 
-          <p className="text-medium text-gray-600 mb-10">
-  We have sent an email with code information to <span className="font-bold">{email}</span>.
+          <p className="text-medium text-gray-600 font-bold mb-10">
+  We have sent an email with code information to {email}.
 </p>
-
 
 <p className="text-sm text-black-500 font-bold mb-5" style={{ marginTop: '12rem' }}>
   Didn’t receive the email? Check spam or promotion folder or

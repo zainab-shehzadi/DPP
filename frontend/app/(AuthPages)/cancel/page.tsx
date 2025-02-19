@@ -1,7 +1,7 @@
 "use client"; // Ensures this component is client-side only
 
 import { useEffect, useState } from 'react';
-import { useRouter } from 'next/navigation';  // Correct import for the App Router
+import { useRouter } from 'next/navigation';  
 
 const CancelPage = () => {
   const router = useRouter();
@@ -13,7 +13,7 @@ const CancelPage = () => {
   }, []);
 
   if (!isMounted) {
-    return null; // Prevent rendering until the component is mounted on the client-side
+    return null; 
   }
 
   const handleRedirect = () => {

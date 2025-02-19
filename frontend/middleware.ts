@@ -39,13 +39,6 @@ export function middleware(req: NextRequest) {
     } else if (status === "verified") {
       return NextResponse.next();
     }
-
-    // Prevent logged-in users from accessing public routes
-    if (publicRoutes.includes(url.pathname)) {
-      url.pathname = "/Dashboard"; 
-      return NextResponse.redirect(url);
-    }
-
   }
 
   // Allow non-logged-in users to access public routes
