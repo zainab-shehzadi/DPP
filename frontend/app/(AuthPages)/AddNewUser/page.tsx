@@ -5,7 +5,7 @@ import { FaBell } from 'react-icons/fa';
 import React, { useState ,useEffect} from "react";
 
 import Link from "next/link"; // Correct import for Link
-import Sidebar from "@/components/Sidebar";
+import Sidebar from "@/components/Admin-sidebar";
 
 // Define the User interface
 interface User {

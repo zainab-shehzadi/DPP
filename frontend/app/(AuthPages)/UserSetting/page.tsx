@@ -3,7 +3,7 @@
 import Image from "next/image";
 import { FaBell } from "react-icons/fa";
 import React, { useState, useEffect } from "react";
-import Sidebar from "@/components/Sidebar";
+import Sidebar from "@/components/Admin-sidebar";
 import { toast } from "react-toastify";
 // Define the User interface
 interface User {

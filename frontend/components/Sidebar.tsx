@@ -66,6 +66,7 @@ const Sidebar: React.FC<SidebarProps> = ({ isSidebarOpen, toggleSidebar }) => {
   }, []);
   const handleUserSettingsNavigation = async () => {
     const email = Cookies.get("email");
+    const role =Cookies.get("role");
     if (!email) {
       console.error("Email is missing or not provided.");
       return;
@@ -244,17 +245,6 @@ const Sidebar: React.FC<SidebarProps> = ({ isSidebarOpen, toggleSidebar }) => {
                   Task List
                 </a>
               </li>
-  {/* Add New User */}
-  <li className="w-full">
-                <a
-                  href="#"
-                  onClick={() => handleNavigation("/AddNewUser")}
-                  className="flex items-center py-2 px-3 hover:bg-white hover:text-blue-900 rounded-md font-semibold text-xs lg:text-sm"
-                >
-                  <FaUserPlus className="mr-2" />
-                  Add New User
-                </a>
-              </li>
 
 
               {/* Settings */}
@@ -268,13 +258,13 @@ const Sidebar: React.FC<SidebarProps> = ({ isSidebarOpen, toggleSidebar }) => {
                   Settings
                 </a>
                 {settingsOpen && (
-  <ul className="ml-4 space-y-2"> {/* Reduced spacing for better fit */}
+  <ul className="ml-4 space-y-2"> 
     
     {/* Profile Settings */}
     <li>
       <a
         href="#"
-        onClick={handleUserSettingsNavigation} // ✅ Corrected handler
+        onClick={handleUserSettingsNavigation} 
         className="flex items-center py-2 px-3 hover:bg-white hover:text-blue-900 rounded-md font-semibold text-xs lg:text-sm transition"
       >
         <FaUser className="mr-2" />
@@ -291,30 +281,6 @@ const Sidebar: React.FC<SidebarProps> = ({ isSidebarOpen, toggleSidebar }) => {
       >
         <FaBuilding className="mr-2" />
         Facility Settings
-      </a>
-    </li>
-
-    {/* User Settings */}
-    <li>
-      <a
-        href="#"
-        onClick={() => handleNavigation("/UserSetting")}
-        className="flex items-center py-2 px-3 hover:bg-white hover:text-blue-900 rounded-md font-semibold text-xs lg:text-sm transition"
-      >
-        <FaUser className="mr-2" />
-        User Settings
-      </a>
-    </li>
-
-    {/* Billing */}
-    <li>
-      <a
-        href="#"
-        onClick={() => handleNavigation("/Billing")} // ✅ Added correct navigation
-        className="flex items-center py-2 px-3 hover:bg-white hover:text-blue-900 rounded-md font-semibold text-xs lg:text-sm transition"
-      >
-        <FaCreditCard className="mr-2" />
-        Billing
       </a>
     </li>
 

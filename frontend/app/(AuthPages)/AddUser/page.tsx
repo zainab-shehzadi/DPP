@@ -4,7 +4,7 @@ import Image from "next/image";
 import { FaBell } from "react-icons/fa";
 import React, { useState } from "react";
 import { toast } from "react-toastify";
-import Sidebar from "@/components/Sidebar";
+import Sidebar from "@/components/Admin-sidebar";
 
 export default function Dashboard() {
   const [formData, setFormData] = useState({

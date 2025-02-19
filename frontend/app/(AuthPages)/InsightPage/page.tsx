@@ -1,29 +1,48 @@
-"use client"; // <-- Add this line to mark this file as a client component
+"use client";
 
 import Image from 'next/image';
 import { FaBell } from 'react-icons/fa';
-import React, { useState, useEffect } from "react";
+import React, { useState, useEffect ,useRef } from "react";
+import Cookies from "js-cookie";
+import { toast } from "react-toastify";
 
 import Sidebar from "@/components/Sidebar";
 interface Facility {
   tag?: string;
   solution?: string;
 }
+interface DocumentType {
+  _id: string;
+  originalName: string;
+  fileUrl?: string; 
+  uploadedAt: Date; 
+}
+
 export default function Dashboard() {
 
-
-  const [dropdownOpen, setDropdownOpen] = useState(false); // Dropdown state
-  const [dropdownOpen1, setDropdownOpen1] = useState(false); // Dropdown state
+  const [tagsData, setTagsData] = useState<{
+    id: number;
+    tag: string;
+    status:string;
+    shortDesc: string;
+    longDesc: string;
+    solution: string;
+    policies: string;
+    task: string;
+  }[]>([]);
+  const [documents, setDocuments] = useState<DocumentType[]>([]); 
+  const [dropdownOpen, setDropdownOpen] = useState(false); 
+  const [dropdownOpen1, setDropdownOpen1] = useState(false); 
   const [isSidebarOpen, setIsSidebarOpen] = useState(false);
   const [tag, setTags] = useState<string[]>([]);
   const [solution, setSolutions] = useState<string[]>([]);
   const [facilities, setFacilities] = useState<Facility[]>([]);
-  const [email, setEmail] = useState<string | null>(null); // Email from localStorage
-  const [selectedTag, setSelectedTag] = useState<string>(""); // Track selected tag
+  const [email, setEmail] = useState<string | null>(null); 
   const [facilityName, setFacilityName] = useState("");
   const [facilityAddress, setFacilityAddress] = useState("");
   const [noOfBeds, setNoOfBeds] = useState("");
-
+  const dropdownRef = useRef<HTMLDivElement>(null);
+const [selectedTag, setSelectedTag] = useState<string | null>(null); 
 
   const toggleSidebar = () => setIsSidebarOpen(!isSidebarOpen);
 
@@ -33,7 +52,33 @@ export default function Dashboard() {
   const toggleDropdown1 = () => {
     setDropdownOpen1(!dropdownOpen1);
   };
+useEffect(() => {
+  const fetchDocuments = async () => {
+    try {
+      const email = Cookies.get("email");
+      if (!email) {
+        console.error("Error: Email not found in cookies!");
+        return;
+      }
 
+      const res = await fetch(
+        `${process.env.NEXT_PUBLIC_API_BASE_URL}/api/files/docs?email=${encodeURIComponent(email)}`
+      );
+      const data = await res.json();
+      console.log("API Response:", data); 
+  
+      if (Array.isArray(data)) {
+        setDocuments(data); 
+      } else {
+        console.error("Unexpected API response format", data);
+      }
+    } catch (error) {
+      console.error("Error fetching documents:", error);
+    }
+  };
+
+  fetchDocuments();
+}, []);
   // Helper function to get cookies
   const getCookie = (name: string) => {
     const value = `; ${document.cookie}`;
@@ -43,92 +88,118 @@ export default function Dashboard() {
   };
 
   useEffect(() => {
-    // Retrieve email from cookies on component mount
+  
     const storedEmail = getCookie("email");
     if (storedEmail) {
-      setEmail(storedEmail); // Set the email state if found in cookies
+      setEmail(storedEmail); 
     }
   }, []);
-  useEffect(() => {
-    const fetchFacilities = async () => {
-      if (!email) {
-        setFacilities([]); // Set facilities to an empty array if email is missing
-        return;
-      }
+const handleTagClick = async (tagName, tagId) => {
+    try {
+        const apiUrl = `${process.env.NEXT_PUBLIC_API_BASE_URL}/api/files/tag-details?tagId=${tagId}&tagName=${encodeURIComponent(tagName)}`;
+        console.log("📡 API Request URL:", apiUrl);
 
-      try {
-        const response = await fetch(
-          `${process.env.NEXT_PUBLIC_API_BASE_URL}/api/files/tags2?email=${encodeURIComponent(email)}`
-        );
+        const response = await fetch(apiUrl, {
+            method: "GET",
+            headers: { "Content-Type": "application/json" }
+        });
 
-        const contentType = response.headers.get("content-type");
-        if (response.ok && contentType && contentType.includes("application/json")) {
-          const data: any = await response.json();
-          console.log("Fetched facilities for email:", data);
-
-          if (Array.isArray(data)) {
-            // Initialize arrays for tags and solutions
-            const tags: string[] = [];
-            const solutions: string[] = [];
-
-            // Loop through the fetched data to separate tags and solutions
-            data.forEach((facility: Facility) => {
-              if (typeof facility.tag === "string" && typeof facility.solution === "string") {
-                tags.push(facility.tag);
-                solutions.push(facility.solution);
-              }
-            });
-
-            setFacilities(data); // Set facilities as fetched data (optional)
-            setTags(tags); // Set tags array
-            setSolutions(solutions); // Set solutions array
-          } else {
-            console.error("Fetched data is not an array:", data);
-            setFacilities([]); // Fallback to an empty array
-          }
-        } else {
-          console.error("Unexpected response format or server error:", response.statusText);
-          setFacilities([]); // Fallback to an empty array
+        if (!response.ok) {
+            throw new Error(`API Error - Status: ${response.status}`);
         }
-      } catch (error) {
-        console.error("Error fetching facilities:", error);
-        setFacilities([]); // Fallback to an empty array
-      }
-    };
 
-    fetchFacilities();
-  }, [email]);
+        const result = await response.json();
+        let newSolution = result.solution || [];
+        if (!Array.isArray(newSolution)) newSolution = [newSolution];
+        setSolutions(newSolution);
+    
+    } catch (error) {
+        console.error("❌ Error fetching tag details:", error);
+        toast.error(`Error`);
+    }
+};
+  const fetchDocumentDetails = async (id) => {
+    try {
+        console.log(`📤 Fetching Details for Document ID: ${id}`);
+
+        const safeEmail = email ?? "";
+        const apiUrl = `${process.env.NEXT_PUBLIC_API_BASE_URL}/api/files/tags-with-descriptions?email=${encodeURIComponent(safeEmail)}&id=${encodeURIComponent(id)}`;
+        const response = await fetch(apiUrl);
+      
+
+        if (!response.ok) {
+            console.error(`❌ Failed to fetch document details: ${response.statusText}`);
+            setTagsData([]);
+            alert("Error: Failed to fetch document details.");
+            return;
+        }
+
+        const data = await response.json();
+      
+        if (!data.tags || !Array.isArray(data.tags)) {
+          
+            console.error("❌ API Error: `data.tags` is undefined or not an array:", data);
+            return;
+        }
+
+        // ✅ Ensure the correct ID field is used
+        const formattedTags = data.tags.map((tag) => ({
+            id: tag.id || tag._id || "❌ Missing ID",
+            tag: tag.tag,
+            shortDesc: tag.shortDescription || "❌ No Short Description",
+            longDesc: tag.longDescription || "❌ No Long Description",
+            solution: tag.solution && tag.solution.trim() !== "" ? tag.solution : "❌ No Solution",  // ✅ Handle empty solution
+            policies: tag.policies || "❌ No Policies",
+            task: tag.task || [],
+        }));
+
+        // ✅ Ensure ID is present in logs
+        formattedTags.forEach((tag, index) => {
+            console.log(`🔹 Tag ${index} - ID: ${tag.id}`);
+        });
+
+        setTagsData(formattedTags);
+        console.log("✅ Updated Tags Data:", formattedTags);
+       
+
+    } catch (error) {
+        console.error("❌ Error fetching document details:", error);
+        alert("❌ Error fetching document details:\n" );
+    } finally {
+        
+        console.log("⏳ Loading state set to false.");
+    }
+};
 
   useEffect(() => {
     const fetchUserData = async () => {
-      if (!email) return; // Ensure email is available before making the request
+      if (!email) return; 
 
 
       try {
         const response = await fetch(
-          `${process.env.NEXT_PUBLIC_API_BASE_URL}/api/facility/${email}` // Use the API base URL from environment variables
+          `${process.env.NEXT_PUBLIC_API_BASE_URL}/api/facility/${email}` 
         );
 
         if (!response.ok) {
           throw new Error(`Failed to fetch user data. Status: ${response.status}`);
         }
 
-        const data = await response.json(); // Parse the response as JSON
+        const data = await response.json(); 
         console.log("Fetched user data:", data);
 
-        // Safely update the state with data, using empty strings if values are undefined or null
         setFacilityName(data.facilityName || "");
         setFacilityAddress(data.facilityAddress || "");
-        setNoOfBeds(data.noOfBeds ? data.noOfBeds.toString() : ""); // Convert noOfBeds to string if it's not null/undefined
+        setNoOfBeds(data.noOfBeds ? data.noOfBeds.toString() : "");
       } catch (error) {
-        console.error("Error fetching user data:", error); // Log the error message
+        console.error("Error fetching user data:", error);
       } finally {
 
       }
     };
 
-    fetchUserData(); // Call the async function
-  }, [email]); // Dependency on email to trigger the effect when email changes
+    fetchUserData();
+  }, [email]); 
 
   return (
     <div className="flex flex-col lg:flex-row h-screen">
@@ -172,21 +243,50 @@ export default function Dashboard() {
         {/* Facility Dropdown */}
         <div className="flex items-center space-x-4 mt-4 lg:mt-8 ml-4 lg:ml-10">
           <h3 className="text-xl font-bold text-blue-900">Facility</h3>
-          <div className="relative">
-            <button onClick={toggleDropdown} className="flex items-center bg-blue-900 text-white px-4 py-2 rounded-lg">
-              <span>Lorem Ipsum</span>
-              <svg className="w-3 h-3 sm:w-4 sm:h-4 ml-2" fill="currentColor" viewBox="0 0 20 20" xmlns="http://www.w3.org/2000/svg">
-                <path fillRule="evenodd" d="M5.293 7.293a1 1 0 011.414 0L10 10.586l3.293-3.293a1 1 0 111.414 1.414l-4 4a1 1 0 01-1.414 0l-4-4a1 1 0 010-1.414z" clipRule="evenodd"></path>
-              </svg>
+          <div className="relative ml-2 sm:ml-4 lg:ml-6" ref={dropdownRef}>
+  <button
+    onClick={toggleDropdown}
+    className="flex items-center bg-[#244979] text-white font-semibold text-sm px-3 py-2 rounded-lg"
+  >
+    <span className="font-[Plus Jakarta Sans]">Documents</span>
+    <svg
+      className="w-4 h-4 ml-2 transition-transform duration-200"
+      fill="currentColor"
+      viewBox="0 0 20 20"
+      style={{ transform: dropdownOpen ? "rotate(180deg)" : "rotate(0deg)" }}
+    >
+      <path
+        fillRule="evenodd"
+        d="M5.293 7.293a1 1 0 011.414 0L10 10.586l3.293-3.293a1 1 0 111.414 1.414l-4 4a1 1 0 01-1.414 0l-4-4a1 1 0 010-1.414z"
+        clipRule="evenodd"
+      ></path>
+    </svg>
+  </button>
+
+  {/* Dropdown Menu */}
+  {dropdownOpen && (
+    <div className="absolute right-0 mt-2 w-40 bg-white shadow-lg rounded-lg z-50 border border-gray-200">
+      {documents.length > 0 ? (
+        documents.map((doc, index) => {
+          return (
+            <button
+              key={doc._id || index} 
+              onClick={() => {
+                fetchDocumentDetails(doc._id);
+                setDropdownOpen(false); 
+              }}
+              className="block w-full text-left px-4 py-2 text-gray-800 hover:bg-gray-200 text-xs sm:text-sm"
+            >
+              {doc.originalName || "Untitled Document"}
             </button>
-            {dropdownOpen && (
-              <div className="absolute mt-2 w-full bg-white shadow-lg rounded-lg">
-                <a href="#" className="block px-4 py-2 text-gray-800 hover:bg-gray-200">Option 1</a>
-                <a href="#" className="block px-4 py-2 text-gray-800 hover:bg-gray-200">Option 2</a>
-                <a href="#" className="block px-4 py-2 text-gray-800 hover:bg-gray-200">Option 3</a>
-              </div>
-            )}
-          </div>
+          );
+        })
+      ) : (
+        <p className="px-4 py-2 text-gray-500 text-xs sm:text-sm">No documents found.</p>
+      )}
+    </div>
+  )}
+</div>
         </div>
 
 
@@ -210,9 +310,8 @@ export default function Dashboard() {
 
 
             <div className="relative ml-4 sm:ml-6 lg:ml-10">
-              {/* Button to show the selected tag */}
               <button
-                onClick={() => setDropdownOpen1(!dropdownOpen1)} // Toggle dropdown
+                onClick={() => setDropdownOpen1(!dropdownOpen1)} 
                 className="flex items-center text-white font-semibold text-[11px] leading-[14px] px-4 py-2 rounded-lg"
               >
                 <span className={`font-[Plus Jakarta Sans] font-bold text-[40px] leading-[50.4px] text-[#494D55]`}>
@@ -227,31 +326,34 @@ export default function Dashboard() {
                 </svg>
               </button>
 
-              {/* Dropdown menu */}
-              {dropdownOpen1 && (
-                <div className="absolute mt-2 w-full bg-white shadow-lg rounded-lg z-10">
-                  {facilities.length > 0 ? (
-                    facilities
-                      .filter((facility) => typeof facility.tag === 'string' && facility.tag !== selectedTag)
-                      .map((facility, index) => (
-                        <a
-                          key={index}
-                          onClick={() => {
-                            setSelectedTag(facility.tag as string); // Assert that tag is a string
-                            setDropdownOpen1(false); // Close dropdown
-                          }}
-                          className="block px-4 py-2 text-gray-800 hover:bg-gray-200 text-sm sm:text-base md:text-lg cursor-pointer"
-                        >
-                          {facility.tag}
-                        </a>
-                      ))
-                  ) : (
-                    <div className="px-4 py-2 text-gray-500 text-sm sm:text-base md:text-lg">
-                      No tags available
-                    </div>
-                  )}
-                </div>
-              )}
+              {/* Dropdown */}
+  {dropdownOpen1 && (
+    <div
+      className="absolute mt-2 w-full max-w-[190px] bg-white border border-gray-300 rounded-lg shadow-lg z-10"
+      style={{
+        maxHeight: "200px",
+        overflowY: "auto",
+      }}
+    >
+      <ul className="flex flex-col divide-y divide-gray-200">
+        {tagsData.map((item, index) => (
+          <li
+            key={item.id || index}
+            className="px-4 py-2 hover:bg-gray-100 cursor-pointer transition-all duration-300 hover:shadow-md"
+            onClick={() => {
+              setSelectedTag(item.tag); // Update the selected tag
+              handleTagClick(item.tag, item.id);
+              setDropdownOpen1(false);
+            }}
+          >
+            <div>
+              <strong>{item.tag}</strong>
+            </div>
+          </li>
+        ))}
+      </ul>
+    </div>
+  )}
             </div>
 
 
@@ -266,18 +368,25 @@ export default function Dashboard() {
 
 
           <div className="text-gray-600 space-y-4">
-            {selectedTag && (
-              <>
-                <h3 className="text-lg font-semibold text-gray-900 mb-10"></h3>
-                <p className="text-gray-600 mt-2">
-                  {
-                    // Find the corresponding facility solution based on the selected tag
-                    facilities.find(facility => facility.tag === selectedTag)?.solution || 'No solution available.'
-                  }
-                </p>
-              </>
-            )}
-          </div>
+  {selectedTag && (
+    <>
+      <h3 className="text-lg font-semibold text-gray-900 mb-10"></h3>
+      <p className="text-gray-600 mt-2">
+      {Array.isArray(solution) && solution.length > 0 ? (
+      solution.map((policy, index) => (
+        <li key={index}>
+          {policy}
+        </li>
+      ))
+    ) : (
+      <li>No Plan of Correction available.</li>
+    )}
+        
+      </p>
+    </>
+  )}
+</div>
+
         </div>
 
         {/* More Content or Sections can go here */}

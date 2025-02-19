@@ -222,8 +222,6 @@ if (users.length > 0) {
 
 router.post("/taskdetail", async (req, res) => {
   const { department } = req.body;
-  console.log("Request body received:", req.body); 
-
 
   if (!department) {
     console.warn("Department is missing in the request body."); 

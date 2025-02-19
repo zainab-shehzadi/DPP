@@ -76,10 +76,8 @@ const moveTaskToColumn = async (_id: string, column: string) => {
     )
   );
 
-  // Optional: Close the dropdown
   setDropdownOpen1(null);
 
-  // Update the task in the backend
   try {
     await fetch(`${process.env.NEXT_PUBLIC_API_BASE_URL}/api/calendar/updateTask`, {
       method: "PUT",
@@ -106,7 +104,7 @@ const renderTasksForColumn = (column: string) => {
           onClick={() => setSelectedTask(task)}
         >
           <div
-            className="absolute top-2 right-2 cursor-pointer"
+            className="absolute top-2 right-1 cursor-pointer"
             onClick={(e) => {
               e.stopPropagation();
               toggleDropdown1(uniqueKey);
@@ -138,8 +136,8 @@ const renderTasksForColumn = (column: string) => {
             </div>
           )}
 
-          <h3 className="font-bold text-base md:text-md">{task.taskSummary}</h3>
-          <p className="text-sm lg:text-base text-gray-600">
+          <h3 className="font-bold text-sm md:text-md">{task.taskSummary}</h3>
+          <p className="text-sm lg:text-sm text-gray-600">
             Assigned to:{" "}
             {Array.isArray(task.assignedTo) && task.assignedTo.length > 0
               ? task.assignedTo.map((person, idx) => (
@@ -150,7 +148,7 @@ const renderTasksForColumn = (column: string) => {
                 ))
               : "No one assigned to this task."}
           </p>
-          <p className="text-sm lg:text-base text-gray-600">
+          <p className="text-sm lg:text-sm text-gray-600">
             Date added: {new Date(task.startDate).toLocaleDateString()}
           </p>
         </div>
@@ -160,7 +158,6 @@ const renderTasksForColumn = (column: string) => {
 const fetchTasks = async () => {
   
   try {
-    // Make a POST request to the API with the department in the request body
     const response = await fetch(
       `${process.env.NEXT_PUBLIC_API_BASE_URL}/api/calendar/taskdetail`, 
       {
@@ -168,20 +165,17 @@ const fetchTasks = async () => {
         headers: {
           "Content-Type": "application/json",
         },
-        body: JSON.stringify({ department }), // Pass the department as JSON
+        body: JSON.stringify({ department }), 
       }
     );
 
-    // Parse the JSON response
     const data = await response.json();
 
-    // Check for a successful response
     if (response.ok && data.success) {
       toast.success("Tasks fetched successfully:", data.tasks);
 
-      // Update tasks based on their status
       const updatedTasks = data.tasks.map((task) => {
-        let column = "Closed"; // Default to "Closed"
+        let column = "Closed"; 
         if (task.status === "pending") {
           column = "To Do";
         } else if (task.status === "in-progress") {
@@ -192,13 +186,12 @@ const fetchTasks = async () => {
 
         return {
           ...task,
-          column: column, // Assign the appropriate column based on status
+          column: column, 
         };
       });
 
-      setTasks(updatedTasks); // Update the state with the fetched tasks
+      setTasks(updatedTasks); 
     } else {
-      //toast.error("Failed to fetch tasks. Please try again.");
     }
   } catch (error) {
     toast.error("An error occurred while fetching tasks. Please try again.");

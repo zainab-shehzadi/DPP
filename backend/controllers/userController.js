@@ -2,6 +2,7 @@ const bcrypt = require("bcryptjs");
 const jwt = require("jsonwebtoken");
 const nodemailer = require("nodemailer");
 const User = require("../models/User");
+const Admin = require("../models/adminModel");
 
 
 const generate6DigitToken = () => {
@@ -14,111 +15,7 @@ const generateToken = (id) => {
   });
 };
 
-// // Register User and Store in Database
-// const registerUser = async (req, res) => {
-//   const {
-//     DepartmentName,
-//     firstName,
-//     lastName,
-//     position,
-//     email,
-//     role,
-//     password,
-//     confirmPassword,
-//   } = req.body;
 
-
-//   try {
-//     console.log("Incoming data:", {
-//       DepartmentName,
-//       firstName,
-//       lastName,
-//       position,
-//       email,
-//       role,
-//       password,
-//       confirmPassword,
-//     });
-    
-
-//     // Validate all required fields
-//     if (
-//       !DepartmentName ||
-//       !position ||
-//       !firstName ||
-//       !lastName ||
-//       !email ||
-//       !role ||
-//       !password ||
-//       !confirmPassword
-//     ) {
-//       console.log("Validation failed: Missing required fields.");
-//       return res.status(400).json({ message: "All fields are required" });
-//     }
-
-//     // Check if passwords match
-//     if (password !== confirmPassword) {
-//       console.log("Validation failed: Passwords do not match.");
-//       return res.status(400).json({ message: "Passwords do not match" });
-//     }
-
-//     // Check if the user already exists
-//     const userExists = await User.findOne({ email });
-//     if (userExists) {
-//       console.log("Validation failed: User already exists with email:", email);
-//       return res.status(400).json({ message: "User already exists" });
-//     }
-
-//     // Hash the password
-//     console.log("Hashing password...");
-//     const salt = await bcrypt.genSalt(10);
-//     const hashedPassword = await bcrypt.hash(password, salt);
-//     console.log("Password hashed successfully.");
-
-//     // Create and store the user in the database
-//     console.log("Creating user in the database...");
-//     const user = await User.create({
-//       DepartmentName,
-//       Position: position, // Map `position` to `Position` in schema
-//       firstname: firstName,
-//       lastname: lastName,
-//       email,
-//       role,
-//       password: hashedPassword,
-//     });
-
-//     // Respond with the created user data
-//     if (user) {
-//       console.log("User created successfully:", {
-//         _id: user.id,
-//         DepartmentName: user.DepartmentName,
-//         Position: user.Position,
-//         firstname: user.firstname,
-//         lastname: user.lastname,
-//         email: user.email,
-//         role: user.role,
-//       });
-//       res.status(201).json({
-//         _id: user.id,
-//         DepartmentName: user.DepartmentName,
-//         Position: user.Position,
-//         firstname: user.firstname,
-//         lastname: user.lastname,
-//         email: user.email,
-//         role: user.role,
-//         token: generateToken(user.id), // Assuming a JWT token generator
-//       });
-//     } else {
-//       console.log("User creation failed: Invalid user data.");
-//       res.status(400).json({ message: "Invalid user data" });
-//     }
-//   } catch (error) {
-//     console.error("Error creating user:", error.message);
-//     res.status(500).json({ message: "Internal Server Error" });
-//   }
-// };
-
-// Register User and Store in Database
 const registerUser = async (req, res) => {
   const {
     DepartmentName,
@@ -226,35 +123,75 @@ const loginUser = async (req, res) => {
   const { email, password } = req.body;
 
   try {
-    // Check for user in the database
-    const user = await User.findOne({ email });
+    // Check email in both User and Admin collections
+    const [user, admin] = await Promise.all([
+      User.findOne({ email }),
+      Admin.findOne({ email }),
+    ]);
 
     if (user && (await bcrypt.compare(password, user.password))) {
-      // Create the response data
+      // User found, return full response
       const responseData = {
         _id: user.id,
         email: user.email,
-        role: user.role, // Include the user's role
+        role: user.role,
         DepartmentName: user.DepartmentName,
-        priceType: user.priceType || null, // Include priceType, null if not found
-        priceCycle: user.priceCycle || null, // Include priceCycle, null if not found
-        token: generateToken(user.id), // Generate JWT token
+        priceType: user.priceType || null,
+        priceCycle: user.priceCycle || null,
+        token: generateToken(user.id),
       };
 
-      // Log the response data to the console
-      console.log("Response Data: ", responseData); // This will show the data in the server console
-
-      // Send the response with user data and pricing details
-      res.status(200).json(responseData);
-    } else {
-      // If credentials are invalid, send an error
-      res.status(401).json({ message: "Invalid email or password" });
+      console.log("User Login Response: ", responseData);
+      return res.status(200).json(responseData);
     }
+
+    if (admin && (await bcrypt.compare(password, admin.password))) {
+      const responseData = {
+        email: admin.email,
+        role: "admin",
+        token: generateToken(admin.id),
+      };
+
+      console.log("Admin Login Response: ", responseData);
+      return res.status(200).json(responseData);
+    }
+
+    return res.status(401).json({ message: "Invalid email or password" });
   } catch (error) {
-    // Handle any errors during the process
-    res.status(500).json({ message: error.message });
+    return res.status(500).json({ message: error.message });
   }
 };
+
+
+// const loginUser = async (req, res) => {
+//   const { email, password } = req.body;
+
+//   try {
+    
+//     const user = await User.findOne({ email });
+
+//     if (user && (await bcrypt.compare(password, user.password))) {
+     
+//       const responseData = {
+//         _id: user.id,
+//         email: user.email,
+//         role: user.role, 
+//         DepartmentName: user.DepartmentName,
+//         priceType: user.priceType || null, 
+//         priceCycle: user.priceCycle || null, 
+//         token: generateToken(user.id), 
+//       };
+
+//       console.log("Response Data: ", responseData); 
+
+//       res.status(200).json(responseData);
+//     } else {
+//       res.status(401).json({ message: "Invalid email or password" });
+//     }
+//   } catch (error) {
+//     res.status(500).json({ message: error.message });
+//   }
+// };
 const forgotPassword = async (req, res) => {
   const { email } = req.body;
 

@@ -1,25 +1,30 @@
 
 const mongoose = require("mongoose");
 
-// Subschema for tags with descriptions and a response field
 const TagSchema = new mongoose.Schema({
   tag: {
     type: String,
-    required: true, // Tag name
+    required: true, 
   },
   shortDescription: {
     type: String,
-    required: true, // Short description for the tag
+    required: true, 
   },
   longDescription: {
     type: String,
-    required: true, // Detailed context for the tag
+    required: true, 
+  },
+  status: {
+    type: String,
+    enum: ["not assigned", "assigned"], 
+    default: "not assigned", 
   },
   response: {
     heading_sections: {
       type: Array,
       required: false,
     },
+  
     solution: {
       type: [String],  // Change this to an array of strings
       required: false,
@@ -44,11 +49,11 @@ const TagSchema = new mongoose.Schema({
   },
 });
 
-// Main file schema
+
 const FileSchema = new mongoose.Schema({
   email: {
     type: String,
-    required: true, // Corresponding email passed from the dashboard
+    required: true, 
   },
   files: [
     {
@@ -76,7 +81,11 @@ const FileSchema = new mongoose.Schema({
       },
     },
   ],
+  uploadedAt: {
+    type: Date,
+    default: Date.now, 
+  },
+ 
 });
 
-// Export the model
 module.exports = mongoose.model("File", FileSchema);

@@ -5,10 +5,10 @@ const axios = require("axios");
 const { v4: uuidv4 } = require("uuid");
 const dotenv = require("dotenv");
 dotenv.config();
-
+const uploadedAt = new Date();
 // AWS SDK
 const { S3Client } = require("@aws-sdk/client-s3");
-const { Upload } = require("@aws-sdk/lib-storage"); // ✅ Better S3 file handling
+const { Upload } = require("@aws-sdk/lib-storage"); 
 
 // AWS S3 Configuration
 const s3 = new S3Client({
@@ -19,7 +19,6 @@ const s3 = new S3Client({
   },
 });
 
-// ✅ Helper function to upload files to S3 using @aws-sdk/lib-storage
 const uploadToS3 = async (file) => {
   try {
     const fileName = `${uuidv4()}-${file.originalname}`;
@@ -35,14 +34,13 @@ const uploadToS3 = async (file) => {
     });
 
     const result = await upload.done();
-    return result.Location; // Returns the uploaded file URL
+    return result.Location;
   } catch (error) {
     console.error("AWS S3 Upload Error:", error);
     throw error;
   }
 };
 
-// ✅ Helper function to parse PDF content correctly
 const parsePdfContent = async (fileBuffer) => {
   try {
     if (!Buffer.isBuffer(fileBuffer)) {
@@ -70,11 +68,11 @@ const uploadFile = async (req, res) => {
     console.log("Email received:", email);
     console.log("File received:", req.file);
 
-    // ✅ Step 1: Upload File to AWS S3
+
     const fileUrl = await uploadToS3(req.file);
     console.log("File uploaded to S3:", fileUrl);
 
-    // ✅ Step 2: Parse the PDF Content
+  
     const fileContent = await parsePdfContent(req.file.buffer);
     console.log("Extracted PDF Text:", fileContent);
 
@@ -98,10 +96,10 @@ const uploadFile = async (req, res) => {
     if (fileEntry) {
       fileEntry.files.push({
         originalName: req.file.originalname,
-        fileUrl, // Ensure this is correctly passed
-        filePath: req.file.path || "", // ✅ Add filePath
+        fileUrl, 
+        filePath: req.file.path || "", 
         tags: tagsWithDescriptions,
-        uploadedAt: new Date(),
+        uploadedAt
       });
       await fileEntry.save();
       documentId = fileEntry.files[fileEntry.files.length - 1]._id;
@@ -111,9 +109,9 @@ const uploadFile = async (req, res) => {
         files: [{
           originalName: req.file.originalname,
           fileUrl,
-          filePath: req.file.path || "", // ✅ Add filePath
+          filePath: req.file.path || "", 
           tags: tagsWithDescriptions,
-          uploadedAt: new Date(),
+          uploadedAt
         }],
       });
       documentId = fileEntry.files[0]._id;
@@ -136,6 +134,7 @@ const uploadFile = async (req, res) => {
       documentId,
       fileUrl,
       tags: tagsWithDescriptions,
+      uploadedAt
     });
   } catch (error) {
     console.error("Error in file upload:", error.message);
@@ -143,127 +142,9 @@ const uploadFile = async (req, res) => {
   }
 };
 
-// const uploadFile = async (req, res) => {
-//   try {
-//     if (!req.file) {
-//       return res.status(400).json({ error: "No file uploaded." });
-//     }
 
-//     // Get the email from the request body
-//     const { email } = req.body;
-
-//     if (!email) {
-//       return res.status(400).json({ error: "Email is required." });
-//     }
-
-//     console.log("Email received:", email);
-//     console.log("File received:", req.file);
-
-//     // Step 1: Save the file in the server's file system
-//     const uploadsDir = path.join(__dirname, "../uploads");
-//     if (!fs.existsSync(uploadsDir)) {
-//       fs.mkdirSync(uploadsDir); // Create the uploads directory if it doesn't exist
-//     }
-
-//     const filePath = path.join(uploadsDir, req.file.originalname);
-//     fs.renameSync(req.file.path, filePath); // Move the uploaded file to the uploads directory
-//     console.log("File saved to:", filePath);
-
-//     // Step 2: Parse the PDF content
-//     const fileBuffer = fs.readFileSync(filePath); // Read file content as a buffer
-//     const pdfData = await pdf(fileBuffer); // Parse the PDF content
-//     const fileContent = pdfData.text; // Extract text from the PDF
-
-//     // Step 3: Extract tags and descriptions using regex
-//     const extractedTags = fileContent.match(/F \d{4}/g) || [];
-//     const tagsWithDescriptions = [];
-//     extractedTags.forEach((tag) => {
-//       const tagIndex = fileContent.indexOf(tag);
-//       if (tagIndex !== -1) {
-//         const shortDescription = fileContent
-//           .substring(tagIndex, tagIndex + 100)
-//           .split(".")[0]
-//           .trim();
-
-//         const longDescriptionStartIndex = tagIndex + 100;
-//         let longDescriptionEndIndex = fileContent.indexOf(
-//           "(continued on next page)",
-//           longDescriptionStartIndex
-//         );
-//         if (longDescriptionEndIndex === -1) {
-//           longDescriptionEndIndex = fileContent.length;
-//         }
-//         const longDescription = fileContent
-//           .substring(longDescriptionStartIndex, longDescriptionEndIndex)
-//           .trim();
-
-//         // Push tag and descriptions
-//         tagsWithDescriptions.push({
-//           tag,
-//           shortDescription,
-//           longDescription,
-//         });
-//       }
-//     });
-
-//     // Step 4: Save document and metadata in the database
-//     let fileEntry = await File.findOne({ email });
-
-//     let documentId; // To store the uploaded document ID
-//     if (fileEntry) {
-//       // Add new file to the existing email entry
-//       const newFile = {
-//         originalName: req.file.originalname,
-//         filePath,
-//         tags: tagsWithDescriptions,
-//         uploadedAt: new Date(),
-//       };
-//       fileEntry.files.push(newFile);
-//       await fileEntry.save();
-
-//       // Get the document ID for the newly added file
-//       documentId = fileEntry.files[fileEntry.files.length - 1]._id;
-//     } else {
-//       // Create a new entry for the email
-//       fileEntry = await File.create({
-//         email,
-//         files: [
-//           {
-//             originalName: req.file.originalname,
-//             filePath,
-//             tags: tagsWithDescriptions,
-//             uploadedAt: new Date(),
-//           },
-//         ],
-//       });
-
-//       // Get the document ID for the newly created file
-//       documentId = fileEntry.files[0]._id;
-//     }
-//     console.log("ID:",documentId );
-//     console.log("Tags and descriptions extracted:", tagsWithDescriptions);
-
-
-//     req.io.emit("documentUploaded", {
-//       message: `A new document "${req.file.originalname}" has been uploaded!`,
-//       documentName: req.file.originalname,
-//       documentId,
-//     });
-//     // Step 5: Respond to the client
-//     res.status(201).json({
-//       message: "File uploaded and parsed successfully!",
-//       documentId, // Include document ID in the response
-//       tags: tagsWithDescriptions,
-//     });
-//   } catch (error) {
-//     console.error("Error in file upload:", error.message);
-//     res
-//       .status(500)
-//       .json({ error: "File upload failed.", details: error.message });
-//   }
-// };
 const fetchTagsByEmail = async (req, res) => {
-  const { email, id } = req.query; // Extract the email and id from the query parameters
+  const { email, id } = req.query; 
 
   if (!email) {
     return res.status(400).json({ error: "Email is required in query parameters" });

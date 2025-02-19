@@ -6,6 +6,8 @@ import { useRouter } from "next/navigation";
 import Image2 from "@/components/imageright"; // Ensure the correct import path
 import { toast } from "react-toastify";
 import Image from "next/image";
+import Cookies from "js-cookie"; // Import js-cookie to manage cookies
+
 const Login: React.FC = () => {
   const [email, setEmail] = useState("");
   const [password, setPassword] = useState("");
@@ -13,12 +15,10 @@ const Login: React.FC = () => {
 
   const router = useRouter();
 
-  // Helper function to set cookies
   const setCookie = (name: string, value: string, days = 7) => {
     const expires = new Date(Date.now() + days * 86400000).toUTCString();
     document.cookie = `${name}=${value}; path=/; expires=${expires}; secure`;
   };
-  // Helper function to get cookies
   const getCookie = (name: string) => {
     const value = `; ${document.cookie}`;
     const parts = value.split(`; ${name}=`);
@@ -30,7 +30,7 @@ const Login: React.FC = () => {
     e.preventDefault();
     console.log("Email:", email);
     console.log("Password:", password);
-  
+    Cookies.get("verifystatus");
     try {
       // Send login request to the backend
       const response = await fetch(`${process.env.NEXT_PUBLIC_API_BASE_URL}/api/users/login`, {
@@ -189,12 +189,7 @@ const Login: React.FC = () => {
 
           {/* Button */}
           <div className="flex gap-4">
-            {/* Google Button */}
-            {/* <button className="flex items-center justify-center w-full py-2 px-4 border border-gray-300 rounded-lg text-gray-700 hover:bg-[#ffffff] hover:text-black transition-colors">
-              <FaGoogle className="mr-3 text-2xl text-[#df837a] hover:text-white" />
-              <span className="ml-2">Log In With Google</span>
-            </button> */}
-{/* Google Button */}
+          
 <button
   onClick={handleGoogleLogin}
   className="flex items-center justify-center w-full py-2 px-4 border border-gray-300 rounded-lg text-gray-700 hover:bg-[#ffffff] hover:text-black transition-colors"
@@ -202,9 +197,9 @@ const Login: React.FC = () => {
 
 
 <Image
-  src="/assets/google-icon.png" // Replace with the correct path to your Google logo image
+  src="/assets/google-icon.png" 
   alt="Google Logo"
-  width={24} // Adjust the size as needed
+  width={24} 
   height={24}
   className="mr-3"
 />
@@ -229,10 +224,8 @@ const Login: React.FC = () => {
         </div>
       </div>
 
-      {/* Right Side: Image with Quote */}
       <Image2 />
 
-      {/* Show the success or error message */}
       {message && (
         <div className="fixed bottom-4 left-4 p-4 bg-green-700 text-white rounded-lg">
           {message}

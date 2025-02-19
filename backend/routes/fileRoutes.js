@@ -3,10 +3,9 @@ const router = express.Router();
 const upload = require("../config/multer"); // Import multer configuration
 const { uploadFile,fetchTagsByEmail,getTagsWithDescriptions ,fetchDocuments, generateSolution,checkResponse,fetchTagsByEmail1,fetchTagsAndSolutionByEmail} = require("../controllers/fileController");
 const mongoose = require("mongoose");
-const File = require("../models/File"); // Import File model
+const File = require("../models/File"); 
 
-// Route to fetch file names & IDs for a specific user
-// Route to fetch file details for a specific user
+
 router.get("/docs", async (req, res) => {
   try {
     const { email } = req.query;
@@ -15,7 +14,6 @@ router.get("/docs", async (req, res) => {
       return res.status(400).json({ error: "Email is required" });
     }
 
-    // Find user's files (Using find() to get all documents related to the user)
     const userFiles = await File.find({ email });
 
     if (!userFiles || userFiles.length === 0) {
@@ -25,9 +23,10 @@ router.get("/docs", async (req, res) => {
     // ✅ Ensure proper structure in the response
     const fileData = userFiles.flatMap(user => 
       user.files.map(file => ({
-        _id: file._id, // ✅ Use _id for consistency
-        originalName: file.originalName, // ✅ Keep original file name
-        fileUrl: file.fileUrl, // ✅ Ensure file URL is included
+        _id: file._id, 
+        originalName: file.originalName,
+        fileUrl: file.fileUrl, 
+        
       }))
     );
 
@@ -77,14 +76,12 @@ router.get("/tag-details", async (req, res) => {
   try {
     let { tagId, tagName } = req.query;
 
-    // ✅ Ensure both tagId and tagName are provided
+    
     if (!tagId || !tagName) {
       return res.status(400).json({ error: "Both tagId and tagName are required" });
     }
 
     console.log(`🔍 Received API Request: tagId=${tagId}, tagName=${tagName}`);
-
-    // ✅ Convert tagId to ObjectId if it's a valid format
     if (mongoose.Types.ObjectId.isValid(tagId)) {
       tagId = new mongoose.Types.ObjectId(tagId);
     } else {
@@ -105,15 +102,12 @@ router.get("/tag-details", async (req, res) => {
 
     const file = document.files[0];
 
-    // ✅ Find the correct tag using both `tagId` and `tagName`
     const tagData = file.tags.find(t => t._id.toString() === tagId.toString() && t.tag === tagName);
 
     if (!tagData) {
       console.error(`❌ Tag ${tagName} with ID ${tagId} not found in document`);
       return res.status(404).json({ error: "Tag not found in document" });
     }
-
-    // ✅ Extract tag details
     const response = {
       tag: tagData.tag,
       shortDescription: tagData.shortDescription || "",
@@ -121,6 +115,7 @@ router.get("/tag-details", async (req, res) => {
       solution: tagData.response?.solution || [],
       policies: tagData.response?.policies || [],
       task: tagData.response?.task || [],
+      status: tagData.status
     };
 
     console.log("✅ Found Tag Details:", response);
@@ -132,7 +127,38 @@ router.get("/tag-details", async (req, res) => {
   }
 });
 
-router.get("/tags2",fetchTagsAndSolutionByEmail ); // Route to fetch tags by a specific ID
+
+router.post("/update-status", async (req, res) => {
+  try {
+    const { tagId, status } = req.body;
+
+    if (!tagId || !status) {
+      return res.status(400).json({ error: "Tag ID and status are required." });
+    }
+
+    const updatedFile = await File.findOneAndUpdate(
+      { "files.tags._id": tagId }, 
+      { $set: { "files.$[].tags.$[tag].status": status } },
+      { new: true, arrayFilters: [{ "tag._id": tagId }] }
+    );
+
+    if (!updatedFile) {
+      return res.status(404).json({ error: "Tag not found." });
+    }
+
+    res.status(200).json({
+      message: "Status updated successfully.",
+      updatedFile, 
+    });
+  } catch (error) {
+    console.error("Error updating status:", error);
+    res.status(500).json({ error: "Internal server error." });
+  }
+});
+
+
+
+router.get("/tags2",fetchTagsAndSolutionByEmail ); 
 router.post("/generatesol", generateSolution);
 router.get('/check-response',  checkResponse);
 

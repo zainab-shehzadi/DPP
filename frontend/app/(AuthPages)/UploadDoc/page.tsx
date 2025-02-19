@@ -15,6 +15,7 @@ interface DocumentType {
   _id: string;
   originalName: string;
   fileUrl?: string; 
+  uploadedAt: Date; 
 }
 export default function Dashboard() {
 
@@ -22,19 +23,19 @@ export default function Dashboard() {
   const [tagsData, setTagsData] = useState<{
     id: number;
     tag: string;
+    status:string;
     shortDesc: string;
     longDesc: string;
     solution: string;
     policies: string;
     task: string;
   }[]>([]);
-  
-const [facilities, setFacilities] = useState<string[]>([]); 
+const [status, setStatus] = useState(""); 
 const [selectedTag, setSelectedTag] = useState<string | null>(null); 
 const [selectedID, setSelectedID] = useState<number | null>(null); 
 const [selectedLongDesc, setSelectedLongDesc] = useState<string | null>(null);
 const [selectedPolicy, setSelectedPPolicy] = useState<string | null>(null);
-const [selectedTask, setSelectedTask] = useState<any[]>([]); // Ensure it's an array
+const [selectedTask, setSelectedTask] = useState<string []>([]); 
 const [selectedFacility, setSelectedFacility] = useState<string>(""); 
 const [email, setEmail] = useState<string | null>(null); 
 const [visibleCount, setVisibleCount] = useState<number>(4);
@@ -45,10 +46,10 @@ const [solution, setSolution] = useState('');
 const [dropdownOpen1, setDropdownOpen1] = useState(false); 
 const [selectedDate, setSelectedDate] = useState(new Date());
 const [accessToken123, setAccessToken] = useState<string | null>(null);
-const [documents, setDocuments] = useState<DocumentType[]>([]); // ✅ Specify type
+const [documents, setDocuments] = useState<DocumentType[]>([]); 
 const [refreshToken, setrefreshToken] =useState<string| null>(null);
-const [dropdownOpen2, setDropdownOpen2] = useState(false); // State for dropdown visibility
-const [selectedDescription, setSelectedDescription] = useState<string | null>( null ); // Short description of the selected tag
+const [dropdownOpen2, setDropdownOpen2] = useState(false); 
+const [selectedDescription, setSelectedDescription] = useState<string | null>( null ); 
 const dropdownRef = useRef<HTMLDivElement>(null);
 const [selectedDocument, setSelectedDocument] = useState(null);
 const [answer1, setAnswer1] = useState('');
@@ -89,13 +90,10 @@ useEffect(() => {
         `${process.env.NEXT_PUBLIC_API_BASE_URL}/api/files/docs?email=${encodeURIComponent(email)}`
       );
       const data = await res.json();
-
-      console.log("API Response:", data); // Debugging log
-    
-
-      // Ensure response is an array
+      console.log("API Response:", data); 
+  
       if (Array.isArray(data)) {
-        setDocuments(data); // ✅ Save documents in state
+        setDocuments(data); 
       } else {
         console.error("Unexpected API response format", data);
       }
@@ -107,7 +105,9 @@ useEffect(() => {
   fetchDocuments();
 }, []);
 
-
+const handleNavigateToPolicy = () => {
+  setActiveTab("Policy"); 
+};
   useEffect(() => {
     const handleClickOutside = (event: MouseEvent) => {
       if (dropdownRef.current && !dropdownRef.current.contains(event.target as Node)) {
@@ -118,7 +118,7 @@ useEffect(() => {
     return () => document.removeEventListener("mousedown", handleClickOutside);
   }, []);
   const handleNavigateToTags = () => {
-    router.push("/Tags"); // Navigate to the UploadDoc page
+    router.push("/Tags"); 
   };
   const fetchDocumentDetails = async (id) => {
     try {
@@ -196,7 +196,7 @@ useEffect(() => {
       }
       Cookies.set("accessToken", accessToken, { expires: 7 });
       Cookies.set("refreshToken", refreshToken, { expires: 30 }); 
-  
+      handleAssignTask();
       return true;
     } catch (error) {
       console.error("Error fetching tokens:", error);
@@ -205,13 +205,11 @@ useEffect(() => {
       return false;
     }
   };
-
-
 const handleAssignTask = async () => {
-  isAuthenticated() ;
-  
+
   if (!selectedTask || selectedTask.length === 0) {
     alert("Please select at least one task before assigning.");
+  
     return;
   }
   try {
@@ -271,15 +269,25 @@ const handleAssignTask = async () => {
       if (!calendarResponse.ok) {
         const error = await calendarResponse.json();
         console.error("Failed to create event:", error);
-        alert("Failed to create one or more events. Check the console for details.");
         continue; 
       }
-
-      const calendarData = await calendarResponse.json();
-      toast.success("Event created successfully:", calendarData);
+        
+        await fetch(
+          `${process.env.NEXT_PUBLIC_API_BASE_URL}/api/files/update-status`,
+          {
+            method: "POST",
+            headers: {
+              "Content-Type": "application/json",
+            },
+            body: JSON.stringify({
+              tagId: selectedID , 
+              status: "assigned",
+            }),
+          }
+        );
     }
 
-    toast.success("Tasks assigned and events created successfully.");
+    toast.success("Events created successfully.");
   } catch (error) {
     toast.error("An error occurred while assigning tasks. Check the console for details.");
   }
@@ -321,7 +329,7 @@ const handleSubmit = async (e:any) => {
     
     setSolution(newSolution);
     setSelectedTask(newTasks);
-    
+    setSelectedPPolicy(newPolicies);
 
     if (result.tags) {
       const formattedTags = result.tags.map((tag) => ({
@@ -349,12 +357,8 @@ setAnswer2("");
     setLoading(false);
   }
 };
-
-  const handleTagClick = async (tagName, tagId) => {
-   
-
+const handleTagClick = async (tagName, tagId) => {
     try {
-   
         const apiUrl = `${process.env.NEXT_PUBLIC_API_BASE_URL}/api/files/tag-details?tagId=${tagId}&tagName=${encodeURIComponent(tagName)}`;
         console.log("📡 API Request URL:", apiUrl);
 
@@ -368,8 +372,6 @@ setAnswer2("");
         }
 
         const result = await response.json();
-        console.log("✅ API Response:", result);
-
 
         let newSolution = result.solution || [];
         let newPolicies = result.policies || [];
@@ -379,9 +381,11 @@ setAnswer2("");
         if (!Array.isArray(newPolicies)) newPolicies = [newPolicies];
         if (!Array.isArray(newTasks)) newTasks = [newTasks];
 
-        // ✅ Update state properly
+        setStatus(result.status);
+        
         setSelectedTag(tagName);
         setSelectedID(tagId);
+        setSelectedTask(newTasks);
         setSelectedPPolicy(newPolicies);
         setSelectedDescription(result.shortDescription || "No short description available");
         setSelectedLongDesc(result.longDescription || "No long description available");
@@ -401,10 +405,7 @@ setAnswer2("");
  
   return (
     <div className="flex flex-col lg:flex-row">
-      {/* Sidebar */}
       <Sidebar isSidebarOpen={isSidebarOpen} toggleSidebar={toggleSidebar} />
-
-      {/* Main Content */}
       <div className="lg:ml-64 p-4 sm:p-8 w-full">
      
 {/* Facility Dropdown and Tabs */}
@@ -458,8 +459,6 @@ setAnswer2("");
     </div>
   )}
 </div>
-
-
           </div>
 
 {/* Facility Tabs */}
@@ -526,8 +525,6 @@ setAnswer2("");
     )}
   </div>
 </div>
-
-
  {/* Date */}
   <div className="relative flex items-center space-x-2">
   {/* Date Button */}
@@ -602,9 +599,9 @@ setAnswer2("");
   <button
     className="flex justify-between items-center w-full max-w-[190px] h-[40px] px-4 rounded-lg text-sm sm:text-base mb-2"
     style={{ backgroundColor: "#CCE2FF", borderRadius: "12px" }}
-    onClick={() => toggleDropdown2()} // Toggle dropdown
+    onClick={() => toggleDropdown2()}
   >
-    <span>Tags</span>
+    <span>{selectedTag}</span>
     <span className="text-gray-500">⋮</span>
   </button>
 
@@ -614,7 +611,7 @@ setAnswer2("");
       className="absolute mt-2 w-full max-w-[190px] bg-white border border-gray-300 rounded-lg shadow-lg z-10"
       style={{
         maxHeight: "200px",
-        overflowY: "auto", // Enable vertical scrolling
+        overflowY: "auto",
       }}
     >
       <ul className="flex flex-col divide-y divide-gray-200">
@@ -623,8 +620,9 @@ setAnswer2("");
             key={item.id || index}
             className="px-4 py-2 hover:bg-gray-100 cursor-pointer transition-all duration-300 hover:shadow-md"
             onClick={() => {
+              setSelectedTag(item.tag); // Update the selected tag
               handleTagClick(item.tag, item.id);
-              setDropdownOpen2(false); // ✅ Close dropdown on click
+              setDropdownOpen2(false);
             }}
           >
             <div>
@@ -638,7 +636,6 @@ setAnswer2("");
 </div>
 
 
-  {/* Selected Tag Short & Long Description */}
   {selectedDescription && (
     <div
       className="mt-4 text-[14px] leading-[17.64px] font-light"
@@ -656,7 +653,7 @@ setAnswer2("");
 
   </div>
   <button
-        //onClick={handleNavigateToPolicy}
+        onClick={handleNavigateToPolicy}
         className="flex items-center justify-center bg-[#002F6C] text-white w-[200px] h-[40px] rounded-lg text-sm shadow-md transition-colors duration-300"
       >
         <FaFileAlt className="mr-2" />
@@ -665,7 +662,7 @@ setAnswer2("");
 </div>
 
 
-{/* Center Container */}
+
 <div className="bg-white border shadow-lg rounded-lg p-4 sm:p-6 w-full h-auto flex flex-col justify-between">
   <div>
     <h4 className="font-bold text-lg sm:text-xl lg:text-2xl leading-tight text-[#494D55] mb-4 lg:mb-12">
@@ -682,9 +679,8 @@ setAnswer2("");
   </div>
 </div>
 
-{/* Right Panel */}
 <div className="bg-white border shadow-lg rounded-lg p-4 sm:p-6 w-full h-auto flex flex-col justify-between">
-  {/* Title */}
+ 
   <div>
     <h4 className="font-bold text-lg sm:text-xl lg:text-2xl leading-tight text-[#494D55] mb-4 lg:mb-12">
       Plan of Correction
@@ -781,7 +777,7 @@ setAnswer2("");
         )}
       </div>
 
-      {/* Background overlay */}
+    
       <div className="fixed inset-0 bg-black opacity-50 z-40" onClick={toggleSidebar}></div>
     </>
   )}
@@ -790,7 +786,6 @@ setAnswer2("");
 </div>
   </>
 )}
-
 
 {activeTab === "Tags" && (
   <>
@@ -847,15 +842,11 @@ setAnswer2("");
   </>
 )}
 
-
 {activeTab === "Policy" && (
   <>
-    {/* Divider */}
+   
     <div className="w-full border-t border-gray-300 mt-4" style={{ borderColor: "#E0E0E0" }}></div>
-
-    {/* Main Containers */}
     <div className="flex flex-col lg:flex-row justify-center mt-4 lg:mt-8 space-y-4 lg:space-y-0 lg:space-x-4">
-      {/* Center Container */}
       <div className="bg-white border shadow-lg rounded-lg p-4 sm:p-6 w-full h-auto flex flex-col justify-between">
         <div>
           <h4 className="font-bold text-lg sm:text-xl lg:text-2xl leading-tight text-[#494D55] mb-4 lg:mb-12">
@@ -898,42 +889,71 @@ setAnswer2("");
     </div>
   </>
 )}
-
-
-
 {/* Bottom Buttons */}
 <div className="flex justify-end space-x-4 mt-4">
-<button
-  onClick={handleAssignTask}
-  className={`flex items-center justify-center border border-[#002F6C] text-[#002F6C] px-4 py-2 rounded-lg text-sm shadow-md transition-colors duration-300 ${
-    loading ? 'cursor-not-allowed opacity-50' : 'hover:bg-gray-100'
-  }`}
-  disabled={loading}
->
-  <svg
-    xmlns="http://www.w3.org/2000/svg"
-    fill="none"
-    viewBox="0 0 24 24"
-    strokeWidth={1.5}
-    stroke="currentColor"
-    className="w-4 h-4 mr-2"
-  >
-    <path
-      strokeLinecap="round"
-      strokeLinejoin="round"
-      d="M15 10l4.553 4.553-4.553 4.553m-6-9L4.447 14.553 9 19"
-    />
-  </svg>
-  {loading ? 'Assigning...' : 'Assign Task'}
-</button>
+{status !== "assigned" && (
+  <>
+    <button
+      onClick={isAuthenticated}
+      className={`flex items-center justify-center border border-[#002F6C] text-[#002F6C] px-4 py-2 rounded-lg text-sm shadow-md transition-colors duration-300 ${
+        loading ? "cursor-not-allowed opacity-50" : "hover:bg-gray-100"
+      }`}
+      disabled={loading}
+    >
+      <svg
+        xmlns="http://www.w3.org/2000/svg"
+        fill="none"
+        viewBox="0 0 24 24"
+        strokeWidth={1.5}
+        stroke="currentColor"
+        className="w-4 h-4 mr-2"
+      >
+        <path
+          strokeLinecap="round"
+          strokeLinejoin="round"
+          d="M15 10l4.553 4.553-4.553 4.553m-6-9L4.447 14.553 9 19"
+        />
+      </svg>
+      {loading ? "Assigning..." : "Assign Task"}
+    </button>
 
-<button
-            onClick={handleNavigateToTags}
-            className="flex items-center justify-center bg-[#002F6C] text-white px-4 py-2 rounded-lg text-sm shadow-md transition-colors duration-300"
-          >
-            Approve
-</button>
+    <button
+      onClick={handleNavigateToTags}
+      className="flex items-center justify-center bg-[#002F6C] text-white px-4 py-2 rounded-lg text-sm shadow-md transition-colors duration-300"
+    >
+      Approve
+    </button>
+  </>
+)}
+
+ 
+  {status === "assigned" && (
+   <button
+   onClick={handleNavigateToTags}
+   className={`flex items-center justify-center border border-[#002F6C] text-[#002F6C] px-4 py-2 rounded-lg text-sm shadow-md transition-colors duration-300 ${
+     loading ? "cursor-not-allowed opacity-50" : "hover:bg-gray-100"
+   }`}
+   disabled={loading}
+ >
+   <svg
+     xmlns="http://www.w3.org/2000/svg"
+     fill="none"
+     viewBox="0 0 24 24"
+     strokeWidth={1.5}
+     stroke="currentColor"
+     className="w-4 h-4 mr-2"
+   >
+     <path
+       strokeLinecap="round"
+       strokeLinejoin="round"
+       d="M15 10l4.553 4.553-4.553 4.553m-6-9L4.447 14.553 9 19"
+     />
+   </svg>
+    Assigned
+ </button>
+  )}
 </div>
+
       </div>
     </div>
   );

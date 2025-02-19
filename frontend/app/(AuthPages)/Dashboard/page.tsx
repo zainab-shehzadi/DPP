@@ -112,19 +112,15 @@ export default function Dashboard() {
   
      
       console.log("Upload response:", response.data);
-
-     // Assuming the response contains an 'id' field
      const uploadedFileId = response.data?.documentId;
 
-    console.log(uploadedFileId);
-      // Update the status to success
+      console.log(uploadedFileId);
       setUploadStatus("Upload successful!");
   
       // Clear the selected file
       setFile(null);
   
-      // Navigate to the UploadDoc page with the email
-      //router.push(`/UploadDoc`);
+  
       router.push(`/UploadDoc`);
     } catch (error: any) {
       // Log and handle errors
