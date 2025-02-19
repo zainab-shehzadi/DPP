@@ -13,8 +13,7 @@ import {
 import { toast } from "react-toastify";
 
 import MobileSidebar from "./MobileSidebar";
-import { useRouter } from "next/navigation"; // Correct import for Next.js App Router
-
+import { useRouter } from "next/navigation"; 
 
 interface SidebarProps {
   isSidebarOpen: boolean;
