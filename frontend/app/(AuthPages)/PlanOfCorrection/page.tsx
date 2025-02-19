@@ -1,4 +1,4 @@
-"use client"; // <-- Add this line to mark this file as a client component
+"use client"; 
 
 import Image from 'next/image';
 import { FaUpload, FaFileAlt,FaUser, FaBell } from 'react-icons/fa';
@@ -6,16 +6,18 @@ import React, { useState } from "react";
 import DatePicker from "react-datepicker";
 import "react-datepicker/dist/react-datepicker.css";
 import Sidebar from "@/components/Sidebar";
-import { useRouter } from "next/navigation"; // Correct import for App Router
+import { useRouter } from "next/navigation";
+import { toast } from "react-toastify";
+
 export default function Dashboard() {
  
   const [selectedFacility, setSelectedFacility] = useState("F-12346");
-  const [visibleCount, setVisibleCount] = useState(3); // Number of facilities shown by default
+  const [visibleCount, setVisibleCount] = useState(3); 
   const [isSidebarOpen, setIsSidebarOpen] = useState(false);
- const [dropdownOpen, setDropdownOpen] = useState(false); // Dropdown state
+ const [dropdownOpen, setDropdownOpen] = useState(false); 
  const [activeTab, setActiveTab] = useState("POC AI Ally");
  const [selectedDate, setSelectedDate] = useState(new Date());
- const [dropdownOpen1, setDropdownOpen1] = useState(false); // Dropdown toggle
+ const [dropdownOpen1, setDropdownOpen1] = useState(false); 
   const toggleDropdown = () => setDropdownOpen(!dropdownOpen);
   const toggleDropdown1 = () => setDropdownOpen1(!dropdownOpen1);
 
@@ -26,19 +28,19 @@ export default function Dashboard() {
     setVisibleCount(facilities.length);
   };
   const handleNavigateToTags = () => {
-    router.push("/Tags"); // Navigate to the UploadDoc page
+    router.push("/Tags"); 
   };
   const toggleSidebar = () => setIsSidebarOpen(!isSidebarOpen);
  const handleCopy = () => {
-    navigator.clipboard.writeText("Sample Content"); // Copy to clipboard
-    alert("Content copied!"); // Show alert message
+    navigator.clipboard.writeText("Sample Content"); 
+    toast.success("Content copied!"); 
   };
 
   const handleEdit = () => {
-    alert("Edit triggered!"); // Show alert message
+    toast.success("Edit triggered!");
   };
   const handleNavigateToPolicy = () => {
-    router.push("/PolicyGenerator"); // Navigate to the PolicyGenerator page
+    router.push("/PolicyGenerator"); 
   };
   return (
     <div className="flex flex-col lg:flex-row">

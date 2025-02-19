@@ -73,7 +73,6 @@ const usersetting = () => {
       })
       .catch((error) => console.error('Error fetching data:', error));
   }, []);
-
   const handleUpdate = async (userId) => {
     try {
       const response = await fetch(`${process.env.NEXT_PUBLIC_API_BASE_URL}/api/users/fetch/${userId}`);
@@ -87,7 +86,7 @@ const usersetting = () => {
       // Show data for debugging
       console.log("Fetched User Data:", userData);
   
-      // Set full user data
+      
       setSelectedUser(userData);
   
       setDepartmentName(userData.DepartmentName || "");
@@ -101,18 +100,20 @@ const usersetting = () => {
       toast.error("Failed to fetch user data. Please try again.");
     }
   };
-  
   const handleUpdateSubmit = async (e) => {
     e.preventDefault();
-  
+    console.log("Submitting User Data:", selectedUser);
+
     if (!selectedUser || !selectedUser._id) {
-      alert("User ID is required to update the user.");
+      toast.error("User ID is required to update the user.");
       return;
     }
   
     try {
+      console.log("Submitting Data:", selectedUser);
+  
       const response = await fetch(
-        `${process.env.NEXT_PUBLIC_API_BASE_URL}/api/users/${selectedUser._id}`,
+        `${process.env.NEXT_PUBLIC_API_BASE_URL}/api/users/update/${selectedUser._id}`,
         {
           method: "PUT",
           headers: {
@@ -122,14 +123,14 @@ const usersetting = () => {
         }
       );
   
+      const responseData = await response.json();
+      console.log("API Response:", responseData);
+  
       if (!response.ok) {
-        throw new Error("Failed to update user");
+        throw new Error(responseData.error || "Failed to update user");
       }
   
-      const responseData = await response.json();
-      console.log("Response Data:", responseData);
-  
-      // Update the users list
+      // Update UI after successful update
       setUsers(
         users.map((user) =>
           user._id === selectedUser._id ? { ...user, ...selectedUser } : user
@@ -145,13 +146,10 @@ const usersetting = () => {
       toast.error("Failed to update user. Please try again.");
     }
   };
-  
   const handleModalClose = () => {
     setIsModalOpen(false);
     setSelectedUser(null); 
   };
-  
-
   const handleDeleteClick = (id: string) => {
     setUserToDelete(id); // Store the ID of the user to delete
     setIsDeleteModalOpen(true); // Open the confirmation modal
@@ -176,8 +174,7 @@ const usersetting = () => {
       toast.success("User deleted successfully!");
       setIsDeleteModalOpen(false); // Close the confirmation modal after successful deletion
     } catch (error) {
-      console.error("Error deleting user:", error);
-      alert("Failed to delete user. Please try again.");
+      toast.error("Error deleting user");
     }
   };
   
@@ -211,9 +208,9 @@ const usersetting = () => {
 
         {/* Progress Bar */}
         <div className="w-full sm:w-3/4 h-6 sm:h-12 lg:h-18 bg-[#002F6C] mt-2 rounded-lg mx-auto mb-8"></div>
-        <div className="overflow-x-auto mx-auto max-w-[1000px]">
-  <table className="min-w-full text-left border-collapse border border-[#F2F2F2]">
-    <thead>
+        <div className="overflow-x-auto mx-auto max-w-[980px]">
+        <table className="max-w-[0px] w-full text-left border-collapse border border-[#F2F2F2]">
+        <thead>
       <tr className="bg-gray-100 text-black border-b border-[#F2F2F2]">
         <th className="px-6 py-6 text-left font-semibold text-sm">Select</th>
         <th className="px-6 py-6 text-left font-semibold text-sm">User ID</th>
@@ -265,6 +262,17 @@ const usersetting = () => {
     style={{ width: "auto", height: "auto" }}
   />
 </button>
+
+
+          </td>
+        </tr>
+      ))}
+    </tbody>
+  </table>
+</div>
+
+      </div>
+
 {/* Delete Confirmation Modal */}
 {isDeleteModalOpen && (
   <div className="fixed inset-0 bg-gray-800 bg-opacity-50 flex justify-center items-center z-50">
@@ -290,24 +298,15 @@ const usersetting = () => {
     </div>
   </div>
 )}
-
-          </td>
-        </tr>
-      ))}
-    </tbody>
-  </table>
-</div>
-
-      </div>
-
-
    {/* Update Modal */}
 {isModalOpen && selectedUser && (
-  <div className="fixed inset-0 bg-gray-800 bg-opacity-50 flex justify-center items-center z-50">
-    <div className="bg-white p-8 rounded-lg shadow-lg w-full max-w-lg space-y-6 overflow-y-auto max-h-[80vh]">
+  <div className="fixed inset-0 bg-gray-800 bg-opacity-50 flex justify-center items-center z-50"
+  onClick={handleModalClose}
+  >
+    <div className="bg-white p-8 rounded-lg shadow-lg w-full max-w-lg space-y-6 overflow-y-auto max-h-[80vh]"
+    onClick={(e) => e.stopPropagation()} 
+    >
       <h2 className="text-2xl font-semibold text-gray-800 text-center">Update User</h2>
-
-      {/* Success Message */}
       {successMessage && (
         <div
           className="mb-4 rounded-lg bg-green-100 px-4 py-2 text-green-700 border border-green-500"

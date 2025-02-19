@@ -90,18 +90,13 @@ useEffect(() => {
         `${process.env.NEXT_PUBLIC_API_BASE_URL}/api/files/docs?email=${encodeURIComponent(email)}`
       );
       const data = await res.json();
-
-      console.log("API Response:", data); // Debugging log
-      alert("API Response: " + JSON.stringify(data, null, 2)); // Show in alert
-
-      // Ensure response is an array
       if (Array.isArray(data)) {
-        setDocuments(data); // ✅ Save documents in state
+        setDocuments(data); 
       } else {
-        console.error("Unexpected API response format", data);
+        toast.error("Unexpected API response format", data);
       }
     } catch (error) {
-      console.error("Error fetching documents:", error);
+      toast.error("Error fetching documents");
     }
   };
 
@@ -120,7 +115,6 @@ useEffect(() => {
   }, []);
   const fetchDocumentDetails = async (id) => {
     try {
-      alert(`Document ID:\n${JSON.stringify(id, null, 2)}`);
   
       const safeEmail = email ?? "";
       console.log("Fetching details for document ID:", id);
@@ -137,13 +131,12 @@ useEffect(() => {
       if (!response.ok) {
         console.error(`Failed to fetch document details: ${response.statusText}`);
         setTagsData([]); // Reset tags data
-        alert("Error: Failed to fetch document details.");
+        toast.error("Error: Failed to fetch document details.");
         return;
       }
   
       const data = await response.json();
       console.log("Fetched Document Data:", data);
-      alert("Fetched Document Data:\n" + JSON.stringify(data, null, 2)); // Show full API response
   
       // Ensure `data.tags` exists before setting state
       if (!data || !Array.isArray(data.tags)) {
@@ -475,11 +468,10 @@ useEffect(() => {
       id: selectedID, // Backend expects "id"
     };
   
-    // Log the constructed data for debugging
-    console.log('Data sent to API:', data);
+  
   
     try {
-      // Send the POST request
+      
       const response = await fetch(`${process.env.NEXT_PUBLIC_API_BASE_URL}/api/files/generatesol`, {
         method: 'POST',
         headers: {

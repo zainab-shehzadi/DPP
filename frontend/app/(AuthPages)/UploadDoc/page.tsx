@@ -31,13 +31,12 @@ interface DocumentType {
     policies: string;
     task: string;
   }[]>([]);
-const [status, setStatus] = useState(""); 
+const [status, setStatus] = useState<string | null>(null); 
 const [selectedTag, setSelectedTag] = useState<string | null>(null); 
 const [selectedID, setSelectedID] = useState<number | null>(null); 
 const [selectedLongDesc, setSelectedLongDesc] = useState<string | null>(null);
 const [selectedPolicy, setSelectedPPolicy] = useState<string | null>(null);
 const [selectedTask, setSelectedTask] = useState<string []>([]); 
-const [selectedFacility, setSelectedFacility] = useState<string>(""); 
 const [email, setEmail] = useState<string | null>(null); 
 const [visibleCount, setVisibleCount] = useState<number>(4);
 const [isSidebarOpen, setIsSidebarOpen] = useState<boolean>(false); 
@@ -131,9 +130,8 @@ const handleNavigateToPolicy = () => {
       
 
         if (!response.ok) {
-            console.error(`❌ Failed to fetch document details: ${response.statusText}`);
+            toast.error(`❌ Failed to fetch document details: ${response.statusText}`);
             setTagsData([]);
-            alert("Error: Failed to fetch document details.");
             return;
         }
 
@@ -168,11 +166,9 @@ const handleNavigateToPolicy = () => {
        
 
     } catch (error) {
-        console.error("❌ Error fetching document details:", error);
-        alert("❌ Error fetching document details:\n" );
+        toast.error("❌ Error fetching document details:\n" );
     } finally {
         setLoading(false);
-        console.log("⏳ Loading state set to false.");
     }
 };
   const isAuthenticated = async () => {
@@ -200,8 +196,7 @@ const handleNavigateToPolicy = () => {
       handleAssignTask();
       return true;
     } catch (error) {
-      console.error("Error fetching tokens:", error);
-      alert("Please log in with Google for assigned tasks.");
+      toast.error("Please log in with Google for assigned tasks.");
       router.push("/login"); 
       return false;
     }
@@ -209,7 +204,7 @@ const handleNavigateToPolicy = () => {
 const handleAssignTask = async () => {
 
   if (!selectedTask || selectedTask.length === 0) {
-    alert("Please select at least one task before assigning.");
+    toast.error("Please select at least one task before assigning.");
   
     return;
   }
@@ -244,8 +239,7 @@ const handleAssignTask = async () => {
 
     if (!saveResponse.ok) {
       const error = await saveResponse.json();
-      console.error("Failed to save tasks:", error);
-      alert("Failed to save tasks to the database.");
+      toast.error("Failed to save tasks:", error);
       return;
     }
 
@@ -273,7 +267,7 @@ const handleAssignTask = async () => {
         continue; 
       }
         
-        await fetch(
+      const response =  await fetch(
           `${process.env.NEXT_PUBLIC_API_BASE_URL}/api/files/update-status`,
           {
             method: "POST",
@@ -286,6 +280,14 @@ const handleAssignTask = async () => {
             }),
           }
         );
+
+        const result = await response.json(); // Parse the JSON response
+
+        if (!response.ok) {
+          throw new Error(result.message || "Failed to update status");
+        }
+         setStatus(result.status);
+       
     }
 
     toast.success("Events created successfully.");
@@ -383,7 +385,6 @@ const handleTagClick = async (tagName, tagId) => {
         if (!Array.isArray(newTasks)) newTasks = [newTasks];
 
         setStatus(result.status);
-        
         setSelectedTag(tagName);
         setSelectedID(tagId);
         setSelectedTask(newTasks);

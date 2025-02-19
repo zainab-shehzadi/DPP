@@ -123,11 +123,11 @@ const handleSubmit = async () => {
 
       router.push("/AddNewUser"); // Change the route as necessary
     } else {
-      alert(`Error: ${data.message}`);
+      toast.error(`Error: ${data.message}`);
     }
   } catch (error) {
-    console.error("Error adding user:", error);
-    alert("Error adding user. Please try again.");
+    
+    toast.error("Error adding user. Please try again.");
   }
 };
 

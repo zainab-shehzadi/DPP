@@ -4,6 +4,7 @@ import Image from "next/image";
 import React, { useState, useEffect } from "react";
 import Sidebar from "@/components/Sidebar";
 import authProtectedRoutes from "@/hoc/authProtectedRoutes";
+import { toast } from "react-toastify";
 
 function profileSetting() {
   const [isSidebarOpen, setIsSidebarOpen] = useState(false);
@@ -80,8 +81,7 @@ function profileSetting() {
       setPosition(data.position || "");
       setRole(data.role || "");
     } catch (error) {
-      console.error("Error fetching user data:", error);
-      alert("Failed to fetch user data. Please try again.");
+      toast.error("Failed to fetch user data. Please try again.");
     }
   };
 
@@ -104,11 +104,10 @@ function profileSetting() {
         }
       );
       if (!response.ok) throw new Error("Failed to update user data.");
-      alert("User data updated successfully!");
+      toast.success("User data updated successfully!");
       setIsEditing(false);
     } catch (error) {
-      console.error("Error updating user data:", error);
-      alert("Failed to update user data. Please try again.");
+      toast.error("Failed to update user data. Please try again.");
     }
   };
 

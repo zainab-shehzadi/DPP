@@ -8,12 +8,13 @@ import {
   FaCog,
   FaUser,
   FaBuilding,
-  FaCreditCard,
+
 } from "react-icons/fa";
+import { toast } from "react-toastify";
 
 import MobileSidebar from "./MobileSidebar";
 import { useRouter } from "next/navigation"; // Correct import for Next.js App Router
-import Cookies from "js-cookie";
+
 
 interface SidebarProps {
   isSidebarOpen: boolean;
@@ -39,8 +40,7 @@ const Sidebar: React.FC<SidebarProps> = ({ isSidebarOpen }) => {
       sessionStorage.clear();
       router.push("/login");
     } catch (error) {
-      console.error("Error during logout:", error);
-      alert("An error occurred. Please try again.");
+      toast.error("Error during logout");
     }
   };
 

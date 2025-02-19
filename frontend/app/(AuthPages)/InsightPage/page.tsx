@@ -128,9 +128,8 @@ const handleTagClick = async (tagName, tagId) => {
       
 
         if (!response.ok) {
-            console.error(`❌ Failed to fetch document details: ${response.statusText}`);
             setTagsData([]);
-            alert("Error: Failed to fetch document details.");
+            toast.error("Error: Failed to fetch document details.");
             return;
         }
 
@@ -163,8 +162,7 @@ const handleTagClick = async (tagName, tagId) => {
        
 
     } catch (error) {
-        console.error("❌ Error fetching document details:", error);
-        alert("❌ Error fetching document details:\n" );
+        toast.error("❌ Error fetching document details:\n" );
     } finally {
         
         console.log("⏳ Loading state set to false.");

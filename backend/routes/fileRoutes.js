@@ -127,12 +127,12 @@ router.get("/tag-details", async (req, res) => {
   }
 });
 
-
 router.post("/update-status", async (req, res) => {
   try {
     const { tagId, status } = req.body;
 
     if (!tagId || !status) {
+      console.log("Validation Failed: Missing tagId or status");
       return res.status(400).json({ error: "Tag ID and status are required." });
     }
 
@@ -143,11 +143,12 @@ router.post("/update-status", async (req, res) => {
     );
 
     if (!updatedFile) {
+      console.log("Update Failed: Tag not found");
       return res.status(404).json({ error: "Tag not found." });
     }
-
     res.status(200).json({
       message: "Status updated successfully.",
+      status: status,
       updatedFile, 
     });
   } catch (error) {

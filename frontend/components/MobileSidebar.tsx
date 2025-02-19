@@ -1,6 +1,9 @@
 import React, { useState } from "react";
 import { Sheet, SheetContent, SheetHeader, SheetTrigger } from "@/components/ui/sheet";
 import { Menu } from "lucide-react";
+import { toast } from "react-toastify";
+
+
 import {
   FaTachometerAlt,
   FaHome,
@@ -34,7 +37,7 @@ const MobileSidebar = () => {
     if (navigator.onLine) {
       router.push(path);
     } else {
-      alert("No internet connection. Please check your network.");
+      toast.error("No internet connection. Please check your network.");
     }
   };
   const handleLogout = () => {

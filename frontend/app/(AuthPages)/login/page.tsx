@@ -227,4 +227,4 @@ else {
   );
 };
 
-export default authPublicRoutes(Login);
+export default Login;

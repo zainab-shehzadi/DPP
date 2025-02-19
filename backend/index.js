@@ -1,69 +1,3 @@
-// const express = require("express");
-// const dotenv = require("dotenv");
-
-// const { google } = require('googleapis');
-// const bodyParser = require('body-parser');
-// const connectDB = require("./config/db");
-// const userRoutes = require("./routes/userRoutes");
-// const fileRoutes = require('./routes/fileRoutes');
-// const stripeRoutes = require("./routes/stripeRoutes");
-// const facilityRoutes = require("./routes/facilityRoutes");
-// const calendarRoutes = require('./routes/calendarRoutes');
-// const { initializeSocket } = require("./config/socket");
-
-
-// const cors = require("cors");
-
-// dotenv.config();
-// connectDB();
-
-
-// const corsOptions = {
-//   origin: [process.env.NEXT_BASE_URL, "https://document-processing-platform-frontend.vercel.app"], // Allow only this origin
-//   methods: ["GET", "POST", "PUT", "DELETE", "OPTIONS"], // Allow specific HTTP methods
-//   credentials: true,
-// };
-
-// const app = express();
-
-// // Use CORS middleware BEFORE defining routes
-// app.use(cors(corsOptions));
-// app.use(bodyParser.json());
-// // Middleware to parse JSON
-// app.use(express.json());
-
-// // Set up OAuth2 client
-// const oAuth2Client = new google.auth.OAuth2(
-//   process.env.CLIENT_ID,     // Replace with your credentials
-//   process.env.CLIENT_SECRET, // Replace with your credentials
-//   process.env.REDIRECT_URI   // e.g., "http://localhost:3000"
-// );
-// // Initialize Socket.IO
-// const server = initializeSocket(app);
-
-// app.get('/', async (req, res) => {
-//   res.json({ message: 'Server is running' });
-// });
-// app.use("/api/stripe", stripeRoutes);
-// app.use("/api/users", userRoutes);
-// app.use('/api/files', fileRoutes);
-// app.use("/api/facility", facilityRoutes);
-// app.use('/api/calendar', calendarRoutes);
-
-// app.use((req, res, next) => {
-//   console.log(`${req.method} ${req.url}`);
-//   next();
-// });
-// // Error handling middleware (optional for debugging)
-// app.use((err, req, res, next) => {
-//   console.error(err.stack);
-//   res.status(500).json({ message: "Internal server error", error: err.message });
-// });
-
-// const PORT = process.env.PORT || 5000;
-// server.listen(PORT, () => console.log(`Server running on port ${PORT}`));
-
-
 
 
 const express = require("express");
@@ -131,7 +65,7 @@ io.on("connection", (socket) => {
   // Listen for events
   socket.on("sendNotification", (notification) => {
     console.log("Notification received:", notification);
-    io.emit("receiveNotification", notification); // Broadcast notification to all clients
+    io.emit("receiveNotification", notification); 
   });
 
   socket.on("disconnect", () => {

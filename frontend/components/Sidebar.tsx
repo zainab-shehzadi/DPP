@@ -3,18 +3,16 @@
 import React, { useState, useEffect } from "react";
 import {
   FaTachometerAlt,
-  FaHome,
   FaClipboard,
-  FaUserPlus,
-  FaFileAlt,
   FaSignOutAlt,
   FaClock,
   FaCog,
   FaUser,
   FaBuilding,
-  FaQuestionCircle,
+
   FaCreditCard,
 } from "react-icons/fa";
+import { toast } from "react-toastify";
 
 import MobileSidebar from "./MobileSidebar";
 import { useRouter } from "next/navigation"; // Correct import for App Router
@@ -81,7 +79,7 @@ const Sidebar: React.FC<SidebarProps> = ({ isSidebarOpen, toggleSidebar }) => {
         const errorData = await response.json();
 
         if (response.status === 404) {
-          alert("User does not exist. Please check the email and try again.");
+          toast.error("User does not exist. Please check the email and try again.");
         } else {
           throw new Error(errorData.message || "Failed to fetch user role.");
         }
@@ -94,11 +92,10 @@ const Sidebar: React.FC<SidebarProps> = ({ isSidebarOpen, toggleSidebar }) => {
       if (data.role === "Supervisor") {
         handleNavigation(`profileSettting`);
       } else {
-        alert("Access denied. Only users can access this section.");
+        toast.error("Access denied. Only users can access this section.");
       }
     } catch (error) {
-      console.error("Error checking user role:", error);
-      alert("Failed to verify user role. Please try again.");
+      toast.error("Error checking user role");
     }
   };
   return (
