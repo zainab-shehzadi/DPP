@@ -75,6 +75,7 @@ export const config = {
     "/InsightPage",
     "/TaskDetailPage",
     "/DailySummaries",
+    
     "/TaskListPage",
     "/profileSetting",
     "/facilitySetting",
