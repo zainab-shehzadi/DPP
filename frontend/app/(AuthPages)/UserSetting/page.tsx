@@ -5,6 +5,7 @@ import { FaBell } from "react-icons/fa";
 import React, { useState, useEffect } from "react";
 import Sidebar from "@/components/Admin-sidebar";
 import { toast } from "react-toastify";
+import authProtectedRoutes from "@/hoc/authProtectedRoutes";
 // Define the User interface
 interface User {
   _id: string;
@@ -17,7 +18,7 @@ interface User {
   email: string;
 }
 
-const Dashboard = () => {
+const usersetting = () => {
   const [isSidebarOpen, setIsSidebarOpen] = useState(false);
   const toggleSidebar = () => setIsSidebarOpen(!isSidebarOpen);
   const [users, setUsers] = useState<User[]>([]);
@@ -25,7 +26,6 @@ const Dashboard = () => {
   const [selectedUser, setSelectedUser] = useState<User | null>(null); // Selected user to edit
   const [successMessage, setSuccessMessage] = useState("");
   const [departmentName, setDepartmentName] = useState("");
-  const [isEditing, setIsEditing] = useState(false);
   const [position, setPosition] = useState("");
   const [role, setRole] = useState("");
 
@@ -57,13 +57,10 @@ const Dashboard = () => {
   const [userToDelete, setUserToDelete] = useState<string | null>(null);
   const leadershipRoles = roleCategories.leadership;
   const supportingRoles = roleCategories.supporting;
-
-  // Positions based on selected department
   const positions = departmentName ? departmentPositions[departmentName] || [] : [];
 
-  // Fetch users
   useEffect(() => {
-    fetch(`${process.env.NEXT_PUBLIC_API_BASE_URL}/api/users/User123`) // Replace with valid user ID
+    fetch(`${process.env.NEXT_PUBLIC_API_BASE_URL}/api/users/User123`)
       .then((response) => {
         if (!response.ok) {
           throw new Error(`HTTP error! Status: ${response.status}`);
@@ -71,18 +68,94 @@ const Dashboard = () => {
         return response.json();
       })
       .then((data) => {
-        console.log('Fetched User Data:', data); // Log the fetched data
+        console.log('Fetched User Data:', data);
         setUsers(data);
       })
       .catch((error) => console.error('Error fetching data:', error));
   }, []);
 
- 
+  const handleUpdate = async (userId) => {
+    try {
+      const response = await fetch(`${process.env.NEXT_PUBLIC_API_BASE_URL}/api/users/fetch/${userId}`);
+  
+      if (!response.ok) {
+        throw new Error("Failed to fetch user data");
+      }
+  
+      const userData = await response.json();
+  
+      // Show data for debugging
+      console.log("Fetched User Data:", userData);
+  
+      // Set full user data
+      setSelectedUser(userData);
+  
+      setDepartmentName(userData.DepartmentName || "");
+      setPosition(userData.Position || "");
+      setRole(userData.role || "");
+  
+      // Open modal
+      setIsModalOpen(true);
+    } catch (error) {
+      console.error("Error fetching user data:", error);
+      toast.error("Failed to fetch user data. Please try again.");
+    }
+  };
+  
+  const handleUpdateSubmit = async (e) => {
+    e.preventDefault();
+  
+    if (!selectedUser || !selectedUser._id) {
+      alert("User ID is required to update the user.");
+      return;
+    }
+  
+    try {
+      const response = await fetch(
+        `${process.env.NEXT_PUBLIC_API_BASE_URL}/api/users/${selectedUser._id}`,
+        {
+          method: "PUT",
+          headers: {
+            "Content-Type": "application/json",
+          },
+          body: JSON.stringify(selectedUser),
+        }
+      );
+  
+      if (!response.ok) {
+        throw new Error("Failed to update user");
+      }
+  
+      const responseData = await response.json();
+      console.log("Response Data:", responseData);
+  
+      // Update the users list
+      setUsers(
+        users.map((user) =>
+          user._id === selectedUser._id ? { ...user, ...selectedUser } : user
+        )
+      );
+  
+      toast.success("User updated successfully");
+      setTimeout(() => {
+        setIsModalOpen(false);
+      }, 1000);
+    } catch (error) {
+      console.error("Error updating user:", error);
+      toast.error("Failed to update user. Please try again.");
+    }
+  };
+  
+  const handleModalClose = () => {
+    setIsModalOpen(false);
+    setSelectedUser(null); 
+  };
+  
+
   const handleDeleteClick = (id: string) => {
     setUserToDelete(id); // Store the ID of the user to delete
     setIsDeleteModalOpen(true); // Open the confirmation modal
   };
-  
   const handleDelete = async (id: string | null) => {
     setIsDeleteModalOpen(false); 
     if (!id) return;
@@ -107,61 +180,6 @@ const Dashboard = () => {
       alert("Failed to delete user. Please try again.");
     }
   };
-  
-  const handleUpdate = (user: User) => {
-    setSelectedUser(user); 
-    setIsModalOpen(true); 
-  };
-  const handleModalClose = () => {
-    setIsModalOpen(false);
-    setSelectedUser(null); 
-  };
-  const handleUpdateSubmit = async (e: React.FormEvent) => {
-    e.preventDefault();
-  
-    if (!selectedUser || !selectedUser.email) {
-      alert("User email is required to update the user.");
-      return;
-    }
-  
-    try {
-      const response = await fetch(
-        `${process.env.NEXT_PUBLIC_API_BASE_URL}/api/users/email/${selectedUser.email}`,
-        {
-          method: "PUT",
-          headers: {
-            "Content-Type": "application/json",
-          },
-          body: JSON.stringify(selectedUser),
-        }
-      );
-  
-      if (!response.ok) {
-        throw new Error(`Failed to update user with email: ${selectedUser.email}`);
-      }
-  
-      const responseData = await response.json();
-      console.log("Response Data:", responseData);
-  
-      // Update the users list
-      setUsers(
-        users.map((user) =>
-          user.email === selectedUser.email ? { ...user, ...selectedUser } : user
-        )
-      );
-toast.success("user updated successfully");
-  
-      setTimeout(() => {
-        setIsModalOpen(false);
-        setSuccessMessage(""); 
-      }, 1000);
-    } catch (error) {
-      console.error("Error updating user:", error);
-      toast.error("Failed to update user. Please try again.");
-      setIsModalOpen(false);
-    }
-  };
-
   
 
   return (
@@ -223,7 +241,7 @@ toast.success("user updated successfully");
           <td className="py-4 px-4 sm:px-6 text-center">
             <button
               className="text-blue-500 hover:text-blue-700 mr-4"
-              onClick={() => handleUpdate(user)} // Open the update modal with selected user
+              onClick={() => handleUpdate(user._id)} 
               title="Update User"
             >
               <Image
@@ -349,66 +367,65 @@ toast.success("user updated successfully");
         <div>
           <label className="block text-gray-700">Department</label>
           <select
-            value={departmentName}
-            onChange={(e) => setDepartmentName(e.target.value)}
-            className="mt-2 w-full p-2 rounded-md bg-[#e2f3ff]"
-          >
-            <option value="" disabled>
-              Select a Department
-            </option>
-            {Object.keys(departmentPositions).map((dept) => (
-              <option key={dept} value={dept}>
-                {dept}
-              </option>
-            ))}
-          </select>
+  value={selectedUser.DepartmentName || ""}
+  onChange={(e) => setSelectedUser({ ...selectedUser, DepartmentName: e.target.value })}
+  className="mt-2 w-full p-2 rounded-md bg-[#e2f3ff]"
+>
+  <option value="" disabled>Select a Department</option>
+  {Object.keys(departmentPositions).map((dept) => (
+    <option key={dept} value={dept}>
+      {dept}
+    </option>
+  ))}
+</select>
+
         </div>
 
         {/* Position */}
         <div>
           <label className="block text-gray-700">Position</label>
           <select
-            value={position}
-            onChange={(e) => setPosition(e.target.value)}
-            className="mt-2 w-full p-2 rounded-md bg-[#e2f3ff]"
-          >
-            <option value="" disabled>
-              {positions.length ? "Select a Position" : "Select a Department First"}
-            </option>
-            {positions.map((pos) => (
-              <option key={pos} value={pos}>
-                {pos}
-              </option>
-            ))}
-          </select>
+  value={selectedUser.Position || ""}
+  onChange={(e) => setSelectedUser({ ...selectedUser, Position: e.target.value })}
+  className="mt-2 w-full p-2 rounded-md bg-[#e2f3ff]"
+>
+  <option value="" disabled>
+    {positions.length ? "Select a Position" : "Select a Department First"}
+  </option>
+  {positions.map((pos) => (
+    <option key={pos} value={pos}>
+      {pos}
+    </option>
+  ))}
+</select>
+
         </div>
 
         {/* Role */}
         <div>
           <label className="block text-gray-700">Role</label>
-          <select
-            value={role}
-            onChange={(e) => setRole(e.target.value)}
-            className="mt-2 w-full p-2 rounded-md bg-[#e2f3ff]"
-          >
-            <option value="" disabled>
-              Select a Role
-            </option>
-            <optgroup label="Leadership Roles">
-              {leadershipRoles.map((roleOption) => (
-                <option key={roleOption} value={roleOption}>
-                  {roleOption}
-                </option>
-              ))}
-            </optgroup>
-            <optgroup label="Supporting Roles">
-              {supportingRoles.map((roleOption) => (
-                <option key={roleOption} value={roleOption}>
-                  {roleOption}
-                </option>
-              ))}
-            </optgroup>
-          </select>
+         <select
+  value={selectedUser.role || ""}
+  onChange={(e) => setSelectedUser({ ...selectedUser, role: e.target.value })}
+  className="mt-2 w-full p-2 rounded-md bg-[#e2f3ff]"
+>
+  <option value="" disabled>Select a Role</option>
+  <optgroup label="Leadership Roles">
+    {leadershipRoles.map((roleOption) => (
+      <option key={roleOption} value={roleOption}>
+        {roleOption}
+      </option>
+    ))}
+  </optgroup>
+  <optgroup label="Supporting Roles">
+    {supportingRoles.map((roleOption) => (
+      <option key={roleOption} value={roleOption}>
+        {roleOption}
+      </option>
+    ))}
+  </optgroup>
+</select>
+
         </div>
 
         {/* Buttons */}
@@ -437,4 +454,4 @@ toast.success("user updated successfully");
   );
 };
 
-export default Dashboard;
+export default authProtectedRoutes(usersetting);

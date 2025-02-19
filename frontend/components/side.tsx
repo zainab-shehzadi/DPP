@@ -46,7 +46,7 @@ const Sidebar: React.FC<SidebarProps> = ({ isSidebarOpen, toggleSidebar }) => {
       sessionStorage.clear(); // Clear all sessionStorage (if used)
 
       // Redirect to Login page
-      router.push("/LoginPage");
+      router.push("/login");
     } catch (error) {
       console.error("Error during logout:", error);
       alert("An error occurred. Please try again.");

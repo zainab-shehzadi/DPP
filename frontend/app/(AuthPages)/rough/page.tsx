@@ -299,7 +299,7 @@ useEffect(() => {
   
       if (!accessToken) {
         alert("Please log in with Google for assigned tasks.");
-        router.push("/LoginPage"); // Redirect to login page
+        router.push("/login"); // Redirect to login page
         return false;
       }
   
@@ -311,7 +311,7 @@ useEffect(() => {
     } catch (error) {
       console.error("Error fetching tokens:", error);
       alert("Please log in with Google for assigned tasks.");
-      router.push("/LoginPage"); // Redirect to login page
+      router.push("/login"); // Redirect to login page
       return false;
     }
   };

@@ -11,13 +11,14 @@ import Notification from '@/components/Notification'
 import Cookies from "js-cookie";
 import { toast } from "react-toastify";
 import { constants } from 'node:crypto';
+import authProtectedRoutes from "@/hoc/authProtectedRoutes";
 interface DocumentType {
   _id: string;
   originalName: string;
   fileUrl?: string; 
   uploadedAt: Date; 
 }
-export default function Dashboard() {
+ function docUpload() {
 
 
   const [tagsData, setTagsData] = useState<{
@@ -191,7 +192,7 @@ const handleNavigateToPolicy = () => {
   
       if (!accessToken) {
         toast.error("Please log in with Google for assigned tasks.");
-        router.push("/LoginPage");
+        router.push("/login");
         return false;
       }
       Cookies.set("accessToken", accessToken, { expires: 7 });
@@ -201,7 +202,7 @@ const handleNavigateToPolicy = () => {
     } catch (error) {
       console.error("Error fetching tokens:", error);
       alert("Please log in with Google for assigned tasks.");
-      router.push("/LoginPage"); 
+      router.push("/login"); 
       return false;
     }
   };
@@ -958,3 +959,4 @@ const handleTagClick = async (tagName, tagId) => {
     </div>
   );
 }
+export default authProtectedRoutes(docUpload);

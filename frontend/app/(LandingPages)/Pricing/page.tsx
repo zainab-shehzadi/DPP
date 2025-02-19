@@ -30,7 +30,7 @@ const SubscribeComponent: React.FC<SubscribeProps> = ({ planType, planCycle, pri
       const token = Cookies.get("token"); 
       if (!token) {
         toast.error("User is not authenticated. Redirecting to login...");
-        router.push("/LoginPage"); 
+        router.push("/login"); 
         return;
       }
       const stripe = await loadStripe(process.env.NEXT_PUBLIC_STRIPE_PUBLIC_KEY as string);

@@ -6,6 +6,7 @@ import React, { useState ,useEffect} from "react";
 
 import Link from "next/link"; // Correct import for Link
 import Sidebar from "@/components/Admin-sidebar";
+import authProtectedRoutes from '@/hoc/authProtectedRoutes';
 
 // Define the User interface
 interface User {
@@ -15,7 +16,7 @@ interface User {
   email: string;
 }
 
-const Dashboard = () => {
+const Adduser = () => {
   
   const [isSidebarOpen, setIsSidebarOpen] = useState(false);
   const toggleSidebar = () => setIsSidebarOpen(!isSidebarOpen);
@@ -127,4 +128,4 @@ const Dashboard = () => {
   );
 }
 
-export default Dashboard;
+export default authProtectedRoutes(Adduser);

@@ -5,6 +5,7 @@ import { useRouter } from "next/navigation"; // For navigation after successful 
 import "@fortawesome/fontawesome-free/css/all.min.css";
 import Image2 from "@/components/imageright"; // Ensure the correct import path
 import Cookies from "js-cookie"; 
+import authPublicRoutes from "@/hoc/authPublicRoutes";
 const EmailVerify: React.FC = () => {
   const [verificationCode, setVerificationCode] = useState<string[]>(Array(6).fill(""));
   const [message, setMessage] = useState<string>("");
@@ -56,7 +57,7 @@ const EmailVerify: React.FC = () => {
         setMessage("Verification successful!");
         setTimeout(() => {
           // Redirect to resetpassword with the email query parameter
-          router.push(`/resetpassword`);
+          router.push(`/reset-password`);
         }, 1000); // Optional delay for better UX
       } else {
         setMessage(data.message || "Verification failed. Please try again.");
@@ -118,7 +119,7 @@ const EmailVerify: React.FC = () => {
           </button>
 
           {/* Back to Login Button */}
-          <Link href="/LoginPage">
+          <Link href="/login">
             <button
               type="button"
               className="w-full px-3 py-2 border border-black-300 rounded-lg font-bold focus:outline-none mt-8 text-sm sm:text-base md:text-lg hover:bg-gray-100 transition-colors"
@@ -135,4 +136,4 @@ const EmailVerify: React.FC = () => {
   );
 };
 
-export default EmailVerify;
+export default authPublicRoutes(EmailVerify);

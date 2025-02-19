@@ -1,11 +1,11 @@
 "use client"; // Mark this as a client component
 
 import Image from "next/image";
-import { FaBell } from "react-icons/fa";
 import React, { useState, useEffect } from "react";
 import Sidebar from "@/components/Sidebar";
+import authProtectedRoutes from "@/hoc/authProtectedRoutes";
 
-export default function Dashboard() {
+function profileSetting() {
   const [isSidebarOpen, setIsSidebarOpen] = useState(false);
   const toggleSidebar = () => setIsSidebarOpen(!isSidebarOpen);
 
@@ -261,3 +261,4 @@ export default function Dashboard() {
     </div>
   );
 }
+export default authProtectedRoutes(profileSetting);

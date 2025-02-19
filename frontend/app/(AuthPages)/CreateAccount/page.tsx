@@ -33,7 +33,7 @@ const Signup: React.FC = () => {
           <div className="mt-1 text-left">
   <p className="text-lg mb-4" style={{ fontFamily: 'Poppins, sans-serif', color: '#969AB8' }}>
     Already have an account?{" "}
-    <Link href="/LoginPage" className="text-[#002f6c] font-semibold hover:bg-[#002f6c] hover:text-white">
+    <Link href="/login" className="text-[#002f6c] font-semibold hover:bg-[#002f6c] hover:text-white">
       Log In
     </Link>
   </p>

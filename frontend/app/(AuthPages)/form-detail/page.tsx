@@ -9,7 +9,8 @@ import Image2 from "@/components/imageright"; // Ensure the correct import path
 import { useRouter, useSearchParams } from "next/navigation";
 import { toast } from "react-toastify";
 import Cookies from "js-cookie"; 
-const Signup: React.FC = () => {
+import authPublicRoutes from "@/hoc/authPublicRoutes";
+const formDetail: React.FC = () => {
   const [facilityName, setFacilityName] = useState("");
   const [facilityAddress, setFacilityAddress] = useState("");
   const [noOfBeds, setNoOfBeds] = useState("1");
@@ -63,7 +64,7 @@ const status = data.userStatusUpdated; // Correct key name from response
 Cookies.set("VerifyStatus", status);
 
       toast.success("Facility saved successfully!", { position: "top-right" });
-      router.push(`/verifyemail`);
+      router.push(`/verify-email`);
     } catch (error) {
       console.error("Error saving facility:", error);
       toast.error("Failed to save facility. Please try again.", {
@@ -152,11 +153,9 @@ Cookies.set("VerifyStatus", status);
           </form>
         </div>
       </div>
-
-      {/* Right Side: Image with Quote */}
       <Image2 />
     </div>
   );
 };
 
-export default Signup;
+export default authPublicRoutes(formDetail);

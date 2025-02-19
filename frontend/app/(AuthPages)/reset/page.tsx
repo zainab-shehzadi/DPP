@@ -5,7 +5,8 @@ import Link from 'next/link';
 import "@fortawesome/fontawesome-free/css/all.min.css";
 import { CheckCircleIcon } from "@heroicons/react/24/solid"; 
 import Image2 from "@/components/imageright"; // Ensure the correct import path
-const Login: React.FC = () => {
+import authPublicRoutes from '@/hoc/authPublicRoutes';
+const reset: React.FC = () => {
   
 
   return (
@@ -25,7 +26,7 @@ const Login: React.FC = () => {
 
 
           {/* Login button */}
-          <Link href="/LoginPage">
+          <Link href="/login">
             <button
               type="button"
               className="w-full py-3 bg-[#002f6c] text-white font-semibold rounded-lg  transition-colors shadow-lg"
@@ -42,4 +43,4 @@ const Login: React.FC = () => {
   );
 };
 
-export default Login;
+export default authPublicRoutes(reset);

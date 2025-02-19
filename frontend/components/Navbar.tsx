@@ -52,7 +52,7 @@ const Navbar = () => {
       <div className="flex gap-3 items-center">
         <p
           className={`font-semibold cursor-pointer ${pathname === "/Login" ? "font-bold text-blue-600" : ""}`}
-          onClick={() => handleNavigate("/LoginPage")}
+          onClick={() => handleNavigate("/login")}
         >
           Sign In
         </p>

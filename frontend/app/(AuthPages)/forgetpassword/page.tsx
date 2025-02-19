@@ -5,6 +5,7 @@ import { useRouter } from "next/navigation";
 import "@fortawesome/fontawesome-free/css/all.min.css";
 import Image2 from "@/components/imageright"; // Ensure the correct import path
 import { toast } from "react-toastify";
+import authPublicRoutes from "@/hoc/authPublicRoutes";
 
 const ForgotPassword: React.FC = () => {
   const [email, setEmail] = useState("");
@@ -79,7 +80,7 @@ const ForgotPassword: React.FC = () => {
 
 
           {/* Back to Login Button */}
-          <Link href="/LoginPage">
+          <Link href="/login">
             <button
               type="button"
               className="w-full px-3 py-2 border border-black-300 rounded-lg font-bold focus:outline-none mt-8 text-sm sm:text-base md:text-lg hover:bg-gray-100 transition-colors"
@@ -96,4 +97,4 @@ const ForgotPassword: React.FC = () => {
   );
 };
 
-export default ForgotPassword;
+export default authPublicRoutes(ForgotPassword);

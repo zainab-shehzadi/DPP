@@ -6,7 +6,9 @@ import Image2 from "@/components/imageright"; // Ensure the correct import path
 import { Eye, EyeOff } from "lucide-react";
 import { toast } from "react-toastify";
 import Cookies from "js-cookie"; 
+
 import { useRouter } from "next/navigation";
+import authPublicRoutes from "@/hoc/authPublicRoutes";
 const Signup: React.FC = () => {
   const [DepartmentName, setDepartmentName] = useState("");
   const [position, setPosition] = useState("");
@@ -108,7 +110,7 @@ const roleCategories = {
       if (response.ok) {
         toast.success("Signup successful!", { position: "top-right" }); // Success toast
         setTimeout(() => {
-          router.push(`/FormDetail?email=${email}`); // Pass email in query params
+          router.push(`/form-detail?email=${email}`); // Pass email in query params
         }, 2000);  // 2000 ms = 2 seconds
       } else {
         toast.error(data.message || "Signup failed!");
@@ -340,7 +342,7 @@ const roleCategories = {
       <p className="text-sm text-gray-600">
         Already have an account?{" "}
         <Link
-          href="/LoginPage"
+          href="/login"
           className="text-[#002f6c] font-semibold hover:underline"
         >
           Sign In
@@ -364,5 +366,5 @@ const roleCategories = {
     </div>
   );
 };
+export default authPublicRoutes(Signup);
 
-export default Signup;

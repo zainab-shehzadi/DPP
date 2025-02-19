@@ -6,6 +6,7 @@ import React, { useState, useEffect } from "react";
 import Cookies from "js-cookie";
 import Sidebar from "@/components/Sidebar";
 import { toast } from "react-toastify";
+import authProtectedRoutes from '@/hoc/authProtectedRoutes';
 interface Task {
   _id: string | number; 
   task: string; 
@@ -18,7 +19,7 @@ interface Task {
   column: string; 
 }
 
-export default function Dashboard() {
+ function taskList() {
   const [isSidebarOpen, setIsSidebarOpen] = useState(false);
   const [dropdownOpen, setDropdownOpen] = useState(false);
   const [department, setDepartment] = useState<string | null>(null);
@@ -343,3 +344,4 @@ const fetchTasks = async () => {
     </div>
   );
 }
+export default authProtectedRoutes(taskList);

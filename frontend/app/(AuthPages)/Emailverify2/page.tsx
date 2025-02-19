@@ -5,7 +5,8 @@ import { useRouter } from "next/navigation"; // For navigation after successful 
 import "@fortawesome/fontawesome-free/css/all.min.css";
 import Image2 from "@/components/imageright"; // Ensure the correct import path
 import Cookies from "js-cookie"; 
-const EmailVerify: React.FC = () => {
+import authPublicRoutes from "@/hoc/authPublicRoutes";
+const EmailVerify2: React.FC = () => {
   const [verificationCode, setVerificationCode] = useState<string[]>(Array(6).fill(""));
   const [message, setMessage] = useState<string>("");
   const [loading, setLoading] = useState<boolean>(false);
@@ -59,7 +60,7 @@ Cookies.set("VerifyStatus", status);
         setMessage("Verification successful!");
         setTimeout(() => {
          
-          router.push(`/LoginPage`);
+          router.push(`/login`);
         }, 1000); 
       } else {
         setMessage(data.message || "Verification failed. Please try again.");
@@ -121,7 +122,7 @@ Cookies.set("VerifyStatus", status);
           </button>
 
           {/* Back to Login Button */}
-          <Link href="/LoginPage">
+          <Link href="/login">
             <button
               type="button"
               className="w-full px-3 py-2 border border-black-300 rounded-lg font-bold focus:outline-none mt-8 text-sm sm:text-base md:text-lg hover:bg-gray-100 transition-colors"
@@ -138,4 +139,4 @@ Cookies.set("VerifyStatus", status);
   );
 };
 
-export default EmailVerify;
+export default authPublicRoutes(EmailVerify2);

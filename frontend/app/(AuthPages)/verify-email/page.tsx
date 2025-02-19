@@ -7,7 +7,8 @@ import "@fortawesome/fontawesome-free/css/all.min.css";
 import { toast } from "react-toastify";
 
 import Image2 from "@/components/imageright";
-const Login: React.FC = () => {
+import authPublicRoutes from '@/hoc/authPublicRoutes';
+const verifyemail: React.FC = () => {
   const [email, setEmail] = useState<string | null>(null); 
   const router = useRouter();
 
@@ -52,9 +53,10 @@ const Login: React.FC = () => {
             Verify your Email
           </h2>
 
-          <p className="text-medium text-gray-600 font-bold mb-10">
-  We have sent an email with code information to {email}.
+          <p className="text-medium text-gray-600  mb-10">
+  We have sent an email with code information to <span className="font-bold">{email}</span>.
 </p>
+
 
 <p className="text-sm text-black-500 font-bold mb-5" style={{ marginTop: '12rem' }}>
   Didn’t receive the email? Check spam or promotion folder or
@@ -71,7 +73,7 @@ const Login: React.FC = () => {
 </button>
 
 
-<Link href="/LoginPage">
+<Link href="/login">
   <button
     type="button"
     className="w-full px-3 py-2 border border-black-300 rounded-lg font-weight: 700 focus:outline-none mt-5 font-semibold"
@@ -79,8 +81,6 @@ const Login: React.FC = () => {
     Back to login
   </button>
 </Link>
-
-
         
         </div>
       </div>
@@ -91,4 +91,4 @@ const Login: React.FC = () => {
   );
 };
 
-export default Login;
+export default authPublicRoutes(verifyemail);

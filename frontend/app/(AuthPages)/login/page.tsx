@@ -3,10 +3,11 @@
 import Link from "next/link";
 import React, { useState, useEffect } from "react";
 import { useRouter } from "next/navigation";
-import Image2 from "@/components/imageright"; // Ensure the correct import path
+import Image2 from "@/components/imageright"; 
 import { toast } from "react-toastify";
 import Image from "next/image";
-import Cookies from "js-cookie"; // Import js-cookie to manage cookies
+import Cookies from "js-cookie"; 
+import authPublicRoutes from "@/hoc/authPublicRoutes";
 
 const Login: React.FC = () => {
   const [email, setEmail] = useState("");
@@ -42,9 +43,6 @@ const Login: React.FC = () => {
       });
   
       const data = await response.json();
-      console.log(data);
-  
-      // Check if the login was successful
       if (response.ok) {
         toast.success("Login successful! Redirecting......", { position: "top-right" }); // Success toast
         console.log(data);
@@ -60,30 +58,24 @@ const Login: React.FC = () => {
         const storedRole = getCookie("role");
         const priceCycle = getCookie("priceCycle");
         
-        if (storedEmail && storedRole) {
-          // Check if priceCycle is "Annual" or "Bi-Annual"
-          if (priceCycle === "Annual" || priceCycle === "Bi-Annual") {
-            // If priceCycle is valid, redirect to Dashboard
-            setTimeout(() => {
-              router.push(`/Dashboard`);
-            }, 2000);
-          } else if (priceCycle === null || priceCycle === "null") {
-            // If priceCycle is null, redirect to Subscription Plan page
-            setTimeout(() => {
-              router.push(`/Pricing`);
-            }, 3000);
-          }
-        
-        } else {
-          toast.error("Email or role is missing. Please log in again.", { position: "top-right" });
-         
-        }
-        
-        
-      } else {
-        
-        setMessage(data.message || "Login failed!");  
-      }
+       if (storedEmail && storedRole) {
+  if (storedRole === "admin") {
+    setTimeout(() => {
+      router.push(`/UserSetting`);
+    }, 2000);
+  } else if (priceCycle === "Annual" || priceCycle === "Bi-Annual") {
+    setTimeout(() => {
+      router.push(`/Dashboard`);
+    }, 2000);
+  } else if (priceCycle === null || priceCycle === "null") {
+    setTimeout(() => {
+      router.push(`/Pricing`);
+    }, 3000);
+  }
+}
+else {
+          toast.error("Email or role is missing. Please log in again.", { position: "top-right" });}
+      } else {setMessage(data.message || "Login failed!");}
   
     } catch (error) {
       console.error("Error:", error);
@@ -235,4 +227,4 @@ const Login: React.FC = () => {
   );
 };
 
-export default Login;
+export default authPublicRoutes(Login);

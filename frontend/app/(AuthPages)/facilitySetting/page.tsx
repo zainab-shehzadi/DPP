@@ -4,8 +4,9 @@ import Image from "next/image";
 import { FaBell } from "react-icons/fa";
 import React, { useState, useEffect } from "react";
 import Sidebar from "@/components/Sidebar";
+import authProtectedRoutes from "@/hoc/authProtectedRoutes";
 
-export default function Dashboard() {
+function facilitySetting(){
   const [isEditing, setIsEditing] = useState(false);
   const [isSidebarOpen, setIsSidebarOpen] = useState(false);
   const [facilityName, setFacilityName] = useState("");
@@ -399,3 +400,4 @@ const handleEditClick = () => {requestAdminApproval();};
 
 
 }
+export default authProtectedRoutes(facilitySetting)

@@ -4,11 +4,8 @@ import Link from 'next/link';
 
 import "@fortawesome/fontawesome-free/css/all.min.css";
 import Image2 from "@/components/imageright"; // Ensure the correct import path
-const Login: React.FC = () => {
-  
-  
-
-  
+import authPublicRoutes from '@/hoc/authPublicRoutes';
+const forgetpassword: React.FC = () => {
 
   return (
     <div className="flex h-screen font-work-sans bg-black-50">
@@ -30,7 +27,7 @@ Check your Email
 </p>
 
 
-<Link href="/resetpassword">
+<Link href="/reset-password">
     <button
       className="w-full py-3 bg-[#002f6c] text-white font-semibold rounded-lg transition-colors text-sm sm:text-base md:text-lg"
     >
@@ -39,7 +36,7 @@ Check your Email
   </Link>
 
 
-<Link href="/LoginPage">
+<Link href="/login">
   <button
     type="button"
       className="w-full px-3 py-2 border  border-black-300 rounded-lg font-bold focus:outline-none mt-6 text-sm sm:text-base md:text-lg hover:bg-gray-100 transition-colors"
@@ -52,8 +49,6 @@ Check your Email
         
         </div>
       </div>
-
-      {/* Right Side: Image with Quote */}
       <Image2 />
 
       
@@ -61,4 +56,4 @@ Check your Email
   );
 };
 
-export default Login;
+export default authPublicRoutes(forgetpassword);
