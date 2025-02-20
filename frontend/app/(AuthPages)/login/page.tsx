@@ -109,9 +109,9 @@ else {
   useEffect(() => {
     if (message) {
       const timer = setTimeout(() => {
-        setMessage(""); // Clear the message after 2 seconds
+        setMessage(""); 
       }, 2000);
-      return () => clearTimeout(timer); // Cleanup the timer on unmount
+      return () => clearTimeout(timer); 
     }
   }, [message]);
 
@@ -165,7 +165,7 @@ else {
             {/* Submit Button */}
             <button
               type="submit"
-              className="w-full py-3 bg-[#002f6c] text-white font-semibold rounded-lg hover:bg-blue-800 transition-colors text-sm sm:text-base"
+              className="w-full py-3 bg-[#002f6c] text-white font-semibold rounded-lg transition-colors text-sm sm:text-base"
             >
               Sign in
             </button>

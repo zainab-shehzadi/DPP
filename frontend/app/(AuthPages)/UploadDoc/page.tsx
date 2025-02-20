@@ -269,7 +269,7 @@ const handleAssignTask = async () => {
               status: "assigned",
             }),
           }
-        );
+      );
 
         const result = await response.json(); 
 

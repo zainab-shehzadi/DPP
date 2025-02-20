@@ -47,7 +47,6 @@ interface Task {
     setDropdownOpen1(dropdownOpen1 === key ? null : key);
   };
   
-  
   useEffect(() => {
     const department =Cookies.get("DepartmentName");
     setDepartment(department);
@@ -90,8 +89,6 @@ const moveTaskToColumn = async (_id: string, column: string) => {
     console.error("Failed to update task status", error);
   }
 };
-
-
 const renderTasksForColumn = (column: string) => {
   return tasks
     .filter((task) => task.column === column)
@@ -198,6 +195,7 @@ const fetchTasks = async () => {
   }
 };
 
+  const name = Cookies.get("role") || "Guest"; 
 
   return (
     <div className="flex flex-col lg:flex-row">
@@ -213,7 +211,7 @@ const fetchTasks = async () => {
       <div className="lg:ml-64 p-4 sm:p-8 w-full">
         <header className="flex items-center justify-between mb-6 w-full flex-wrap">
           <h2 className="text-lg sm:text-2xl lg:text-3xl font-bold">
-            Hello, <span className="text-blue-900">User</span>
+            Hello, <span className="text-blue-900">{name}</span>
           </h2>
           <div className="flex items-center space-x-2 sm:space-x-4 mt-2 sm:mt-0">
             <FaBell className="text-gray-500 text-base sm:text-lg lg:text-xl" />

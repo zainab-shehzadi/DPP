@@ -12,11 +12,10 @@ import {
 
   FaCreditCard,
 } from "react-icons/fa";
-import { toast } from "react-toastify";
+
 
 import MobileSidebar from "./MobileSidebar";
-import { useRouter } from "next/navigation"; // Correct import for App Router
-import Cookies from "js-cookie"; 
+import { useRouter } from "next/navigation"; 
 interface SidebarProps {
   isSidebarOpen: boolean;
   toggleSidebar: () => void;
@@ -26,7 +25,6 @@ const Sidebar: React.FC<SidebarProps> = ({ isSidebarOpen, toggleSidebar }) => {
   const [dashboardOpen, setDashboardOpen] = useState(false);
   const [settingsOpen, setSettingsOpen] = useState(false);
   const [isMobileView, setIsMobileView] = useState(false);
-  const [email, setEmail] = useState<string | null>(null); 
   const [activeItem, setActiveItem] = useState<string | null>(null);
   const [isModalOpen, setIsModalOpen] = useState(false);
   const router = useRouter();
@@ -63,38 +61,7 @@ const Sidebar: React.FC<SidebarProps> = ({ isSidebarOpen, toggleSidebar }) => {
     return () => window.removeEventListener("resize", handleResize);
   }, []);
   const handleUserSettingsNavigation = async () => {
-    const email = Cookies.get("email");
-    const role =Cookies.get("role");
-    if (!email) {
-      console.error("Email is missing or not provided.");
-      return;
-    }
-  
-    try {
-      // Fetch user role
-      const response = await fetch(`${process.env.NEXT_PUBLIC_API_BASE_URL}/api/users/role/${email}`);
-  
-      if (!response.ok) {
-        const errorData = await response.json();
-
-        if (response.status === 404) {
-          toast.error("User does not exist. Please check the email and try again.");
-        } else {
-          throw new Error(errorData.message || "Failed to fetch user role.");
-        }
-        return;
-      }
-  
-      const data = await response.json();
-  
-      if (data.role === "Supervisor") {
-        handleNavigation(`profileSettting`);
-      } else {
-        toast.error("Access denied. Only users can access this section.");
-      }
-    } catch (error) {
-      toast.error("Error checking user role");
-    }
+    handleNavigation(`profileSettting`);
   };
   return (
     <>
