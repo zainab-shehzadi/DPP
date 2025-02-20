@@ -142,7 +142,7 @@ function profileSetting() {
                 alt="Profile Picture"
               />
               <div className="sm:ml-6 mt-4 sm:mt-0 text-center sm:text-left">
-                <h3 className="text-xl font-bold">Alexa Rawles</h3>
+                <h3 className="text-xl font-bold">{firstName}</h3>
                 <p className="text-gray-500">{email}</p>
               </div>
 
