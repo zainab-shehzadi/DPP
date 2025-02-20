@@ -24,7 +24,6 @@ const NotificationIcon = () => {
       .catch((err) => console.error("Error fetching notifications:", err));
   }, []);
 
-// Listen for socket events
 useEffect(() => {
     // Listen for general notification events
     socket.on("notification", (notification) => {
