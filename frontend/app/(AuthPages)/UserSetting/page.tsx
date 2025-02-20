@@ -68,7 +68,6 @@ const usersetting = () => {
         return response.json();
       })
       .then((data) => {
-        console.log('Fetched User Data:', data);
         setUsers(data);
       })
       .catch((error) => console.error('Error fetching data:', error));
@@ -82,13 +81,7 @@ const usersetting = () => {
       }
   
       const userData = await response.json();
-  
-      // Show data for debugging
-      console.log("Fetched User Data:", userData);
-  
-      
       setSelectedUser(userData);
-  
       setDepartmentName(userData.DepartmentName || "");
       setPosition(userData.Position || "");
       setRole(userData.role || "");
@@ -102,7 +95,6 @@ const usersetting = () => {
   };
   const handleUpdateSubmit = async (e) => {
     e.preventDefault();
-    console.log("Submitting User Data:", selectedUser);
 
     if (!selectedUser || !selectedUser._id) {
       toast.error("User ID is required to update the user.");
@@ -110,7 +102,6 @@ const usersetting = () => {
     }
   
     try {
-      console.log("Submitting Data:", selectedUser);
   
       const response = await fetch(
         `${process.env.NEXT_PUBLIC_API_BASE_URL}/api/users/update/${selectedUser._id}`,
@@ -124,7 +115,6 @@ const usersetting = () => {
       );
   
       const responseData = await response.json();
-      console.log("API Response:", responseData);
   
       if (!response.ok) {
         throw new Error(responseData.error || "Failed to update user");
@@ -151,14 +141,13 @@ const usersetting = () => {
     setSelectedUser(null); 
   };
   const handleDeleteClick = (id: string) => {
-    setUserToDelete(id); // Store the ID of the user to delete
-    setIsDeleteModalOpen(true); // Open the confirmation modal
+    setUserToDelete(id); 
+    setIsDeleteModalOpen(true); 
   };
   const handleDelete = async (id: string | null) => {
     setIsDeleteModalOpen(false); 
     if (!id) return;
   
-    console.log("Deleting user with ID:", id);
     try {
       const response = await fetch(
         `${process.env.NEXT_PUBLIC_API_BASE_URL}/api/users/${id}`,
@@ -166,7 +155,6 @@ const usersetting = () => {
           method: "DELETE",
         }
       );
-      console.log("Response:", response);
       if (!response.ok) {
         throw new Error(`Failed to delete user with ID: ${id}`);
       }
@@ -209,7 +197,7 @@ const usersetting = () => {
         {/* Progress Bar */}
         <div className="w-full sm:w-3/4 h-6 sm:h-12 lg:h-18 bg-[#002F6C] mt-2 rounded-lg mx-auto mb-8"></div>
         <div className="overflow-x-auto mx-auto max-w-[980px]">
-        <table className="max-w-[0px] w-full text-left border-collapse border border-[#F2F2F2]">
+        <table className=" w-full text-left border-collapse border border-[#F2F2F2]">
         <thead>
       <tr className="bg-gray-100 text-black border-b border-[#F2F2F2]">
         <th className="px-6 py-6 text-left font-semibold text-sm">Select</th>
@@ -273,7 +261,7 @@ const usersetting = () => {
 
       </div>
 
-{/* Delete Confirmation Modal */}
+
 {isDeleteModalOpen && (
   <div className="fixed inset-0 bg-gray-800 bg-opacity-50 flex justify-center items-center z-50">
     <div className="bg-white p-8 rounded-lg shadow-lg w-full max-w-md space-y-6">
@@ -283,13 +271,13 @@ const usersetting = () => {
 
       <div className="flex justify-end space-x-4 mt-4">
         <button
-          onClick={() => setIsDeleteModalOpen(false)} // Close the modal without deleting
+          onClick={() => setIsDeleteModalOpen(false)} 
           className="bg-gray-300 text-gray-700 py-2 px-6 rounded-md hover:bg-gray-400"
         >
           No
         </button>
         <button
-          onClick={() => handleDelete(userToDelete)} // Call delete function with the user ID
+          onClick={() => handleDelete(userToDelete)} 
           className="bg-red-500 text-white py-2 px-6 rounded-md hover:bg-red-700"
         >
           Yes

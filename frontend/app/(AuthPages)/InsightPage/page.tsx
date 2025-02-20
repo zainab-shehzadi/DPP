@@ -69,11 +69,9 @@ useEffect(() => {
   
       if (Array.isArray(data)) {
         setDocuments(data); 
-      } else {
-        console.error("Unexpected API response format", data);
       }
     } catch (error) {
-      console.error("Error fetching documents:", error);
+      toast.error("Error fetching documents:");
     }
   };
 

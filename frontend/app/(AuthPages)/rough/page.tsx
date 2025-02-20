@@ -80,7 +80,7 @@ useEffect(() => {
 useEffect(() => {
   const fetchDocuments = async () => {
     try {
-      const email = Cookies.get("email"); // Get email from cookies
+      const email = Cookies.get("email"); 
       if (!email) {
         console.error("Error: Email not found in cookies!");
         return;
@@ -103,7 +103,7 @@ useEffect(() => {
   fetchDocuments();
 }, []);
 
-  // ✅ Close dropdown when clicking outside
+
   useEffect(() => {
     const handleClickOutside = (event: MouseEvent) => {
       if (dropdownRef.current && !dropdownRef.current.contains(event.target as Node)) {
@@ -113,6 +113,7 @@ useEffect(() => {
     document.addEventListener("mousedown", handleClickOutside);
     return () => document.removeEventListener("mousedown", handleClickOutside);
   }, []);
+
   const fetchDocumentDetails = async (id) => {
     try {
   
@@ -163,16 +164,11 @@ useEffect(() => {
     }
   };
   
-  
-  
     const handleNavigateToTags = () => {
-      router.push("/Tags"); // Navigate to the UploadDoc page
+      router.push("/Tags");
     };
-   // Handle Tag Selection
+
    const handleTagClick = (tag, shortDesc, longDesc, id, solution, policies) => {
-    alert(
-      `Tag Clicked:\nTag: ${tag}\nShort Description: ${shortDesc || "Not Found"}\nLong Description: ${longDesc || "Not Found"}\nID: ${id || "Not Found"}\nSolution: ${solution || "Not Found"}\nPolicies: ${policies || "Not Found"}`
-    );
   
     console.log("handleTagClick triggered with:", {
       tag,
@@ -215,63 +211,8 @@ useEffect(() => {
   };
   const toggleDropdown2 = () => setDropdownOpen2(!dropdownOpen2);
 
-  // const toggleDropdown2 = async () => {
-  //   // Toggle dropdown visibility
-  //   setDropdownOpen2((prev) => !prev);
-  
-  //   // Only fetch data if the dropdown is being opened
-  //   if (!dropdownOpen2) {
-  //     try {
-  //       // Validate email and ID
-  //       if (!email || typeof email !== "string" || !email.trim() || !id) {
-  //         console.error("Invalid email or ID provided.");
-  //         setTagsData([]); // Reset tags data
-  //         return;
-  //       }
-  
-  //       // Fetch tags and descriptions using email and id
-  //       const response = await fetch(
-  //         `${process.env.NEXT_PUBLIC_API_BASE_URL}/api/files/tags-with-descriptions?email=${encodeURIComponent(email)}&id=${encodeURIComponent(id)}`
-  //       );
-  
-  //       if (!response.ok) {
-  //         console.error(`Failed to fetch tags data: ${response.statusText}`);
-  //         setTagsData([]); // Reset tags data
-  //         return;
-  //       }
-  
-  //       const data = await response.json();
-  
-  //       // Validate if the fetched data is an array
-  //       if (Array.isArray(data)) {
-  //         // Map and set tags data
-  //         setTagsData(
-  //           data.map((item) => ({
-  //             id: item.id || "Unknown ID",
-  //             tag: item.tag || "Unknown Tag",
-  //             shortDesc: item.shortDesc || "No short description available.",
-  //             longDesc: item.longDesc || "No long description available.",
-  //             solution: item.solution || "No solution available.",
-  //             policies: item.policies || "No policy available.",
-  //             task: item.task || "No task available.", // Include the task object with a fallback
-  //           }))
-  //         );
-  
-  //         // Log the task for debugging purposes
-  //         const task = data[0]?.task || "No task available.";
-  //         setSelectedTask(task || null); // Set the first task or null
 
-  //         console.log("First task:", task);
-  //       } else {
-  //         console.warn("Fetched data is not an array:", data);
-  //         setTagsData([]); // Fallback to an empty array
-  //       }
-  //     } catch (error) {
-  //       console.error("Error fetching tags data:", error);
-  //       setTagsData([]); // Fallback to an empty array
-  //     }
-  //   }
-  // };
+  
   const isAuthenticated = async () => {
     try {
       const safeEmail = email ?? ""; // Use empty string if email is null
@@ -814,7 +755,6 @@ useEffect(() => {
        <ul className="flex flex-col divide-y divide-gray-200">
   {tagsData.map((item, index) => {
     console.log(`Tag ${index} Data:`, item); // ✅ Log each tag data
-    //alert(`Tag ${index} Data:\n` + JSON.stringify(item, null, 2)); // ✅ Show alert
 
     return (
       <li

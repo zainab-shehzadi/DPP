@@ -48,20 +48,14 @@ const createFacility = async (req, res) => {
 
 const getFacilityByEmail = async (req, res) => {
   try {
-    const { email } = req.params; // Destructure email from request parameters
+    const { email } = req.params; 
 
-    console.log("Fetching facility for email:", email); // Debugging log
-
-    // Fetch facility from the database using email
     const facility = await FacilitySignup.findOne({ email });
-
-    // Check if facility exists
     if (!facility) {
-      console.log("Facility not found for email:", email); // Debugging log
+
       return res.status(404).json({ message: "Facility not found" });
     }
 
-    console.log("Facility details fetched:", facility); // Debugging log
     res.status(200).json({
       facilityName: facility.facilityName,
       facilityAddress: facility.facilityAddress,
@@ -79,37 +73,31 @@ const getFacilityByEmail = async (req, res) => {
 
 
 const transporter = nodemailer.createTransport({
-  host: 'smtp.gmail.com', // Gmail SMTP server
-  port: 465, // or 587 for TLS
-  secure: true, // true for port 465, false for port 587
+  host: 'smtp.gmail.com', 
+  port: 465, 
+  secure: true, 
   auth: {
-      user: process.env.EMAIL_USER, // your Gmail address
-      pass: process.env.EMAIL_PASSWORD, // your Gmail password or app password
+      user: process.env.EMAIL_USER,
+      pass: process.env.EMAIL_PASSWORD,
   },
 });
 
 const statusupdate = async (req, res) => {
-  const { status, email } = req.body; // Get status and email from the request body
-console.log(email);
+  const { status, email } = req.body; 
   if (req.method === 'POST') {
     try {
-      console.log('Received request to update status:', { status, email });
-
-      // Check if the status is valid
+     
       if (status !== "approve" && status !== "reject") {
         return res.status(400).json({ message: "Invalid status value. It should be 'approve' or 'reject'." });
       }
-
-      // 1. Update the user status in the database
-      const facility = await FacilitySignup.findOne({ email });  // Find the facility by email
+      const facility = await FacilitySignup.findOne({ email });  
       if (!facility) {
         return res.status(404).json({ message: "Facility not found" });
       }
 
-      facility.status = status; // Update the status
-      await facility.save(); // Save the updated document
+      facility.status = status; 
+      await facility.save(); 
 
-      // 2. Send an email to the user
       const subject = status === 'approve' ? 'Your request has been approved' : 'Your request has been rejected';
       const message = `
   <p>Hello,</p>
@@ -134,7 +122,7 @@ console.log(email);
 
 let mailOptions = {
   from: process.env.EMAIL_USER,
-  to: "zainabdev@paklogics.com", // Corrected the email address
+  to: "zainabdev@paklogics.com", 
   subject: subject,
   html: message,
 };
@@ -205,24 +193,17 @@ const updatedata = async (req, res) => {
   }
 
   try {
-    console.log("Attempting to update facility in the database...");
-
-    // Update facility in the database
+  
     const updateResult = await Facility.updateOne(
       { email },
       { $set: { facilityName, facilityAddress, noOfBeds } } // Use `$set` to specify fields to update
     );
 
-    // Log update result for debugging
-    console.log("Update result:", updateResult);
-
-    // Check if a document was updated
     if (updateResult.matchedCount === 0) {
       console.warn("No facility found with the provided email:", email);
       return res.status(404).json({ error: "Facility not found with the provided email." });
     }
 
-    console.log("Facility updated successfully.");
     res.status(200).json({ message: "Facility updated successfully." });
   } catch (error) {
     console.error("Error occurred while updating facility:", error);

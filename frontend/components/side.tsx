@@ -40,11 +40,9 @@ const Sidebar: React.FC<SidebarProps> = ({ isSidebarOpen, toggleSidebar }) => {
     try {
       // Remove the token cookie by setting it with an expired date
       document.cookie = "token=; path=/; expires=Thu, 01 Jan 1970 00:00:00 UTC;";
-      console.log("Token cookie removed.");
 
-      // Optionally clear client-side storage
-      localStorage.clear(); // Clear all localStorage (if used)
-      sessionStorage.clear(); // Clear all sessionStorage (if used)
+      localStorage.clear(); 
+      sessionStorage.clear(); 
 
       // Redirect to Login page
       router.push("/login");
@@ -73,9 +71,7 @@ const Sidebar: React.FC<SidebarProps> = ({ isSidebarOpen, toggleSidebar }) => {
      
       return;
     }
-  
-    console.log(`Fetching role for email: ${email}`);
-    try {
+      try {
       // Fetch user role
       const response = await fetch(`${process.env.NEXT_PUBLIC_API_BASE_URL}/api/users/role/${email}`);
   
@@ -93,7 +89,6 @@ const Sidebar: React.FC<SidebarProps> = ({ isSidebarOpen, toggleSidebar }) => {
       }
   
       const data = await response.json();
-      console.log("User role fetched:", data.role);
   
       // Check if user role is "user"
       if (data.role === "Supervisor") {

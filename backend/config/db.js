@@ -11,7 +11,6 @@ const connectDB = async () => {
     });
     console.log(`MongoDB connected: ${conn.connection.host}`);
 
-    // Check and create an admin user if none exists
     await createAdminIfNotExists();
 
   } catch (error) {

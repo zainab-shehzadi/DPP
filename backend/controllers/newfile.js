@@ -34,10 +34,6 @@ const uploadFile = async (req, res) => {
       return res.status(400).json({ error: "Email is required." });
     }
 
-    console.log("Email received:", email);
-    console.log("File received:", req.file);
-
-    // Step 1: Upload File to AWS S3
     const fileName = `${uuidv4()}-${req.file.originalname}`; // Unique file name
     const uploadParams = {
       Bucket: process.env.AWS_S3_BUCKET_NAME, 

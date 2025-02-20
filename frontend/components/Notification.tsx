@@ -111,8 +111,7 @@ useEffect(() => {
     });
   
     const email = Cookies.get("email");
-    //console.log(email);
-    // Listen specifically for "documentUploaded" event
+  
     socket.on("documentUploaded", (data) => {
       const newNotification = {
         message: data.message,
@@ -120,7 +119,6 @@ useEffect(() => {
         documentId: data.documentId,
       };
   
-      // Save the notification in the database
       fetch(`${process.env.NEXT_PUBLIC_API_BASE_URL}/api/notifications`, {
         method: "POST",
         headers: {
