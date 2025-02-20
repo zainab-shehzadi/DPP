@@ -1,71 +1,53 @@
 "use client"; // <-- Add this line to mark this file as a client component
 
 import Image from "next/image";
-import { FaBell } from "react-icons/fa";
-import React, { useState ,useEffect} from "react";
+import { FaBell } from "react-icons/fa";import React, { useState ,useEffect} from "react";
 import axios from "axios";
 import Sidebar from "@/components/Sidebar";
-import { useRouter ,useSearchParams } from "next/navigation"; // Correct import for App Router
+import { useRouter ,useSearchParams } from "next/navigation"; 
 import Notification from '@/components/Notification'
-import Cookies from "js-cookie"; // Import js-cookie to manage cookies
-import { Cookie } from "next/font/google";
+import Cookies from "js-cookie"; 
+
 
 interface Sidebar {
-  userId: string | null; // Allow string or null
+  userId: string | null; 
   email: string;
   isSidebarOpen: boolean;
   toggleSidebar: () => void;
 }
 export default function Dashboard() {
   const [isSidebarOpen, setIsSidebarOpen] = useState(false);
-  const [dropdownOpen, setDropdownOpen] = useState(false); // Dropdown state
+  const [dropdownOpen, setDropdownOpen] = useState(false); 
   const [activeTab, setActiveTab] = useState("POC AI Ally");
-  const [file, setFile] = useState(null); // Store selected file
+  const [file, setFile] = useState(null); 
   const [uploadStatus, setUploadStatus] = useState(""); 
   const toggleSidebar = () => setIsSidebarOpen(!isSidebarOpen);
   const toggleDropdown = () => setDropdownOpen(!dropdownOpen);
   const [email, setEmail] = useState<string | null>(null); 
-  const searchParams = useSearchParams(); // Hook to get query parameters
-
-
-  
+  const searchParams = useSearchParams(); 
   const router = useRouter();
 
-    // Helper function to get cookies
-    const getCookie = (name: string) => {
-      const value = `; ${document.cookie}`;
-      const parts = value.split(`; ${name}=`);
-      if (parts.length === 2) return parts.pop()?.split(";").shift();
-      return null;
-    };
-  
-    
 
     useEffect(() => {
-
-       // Retrieve the access token from query parameters
     const accessToken = searchParams.get("accessToken");
-
     if (accessToken) {
       console.log("Access Token from Query Params:", accessToken);
-
-      // Store the access token in cookies
       Cookies.set("accessToken", accessToken, {
-        expires: 1, // Expires in 1 day
-        secure: process.env.NODE_ENV === "production", // Use HTTPS in production
-        sameSite: "Strict", // Prevent cross-site attacks
+        expires: 1, 
+        secure: process.env.NODE_ENV === "production", 
+        sameSite: "Strict", 
       });
 
-      // Optionally remove the accessToken from the URL to clean up
+      
       const currentUrl = window.location.href;
       const cleanUrl = currentUrl.split("?")[0];
       window.history.replaceState({}, document.title, cleanUrl);
     }
-      // Retrieve email from cookies on component mount
+      
       const storedEmail = Cookies.get("email");
-     
+    
       if (storedEmail) {
-        setEmail(storedEmail); // Set the email state if found in cookies
+        setEmail(storedEmail); 
       }
     }, []);
   
@@ -93,8 +75,8 @@ export default function Dashboard() {
     }
   
     const formData = new FormData();
-    formData.append("file", file); // Add the file
-    formData.append("email", email); // Add the email
+    formData.append("file", file); 
+    formData.append("email", email); 
   
     try {
      
@@ -110,20 +92,17 @@ export default function Dashboard() {
         }
       );
   
-     
-      console.log("Upload response:", response.data);
+    
      const uploadedFileId = response.data?.documentId;
 
       console.log(uploadedFileId);
       setUploadStatus("Upload successful!");
-  
-      // Clear the selected file
       setFile(null);
   
   
       router.push(`/UploadDoc`);
     } catch (error: any) {
-      // Log and handle errors
+ 
       console.error(
         "Error during file upload:",
         error.response?.data || error.message
@@ -133,20 +112,19 @@ export default function Dashboard() {
   };
   
   const handleFileSelect = (e) => {
-    const uploadedFile = e.target.files[0]; // Access the first file in the input
+    const uploadedFile = e.target.files[0]; 
     if (!uploadedFile || uploadedFile.type !== "application/pdf") {
-      setUploadStatus("Only PDF files are allowed!"); // Update the upload status if the file is not a PDF
+      setUploadStatus("Only PDF files are allowed!"); 
       return;
     }
     setFile(uploadedFile); // Save the file in state
-    setUploadStatus(`File "${uploadedFile.name}" is ready to upload.`); // Update the upload status
+    setUploadStatus(`File "${uploadedFile.name}" is ready to upload.`); 
   };
-  const name = Cookies.get("firstname") || "Guest"; // Default to "Guest" if undefined
+  const name = Cookies.get("role") || "Guest"; 
 
 
   return (
     <div className="flex flex-col lg:flex-row">
-  {/* Mobile Toggle Button */}
   <div className="lg:hidden flex items-center justify-between px-4 py-2 bg-[#002F6C] text-white">
     <div
       className="h-12 w-12 bg-cover bg-center"
@@ -154,7 +132,6 @@ export default function Dashboard() {
     ></div>
   </div>
 
-  {/* Sidebar Component */}
   <Sidebar 
     isSidebarOpen={isSidebarOpen} 
     toggleSidebar={toggleSidebar} 

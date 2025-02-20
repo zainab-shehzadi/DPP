@@ -10,20 +10,11 @@ const StatusChange = () => {
   const [email, setEmail] = useState<string | null>(null); // Email from cookies
   const [message, setMessage] = useState('');
 
-  // Helper function to get cookies
-  const getCookie = (name: string) => {
-    const value = `; ${document.cookie}`;
-    const parts = value.split(`; ${name}=`); 
-    if (parts.length === 2) return parts.pop()?.split(";").shift();
-    return null;
-  };
-
+ 
   useEffect(() => {
-    // Retrieve email from cookies on component mount
     const storedEmail = Cookies.get("email");
-    console.log(storedEmail);
     if (storedEmail) {
-      setEmail(storedEmail); // Set email state if found in cookies
+      setEmail(storedEmail); 
     }
   }, []);
 
@@ -34,7 +25,6 @@ const StatusChange = () => {
       setMessage(`The facility for the following email has been rejected:`);
     }
     
-    // Call API to update the status and send email only when status and email are available
     const updateStatus = async () => {
       if (status && email) {
         try {
@@ -59,7 +49,7 @@ const StatusChange = () => {
     };
 
     updateStatus();
-  }, [status, email]); // Only run when status or email changes
+  }, [status, email]); 
 
   return (
     <div className="flex flex-col items-center justify-center min-h-screen bg-gray-100">

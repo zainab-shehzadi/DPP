@@ -29,7 +29,6 @@ exports.googleCallback = async (req, res) => {
   }
 };
 
-// Create a Calendar Event
 exports.createEvent = async (req, res) => {
   const event = req.body;
   console.log('Received event:', event);
@@ -58,7 +57,6 @@ exports.saveTasksWithID = async (req, res) => {
   }
 
   try {
-    // Prepare tasks for saving
     const formattedTasks = tasks.map((task) => ({
       
       taskSummary: task.summary,
@@ -69,12 +67,9 @@ exports.saveTasksWithID = async (req, res) => {
       tagId,
     }));
 
-    console.log('Formatted tasks ready for insertion:', formattedTasks);
-
-    // Save tasks to the database
     const savedTasks = await Task.insertMany(formattedTasks);
 
-    console.log('Tasks saved to the database successfully:', savedTasks);
+    // console.log('Tasks saved to the database successfully:', savedTasks);
 
     res.status(200).json({ success: true, data: savedTasks });
   } catch (error) {

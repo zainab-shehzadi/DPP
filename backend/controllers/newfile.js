@@ -34,10 +34,6 @@ const uploadFile = async (req, res) => {
       return res.status(400).json({ error: "Email is required." });
     }
 
-    console.log("Email received:", email);
-    console.log("File received:", req.file);
-
-    // Step 1: Upload File to AWS S3
     const fileName = `${uuidv4()}-${req.file.originalname}`; // Unique file name
     const uploadParams = {
       Bucket: process.env.AWS_S3_BUCKET_NAME, 
@@ -50,7 +46,6 @@ const uploadFile = async (req, res) => {
     await s3.send(uploadCommand);
 
     const fileUrl = `https://${process.env.AWS_S3_BUCKET_NAME}.s3.${process.env.AWS_REGION}.amazonaws.com/${fileName}`;
-    console.log("File uploaded to S3:", fileUrl);
 
     // Step 2: Parse the PDF Content
     const pdfData = await pdf(req.file.buffer);
@@ -96,10 +91,7 @@ const uploadFile = async (req, res) => {
       documentId = fileEntry.files[0]._id;
     }
 
-    console.log("Document ID:", documentId);
-    console.log("Tags and descriptions extracted:", tagsWithDescriptions);
 
-    // Step 5: Notify clients via WebSocket (if used)
     req.io.emit("documentUploaded", {
       message: `A new document "${req.file.originalname}" has been uploaded!`,
       documentName: req.file.originalname,
@@ -118,125 +110,8 @@ const uploadFile = async (req, res) => {
     res.status(500).json({ error: "File upload failed.", details: error.message });
   }
 };
-// const uploadFile = async (req, res) => {
-//   try {
-//     if (!req.file) {
-//       return res.status(400).json({ error: "No file uploaded." });
-//     }
-
-//     // Get the email from the request body
-//     const { email } = req.body;
-
-//     if (!email) {
-//       return res.status(400).json({ error: "Email is required." });
-//     }
-
-//     console.log("Email received:", email);
-//     console.log("File received:", req.file);
-
-//     // Step 1: Save the file in the server's file system
-//     const uploadsDir = path.join(__dirname, "../uploads");
-//     if (!fs.existsSync(uploadsDir)) {
-//       fs.mkdirSync(uploadsDir); // Create the uploads directory if it doesn't exist
-//     }
-
-//     const filePath = path.join(uploadsDir, req.file.originalname);
-//     fs.renameSync(req.file.path, filePath); // Move the uploaded file to the uploads directory
-//     console.log("File saved to:", filePath);
-
-//     // Step 2: Parse the PDF content
-//     const fileBuffer = fs.readFileSync(filePath); // Read file content as a buffer
-//     const pdfData = await pdf(fileBuffer); // Parse the PDF content
-//     const fileContent = pdfData.text; // Extract text from the PDF
-
-//     // Step 3: Extract tags and descriptions using regex
-//     const extractedTags = fileContent.match(/F \d{4}/g) || [];
-//     const tagsWithDescriptions = [];
-//     extractedTags.forEach((tag) => {
-//       const tagIndex = fileContent.indexOf(tag);
-//       if (tagIndex !== -1) {
-//         const shortDescription = fileContent
-//           .substring(tagIndex, tagIndex + 100)
-//           .split(".")[0]
-//           .trim();
-
-//         const longDescriptionStartIndex = tagIndex + 100;
-//         let longDescriptionEndIndex = fileContent.indexOf(
-//           "(continued on next page)",
-//           longDescriptionStartIndex
-//         );
-//         if (longDescriptionEndIndex === -1) {
-//           longDescriptionEndIndex = fileContent.length;
-//         }
-//         const longDescription = fileContent
-//           .substring(longDescriptionStartIndex, longDescriptionEndIndex)
-//           .trim();
-
-//         // Push tag and descriptions
-//         tagsWithDescriptions.push({
-//           tag,
-//           shortDescription,
-//           longDescription,
-//         });
-//       }
-//     });
-
-//     // Step 4: Save document and metadata in the database
-//     let fileEntry = await File.findOne({ email });
-
-//     let documentId; // To store the uploaded document ID
-//     if (fileEntry) {
-//       // Add new file to the existing email entry
-//       const newFile = {
-//         originalName: req.file.originalname,
-//         filePath,
-//         tags: tagsWithDescriptions,
-//         uploadedAt: new Date(),
-//       };
-//       fileEntry.files.push(newFile);
-//       await fileEntry.save();
-
-//       // Get the document ID for the newly added file
-//       documentId = fileEntry.files[fileEntry.files.length - 1]._id;
-//     } else {
-//       // Create a new entry for the email
-//       fileEntry = await File.create({
-//         email,
-//         files: [
-//           {
-//             originalName: req.file.originalname,
-//             filePath,
-//             tags: tagsWithDescriptions,
-//             uploadedAt: new Date(),
-//           },
-//         ],
-//       });
-
-//       // Get the document ID for the newly created file
-//       documentId = fileEntry.files[0]._id;
-//     }
-//     console.log("ID:",documentId );
-//     console.log("Tags and descriptions extracted:", tagsWithDescriptions);
 
 
-//     req.io.emit("documentUploaded", {
-//       message: `A new document "${req.file.originalname}" has been uploaded!`,
-//       documentName: req.file.originalname,
-//       documentId,
-//     });
-//     // Step 5: Respond to the client
-//     res.status(201).json({
-//       message: "File uploaded and parsed successfully!",
-//       documentId, // Include document ID in the response
-//       tags: tagsWithDescriptions,
-//     });
-//   } catch (error) {
-//     console.error("Error in file upload:", error.message);
-//     res
-//       .status(500)
-//       .json({ error: "File upload failed.", details: error.message });
-//   }
-// };
 const fetchTagsByEmail = async (req, res) => {
   const { email, id } = req.query; // Extract the email and id from the query parameters
 
@@ -308,9 +183,6 @@ const fetchTagsByEmail1 = async (req, res) => {
       )
     );
 
-    // Log the fetched tags for debugging
-    console.log(`Fetched Tags for Email (${email}):`, tags);
-
     // Send the tags to the client
     res.status(200).json(tags);
   } catch (error) {
@@ -348,9 +220,6 @@ const fetchTagsAndSolutionByEmail = async (req, res) => {
 
     // Flatten the array of arrays (tagsWithSolution contains arrays within arrays)
     const flattenedTagsWithSolution = tagsWithSolution.flat();
-
-    // Log the tags and solutions for debugging purposes
-    console.log(`Fetched Tags and Solutions for Email (${email}):`);
     flattenedTagsWithSolution.forEach((entry) => {
       console.log(`Tag: ${entry.tag}, Solution: ${entry.solution}`);
     });
@@ -362,106 +231,10 @@ const fetchTagsAndSolutionByEmail = async (req, res) => {
     res.status(500).json({ error: "Failed to fetch tags and solutions", details: error.message });
   }
 };
-// // Controller to fetch tags with descriptions for a specific email
-// const getTagsWithDescriptions = async (req, res) => {
-//   const { email } = req.query; // Extract email from query parameters
 
-//   if (!email) {
-//     return res.status(400).json({ error: "Email query parameter is required" });
-//   }
-
-//   try {
-//     // Find files associated with the given email
-//     const files = await File.find({ email });
-
-//     if (!files || files.length === 0) {
-//       return res.status(404).json({ error: `No files found for email ${email}` });
-//     }
-
-//     // Extract tags along with their descriptions
-//     const tagsWithDescriptions = files.flatMap((file) =>
-//       file.files.flatMap((fileEntry) =>
-//         fileEntry.tags.map((tagObj) => ({
-//           tag: tagObj.tag,
-//           shortDesc: tagObj.shortDescription,
-//           longDesc: tagObj.longDescription,
-//         }))
-//       )
-//     );
-
-//     // Send the tags with descriptions to the client
-//     res.status(200).json(tagsWithDescriptions);
-//   } catch (error) {
-//     console.error(`Error fetching tags for email (${email}):`, error.message);
-//     res.status(500).json({ error: "Failed to fetch tags", details: error.message });
-//   }
-// };
-
-// // Controller to fetch tags with descriptions for a specific email
-// const getTagsWithDescriptions = async (req, res) => {
-//   const { email, id } = req.query; // Extract email and id from query parameters
-
-//   // Log received parameters for debugging
-//   console.log("Received email query parameter:", email);
-//   console.log("Received id query parameter:", id);
-
-//   if (!email) {
-//     console.error("Error: Email query parameter is missing");
-//     return res.status(400).json({ error: "Email query parameter is required" });
-//   }
-
-//   try {
-//     // Log the start of the database query
-//     console.log(`Searching for files associated with email: ${email}`);
-
-//     // Find files associated with the given email
-//     const files = await File.find({ email });
-
-//     // Log the result of the file query
-//     console.log(`Files found for email ${email}:`, files);
-
-//     if (!files || files.length === 0) {
-//       console.warn(`No files found for email ${email}`);
-//       return res.status(404).json({ error: `No files found for email ${email}` });
-//     }
-
-//     // Extract tags along with their descriptions and IDs
-//     console.log("Extracting tags with descriptions...");
-//     const tagsWithDescriptions = files.flatMap((file) =>
-//       file.files.flatMap((fileEntry) =>
-//         fileEntry.tags.map((tagObj) => ({
-//           id: tagObj._id, // MongoDB tag ID
-//           tag: tagObj.tag,
-//           shortDesc: tagObj.shortDescription, // Short description
-//           longDesc: tagObj.longDescription, // Long description
-//           solution: tagObj.response?.solution || [], // Solution from the response field
-//         }))
-//       )
-//     );
-    
-
-//     // Log the tags with descriptions
-//     console.log("Tags with descriptions extracted:", tagsWithDescriptions);
-
-//     // Send the tags with descriptions and IDs to the client
-//     res.status(200).json(tagsWithDescriptions);
-//     console.log("Response sent to client with tags and descriptions.");
-//   } catch (error) {
-//     // Log the error if something goes wrong
-//     console.error("Error fetching tags for email:", error.message);
-//     res.status(500).json({ error: "Failed to fetch tags", details: error.message });
-//   }
-// };
-
-// Controller to fetch tag details for a specific email and id
 const getTagsWithDescriptions = async (req, res) => {
   const { email, id } = req.query; // Extract email and id from query parameters
 
-  // Log received parameters for debugging
-  console.log("Received email query parameter:", email);
-  console.log("Received id query parameter:", id);
-
-  // Validate email and id
   if (!email) {
     console.error("Error: Email query parameter is missing");
     return res.status(400).json({ error: "Email query parameter is required" });
@@ -473,10 +246,7 @@ const getTagsWithDescriptions = async (req, res) => {
   }
 
   try {
-    // Log the start of the database query
-    console.log(`Searching for files associated with email: ${email}`);
 
-    // Step 1: Find files associated with the given email
     const files = await File.find({ email });
 
     if (!files || files.length === 0) {
@@ -484,10 +254,6 @@ const getTagsWithDescriptions = async (req, res) => {
       return res.status(404).json({ error: `No files found for email ${email}` });
     }
 
-    // Step 2: Filter specific tag details using the provided ID
-    console.log(`Filtering tag details for ID: ${id}`);
-
-    // Flatten files and filter file entries matching the provided ID
     const matchingFiles = files.flatMap((file) =>
       file.files.filter((fileEntry) => fileEntry.id === id) // Compare as strings
     );
@@ -510,14 +276,13 @@ const getTagsWithDescriptions = async (req, res) => {
       }))
     );
 
-    // Check if tagDetails are empty after mapping
+
     if (!tagDetails || tagDetails.length === 0) {
       console.warn(`No tag details found for ID ${id}`);
       return res.status(404).json({ error: `No tag details found for ID ${id}` });
     }
 
-    // Log and return the tag details
-    console.log("Filtered tag details:", tagDetails);
+
     return res.status(200).json(tagDetails);
   } catch (error) {
     // Handle errors
@@ -528,52 +293,32 @@ const getTagsWithDescriptions = async (req, res) => {
 
 const checkSolution = async (req, res) => {
   try {
-    console.log('Received request to check solution'); // Log request initiation
 
-    const { id } = req.params; // Extract the tag ID from the request params
-    console.log('Tag ID received:', id); // Log the received tag ID
-
+    const { id } = req.params; 
     if (!id) {
-      console.error('No Tag ID provided'); // Log missing ID error
+      console.error('No Tag ID provided'); 
       return res.status(400).json({ error: 'Tag ID is required.' });
     }
 
-    // Find the file that contains the tag with the given ID
-    console.log('Searching for file containing the tag...');
     const file = await File.findOne({ "files.tags._id": id });
 
     if (!file) {
-      console.error('File not found for Tag ID:', id); // Log file not found error
       return res.status(404).json({ error: 'Tag not found.' });
     }
-
-    console.log('File found:', file._id); // Log the file ID found
-
-    // Find the specific tag in the file
-    console.log('Searching for tag in the file...');
     const tag = file.files[0].tags.id(id);
 
     if (!tag) {
-      console.error('Tag not found within the file:', id); // Log tag not found error
       return res.status(404).json({ error: 'Tag not found within the file.' });
     }
-
-    console.log('Tag found:', tag); // Log the tag object
-
-    // Check if the tag has a solution in its response
     if (!tag.response || !tag.response.solution) {
-      console.log('No solution found for Tag ID:', id); // Log absence of solution
       return res.status(200).json({ solution: null });
     }
-
-    const solution = tag.response.solution; // Store the solution in a variable
-    console.log('Solution found for Tag ID:', id); // Log the presence of a solution
-    console.log('Solution:', solution); // Log the actual solution
-    res.status(200).json({ solution }); // Return the solution
+    const solution = tag.response.solution; 
+    res.status(200).json({ solution }); 
 
   } catch (error) {
-    console.error('Error in checkSolution function:', error.message); // Log the error message
-    console.error('Error details:', error); // Log detailed error for debugging
+    console.error('Error in checkSolution function:', error.message); 
+    console.error('Error details:', error); 
     res.status(500).json({ error: 'Failed to check solution.', details: error.message });
   }
 };
@@ -581,20 +326,15 @@ const checkSolution = async (req, res) => {
 
 const generateSolution = async (req, res) => {
   try {
-    const { query, id } = req.body; // Extract query and tag id
+    const { query, id } = req.body; 
 
-    // Validate required fields
     if (!query || !id) {
       console.error("Query or ID is missing.", req.body);
       return res.status(400).json({ error: "Query and ID are required." });
     }
-
-    console.log("Received request with ID:", id, "and Query:", query);
-
-    // External API endpoint
+ 
     const apiEndpoint = "https://b57f-173-208-156-111.ngrok-free.app/get-answer/";
 
-    // Call the external API
     let externalResponse;
     try {
       externalResponse = await axios.post(apiEndpoint, { query });
@@ -699,44 +439,29 @@ const generateSolution = async (req, res) => {
 
 const checkResponse = async (req, res) => {
   try {
-    console.log('Received request to check response:', req.body); // Log the incoming request
 
     const { id, tag } = req.body;
-
-    // Validate input
     if (!id || !tag) {
       console.warn('Validation failed: Missing ID or tag'); // Log validation failure
       return res.status(400).json({ error: 'ID and tag are required.' });
     }
 
-    console.log(`Checking for file with tag ID: ${id}`); // Log the ID being checked
-
-    // Find the file and tag by ID
     const file = await File.findOne({ "files.tags._id": id });
 
     if (!file) {
       console.warn(`File not found for tag ID: ${id}`); // Log file not found
       return res.status(404).json({ error: 'File not found.' });
     }
-
-    console.log(`File found. Searching for tag within file for ID: ${id}`); // Log successful file search
-
     const tagData = file.files[0].tags.id(id);
 
     if (!tagData) {
       console.warn(`Tag not found within file for ID: ${id}`); // Log tag not found
       return res.status(404).json({ error: 'Tag not found within the file.' });
     }
-
-    console.log(`Tag found for ID: ${id}. Checking for existing response.`); // Log successful tag search
-
     // Check if the response already exists
     if (tagData.response && tagData.response.solution) {
-      console.log(`Response already exists for tag ID: ${id}`); // Log existing response
       return res.status(200).json({ exists: true, tag: tagData });
     }
-
-    console.log(`No existing response found for tag ID: ${id}`); // Log no response found
     return res.status(200).json({ exists: false });
   } catch (error) {
     console.error('Error checking response:', error); // Log the error

@@ -3,54 +3,45 @@
 import Image from 'next/image';
 import { FaBell } from 'react-icons/fa';
 import React, { useState, useEffect } from "react";
+import Cookies from "js-cookie"; 
 
 import Sidebar from "@/components/Sidebar";
 interface Task {
-  _id: string | number; //
-  task: string; // Task name
-  taskSummary: string; // Summary of the task
-  assignedTo: Array<{ firstname: string }>; // Array of assigned participants
-  dateAdded: string; // Date the task was added
-  startDate: string; // Start date of the task
-  endDate: string; // End date or deadline of the task
+  _id: string | number; 
+  task: string; 
+  taskSummary: string; 
+  assignedTo: Array<{ firstname: string }>; 
+  dateAdded: string; 
+  startDate: string; 
+  endDate: string; 
   status: string;
-  column: string; // Column (e.g., "To Do", "In Progress", etc.)
+  column: string; 
 }
 
 export default function Dashboard() {
   const [isSidebarOpen, setIsSidebarOpen] = useState(false);
   const [dropdownOpen, setDropdownOpen] = useState(false);
   const [department, setDepartment] = useState<string | null>(null);
-  const [dropdownOpen1, setDropdownOpen1] = useState<number | null>(null);
-  const [isModalOpen, setIsModalOpen] = useState(false);
   const [selectedTask, setSelectedTask] = useState<Task | null>(null);
   const [tasks, setTasks] = useState<Task[]>([
     {
       _id: "",  
-      task: "", // Task name
-      taskSummary: "", // Task summary
+      task: "", 
+      taskSummary: "", 
       assignedTo: [{ firstname: "" }], 
-      dateAdded: "", // Task added date
-      startDate: "", // Start date
-      endDate: "", // End date or deadline
+      dateAdded: "",
+      startDate: "", 
+      endDate: "", 
       status: "",
-      column: "To Do", // Default column
+      column: "To Do", 
     },
   ]);
   const toggleDropdown = () => setDropdownOpen(!dropdownOpen);
   const toggleSidebar = () => setIsSidebarOpen(!isSidebarOpen);
   
-  // Helper function to get cookies
-  const getCookie = (name: string) => {
-    const value = `; ${document.cookie}`;
-    const parts = value.split(`; ${name}=`);
-    if (parts.length === 2) {
-      return parts.pop()?.split(";").shift() || null;
-    }
-    return null;
-  };
+
   useEffect(() => {
-    const departmentFromCookie = getCookie("DepartmentName");
+    const departmentFromCookie = Cookies.get("DepartmentName");
     console.log("Department from cookies:", departmentFromCookie);
 
     if (departmentFromCookie) {
@@ -67,7 +58,6 @@ export default function Dashboard() {
       console.warn("Department is not set; skipping fetchTasks.");
     }
   }, [department]);
-
 
 const renderTasksForColumn = (column: string) => {
   return tasks
@@ -155,22 +145,20 @@ const renderTasksForColumn = (column: string) => {
       console.error("Error fetching tasks:", error); // Log any errors
     }
   };
+  const name = Cookies.get("role") || "Guest"; 
 
   return (
     <div className="flex flex-col lg:flex-row">
-      {/* Mobile Toggle Button */}
+
       <div className="lg:hidden flex items-center justify-between px-4 py-2 bg-[#002F6C] text-white">
         <div className="h-12 w-12 bg-cover bg-center" style={{ backgroundImage: "url('/assets/logo.avif')" }}></div>
       </div>
 
-      {/* Sidebar Component */}
       <Sidebar isSidebarOpen={isSidebarOpen} toggleSidebar={toggleSidebar} />
-
-      {/* Main Content */}
       <div className="lg:ml-64 p-4 sm:p-8 w-full">
         <header className="flex items-center justify-between mb-6 w-full flex-wrap">
           <h2 className="text-lg sm:text-2xl lg:text-3xl font-bold">
-            Hello, <span className="text-blue-900">User</span>
+            Hello, <span className="text-blue-900">{name}</span>
           </h2>
           <div className="flex items-center space-x-2 sm:space-x-4 mt-2 sm:mt-0">
             <FaBell className="text-gray-500 text-base sm:text-lg lg:text-xl" />

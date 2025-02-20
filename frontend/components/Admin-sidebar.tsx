@@ -79,96 +79,54 @@ const Sidebar: React.FC<SidebarProps> = ({ isSidebarOpen }) => {
             </div>
 
             <ul className="space-y-2 w-full">
-              {/* Add New User */}
-              <li className="w-full">
-                <a
-                  href="#"
-                  onClick={(e) => {
-                    e.preventDefault();
-                    handleNavigation("/AddNewUser");
-                  }}
-                  className="flex items-center py-2 px-3 hover:bg-white hover:text-blue-900 rounded-md font-semibold text-xs lg:text-sm"
-                >
-                  <FaUserPlus className="mr-2" />
-                  Add New User
-                </a>
-              </li>
+            <li className="w-full">
+  <a
+    href="#"
+    onClick={(e) => {
+      e.preventDefault();
+      handleNavigation("/AddNewUser");
+    }}
+    className={`flex items-center py-2 px-3 rounded-md font-semibold text-xs lg:text-sm ${
+      activeItem === "/AddNewUser" ? "bg-white text-blue-900" : "hover:bg-white hover:text-blue-900"
+    }`}
+  >
+    <FaUserPlus className="mr-2" />
+    Add New User
+  </a>
+</li>
 
-              {/* Settings */}
-              <li className="w-full">
-                <a
-                  href="#"
-                  onClick={(e) => {
-                    e.preventDefault();
-                    setSettingsOpen(!settingsOpen);
-                  }}
-                  className="flex items-center py-2 px-3 hover:bg-white hover:text-blue-900 rounded-md font-semibold text-xs lg:text-sm"
-                >
-                  <FaCog className="mr-2" />
-                  Settings
-                </a>
-                {settingsOpen && (
-                  <ul className="ml-4 space-y-2">
-                    {/* Facility Settings */}
-                    <li>
-                      <a
-                        href="#"
-                        onClick={(e) => {
-                          e.preventDefault();
-                          handleNavigation("/facilitySetting");
-                        }}
-                        className="flex items-center py-2 px-3 hover:bg-white hover:text-blue-900 rounded-md font-semibold text-xs lg:text-sm transition"
-                      >
-                        <FaBuilding className="mr-2" />
-                        Facility Settings
-                      </a>
-                    </li>
+<li className="w-full">
+  <a
+    href="#"
+    onClick={(e) => {
+      e.preventDefault();
+      handleNavigation("/UserSetting");
+    }}
+    className={`flex items-center py-2 px-3 rounded-md font-semibold text-xs lg:text-sm ${
+      activeItem === "/UserSetting" ? "bg-white text-blue-900" : "hover:bg-white hover:text-blue-900"
+    }`}
+  >
+    <FaCog className="mr-2" />
+    User Setting
+  </a>
+</li>
 
-                    {/* User Settings */}
-                    <li>
-                      <a
-                        href="#"
-                        onClick={(e) => {
-                          e.preventDefault();
-                          handleNavigation("/UserSetting");
-                        }}
-                        className="flex items-center py-2 px-3 hover:bg-white hover:text-blue-900 rounded-md font-semibold text-xs lg:text-sm transition"
-                      >
-                        <FaUser className="mr-2" />
-                        User Settings
-                      </a>
-                    </li>
+<li className="w-full">
+  <a
+    href="#"
+    onClick={(e) => {
+      e.preventDefault();
+      setIsModalOpen(true);
+    }}
+    className={`flex items-center py-2 px-3 rounded-md font-semibold text-xs lg:text-sm ${
+      isModalOpen ? "bg-white text-blue-900" : "hover:bg-white hover:text-blue-900"
+    }`}
+  >
+    <FaSignOutAlt className="mr-2" />
+    Logout
+  </a>
+</li>
 
-                   
-                  </ul>
-                )}
-              </li>
-
-              {/* Survey Prep */}
-              <li className="w-full">
-                <a
-                  href="#"
-                  className="flex items-center py-2 px-3 hover:bg-white hover:text-blue-900 rounded-md font-semibold text-xs lg:text-sm"
-                >
-                  <FaClipboard className="mr-2" />
-                  Survey Prep
-                </a>
-              </li>
-
-              {/* Logout */}
-              <li className="w-full">
-                <a
-                  href="#"
-                  className="flex items-center py-2 px-3 hover:bg-white hover:text-blue-900 rounded-md font-semibold text-xs lg:text-sm"
-                  onClick={(e) => {
-                    e.preventDefault();
-                    setIsModalOpen(true);
-                  }}
-                >
-                  <FaSignOutAlt className="mr-2" />
-                  Logout
-                </a>
-              </li>
             </ul>
           </div>
         </nav>

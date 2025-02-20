@@ -29,11 +29,9 @@ const Login: React.FC = () => {
 
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
-    console.log("Email:", email);
-    console.log("Password:", password);
     Cookies.get("verifystatus");
     try {
-      // Send login request to the backend
+   
       const response = await fetch(`${process.env.NEXT_PUBLIC_API_BASE_URL}/api/users/login`, {
         method: "POST",
         headers: {

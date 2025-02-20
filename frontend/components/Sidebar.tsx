@@ -70,7 +70,6 @@ const Sidebar: React.FC<SidebarProps> = ({ isSidebarOpen, toggleSidebar }) => {
       return;
     }
   
-    console.log(`Fetching role for email: ${email}`);
     try {
       // Fetch user role
       const response = await fetch(`${process.env.NEXT_PUBLIC_API_BASE_URL}/api/users/role/${email}`);
@@ -87,7 +86,6 @@ const Sidebar: React.FC<SidebarProps> = ({ isSidebarOpen, toggleSidebar }) => {
       }
   
       const data = await response.json();
-      console.log("User role fetched:", data.role);
   
       if (data.role === "Supervisor") {
         handleNavigation(`profileSettting`);

@@ -63,15 +63,14 @@ useEffect(() => {
   const storedEmail = Cookies.get("email");
 
   if (storedAccessToken) {
-    console.log("Access Token:", storedAccessToken);
     setAccessToken(storedAccessToken);
   } 
-  if (storedRefreshToken) { // ✅ Correct condition
-    console.log("Refresh Token:", storedRefreshToken);
+  if (storedRefreshToken) { 
+ 
     setrefreshToken(storedRefreshToken); 
   } 
   if (storedEmail) {
-    console.log("Email:", storedEmail);
+
     setEmail(storedEmail);
   } else {
     console.error("Email not found in cookies.");
@@ -80,7 +79,7 @@ useEffect(() => {
 useEffect(() => {
   const fetchDocuments = async () => {
     try {
-      const email = Cookies.get("email"); // Get email from cookies
+      const email = Cookies.get("email"); 
       if (!email) {
         console.error("Error: Email not found in cookies!");
         return;
@@ -103,7 +102,7 @@ useEffect(() => {
   fetchDocuments();
 }, []);
 
-  // ✅ Close dropdown when clicking outside
+
   useEffect(() => {
     const handleClickOutside = (event: MouseEvent) => {
       if (dropdownRef.current && !dropdownRef.current.contains(event.target as Node)) {
@@ -113,21 +112,17 @@ useEffect(() => {
     document.addEventListener("mousedown", handleClickOutside);
     return () => document.removeEventListener("mousedown", handleClickOutside);
   }, []);
+
   const fetchDocumentDetails = async (id) => {
     try {
   
       const safeEmail = email ?? "";
-      console.log("Fetching details for document ID:", id);
-      console.log("Using email:", safeEmail);
-  
+ 
       setLoading(true);
       const apiUrl = `${process.env.NEXT_PUBLIC_API_BASE_URL}/api/files/tags-with-descriptions?email=${encodeURIComponent(safeEmail)}&id=${encodeURIComponent(id)}`;
-  
-      console.log("API URL:", apiUrl);
-  
+
       const response = await fetch(apiUrl);
-      console.log("API Response Status:", response.status);
-  
+   
       if (!response.ok) {
         console.error(`Failed to fetch document details: ${response.statusText}`);
         setTagsData([]); // Reset tags data
@@ -136,43 +131,34 @@ useEffect(() => {
       }
   
       const data = await response.json();
-      console.log("Fetched Document Data:", data);
-  
-      // Ensure `data.tags` exists before setting state
+    
       if (!data || !Array.isArray(data.tags)) {
         alert("Error: `data.tags` is undefined or not an array.");
         console.error("Error: `data.tags` is missing or incorrect format in API response", data);
         return;
       }
-  
-      // ✅ Set all tags properly
+
       setTagsData(data.tags);
   
-      // ✅ Show all tags in an alert
       setTimeout(() => {
-        alert("Updated Tags Data:\n" + JSON.stringify(data.tags, null, 2));
+    
         console.log("Updated Tags Data:", data.tags);
-      }, 1000); // Delay to ensure state update
+      }, 1000); 
   
     } catch (error) {
-      console.error("Error fetching document details:", error);
+      toast.error("Error fetching document details:");
       alert("Error fetching document details:\n" );
     } finally {
       setLoading(false);
-      console.log("Loading state set to false.");
+      toast.error("Loading state set to false.");
     }
   };
   
-  
-  
     const handleNavigateToTags = () => {
-      router.push("/Tags"); // Navigate to the UploadDoc page
+      router.push("/Tags");
     };
-   // Handle Tag Selection
+
    const handleTagClick = (tag, shortDesc, longDesc, id, solution, policies) => {
-    alert(
-      `Tag Clicked:\nTag: ${tag}\nShort Description: ${shortDesc || "Not Found"}\nLong Description: ${longDesc || "Not Found"}\nID: ${id || "Not Found"}\nSolution: ${solution || "Not Found"}\nPolicies: ${policies || "Not Found"}`
-    );
   
     console.log("handleTagClick triggered with:", {
       tag,
@@ -192,9 +178,7 @@ useEffect(() => {
     setDropdownOpen2(false); // Close dropdown
   
     setTimeout(() => {
-      alert(
-        `Updated State Values:\nTag: ${selectedTag}\nID: ${selectedID}\nShort Desc: ${selectedDescription}\nLong Desc: ${selectedLongDesc}\nSolution: ${solution}\nPolicies: ${selectedPolicy}`
-      );
+     
   
       console.log("Updated state values:", {
         selectedTag,
@@ -204,77 +188,22 @@ useEffect(() => {
         solution,
         selectedPolicy,
       });
-    }, 1000); // Delay to allow state updates
+    }, 1000); 
   };
   
   
   const handleTagClick1 = (tag: string, shortDesc: string, longDesc: string) => {
-    setSelectedTag(tag); // Update selected tag
-    setSelectedDescription(shortDesc); // Update selected short description
-    setSelectedLongDesc(longDesc); // Update selected long description
+    setSelectedTag(tag); 
+    setSelectedDescription(shortDesc);
+    setSelectedLongDesc(longDesc); 
   };
   const toggleDropdown2 = () => setDropdownOpen2(!dropdownOpen2);
 
-  // const toggleDropdown2 = async () => {
-  //   // Toggle dropdown visibility
-  //   setDropdownOpen2((prev) => !prev);
-  
-  //   // Only fetch data if the dropdown is being opened
-  //   if (!dropdownOpen2) {
-  //     try {
-  //       // Validate email and ID
-  //       if (!email || typeof email !== "string" || !email.trim() || !id) {
-  //         console.error("Invalid email or ID provided.");
-  //         setTagsData([]); // Reset tags data
-  //         return;
-  //       }
-  
-  //       // Fetch tags and descriptions using email and id
-  //       const response = await fetch(
-  //         `${process.env.NEXT_PUBLIC_API_BASE_URL}/api/files/tags-with-descriptions?email=${encodeURIComponent(email)}&id=${encodeURIComponent(id)}`
-  //       );
-  
-  //       if (!response.ok) {
-  //         console.error(`Failed to fetch tags data: ${response.statusText}`);
-  //         setTagsData([]); // Reset tags data
-  //         return;
-  //       }
-  
-  //       const data = await response.json();
-  
-  //       // Validate if the fetched data is an array
-  //       if (Array.isArray(data)) {
-  //         // Map and set tags data
-  //         setTagsData(
-  //           data.map((item) => ({
-  //             id: item.id || "Unknown ID",
-  //             tag: item.tag || "Unknown Tag",
-  //             shortDesc: item.shortDesc || "No short description available.",
-  //             longDesc: item.longDesc || "No long description available.",
-  //             solution: item.solution || "No solution available.",
-  //             policies: item.policies || "No policy available.",
-  //             task: item.task || "No task available.", // Include the task object with a fallback
-  //           }))
-  //         );
-  
-  //         // Log the task for debugging purposes
-  //         const task = data[0]?.task || "No task available.";
-  //         setSelectedTask(task || null); // Set the first task or null
 
-  //         console.log("First task:", task);
-  //       } else {
-  //         console.warn("Fetched data is not an array:", data);
-  //         setTagsData([]); // Fallback to an empty array
-  //       }
-  //     } catch (error) {
-  //       console.error("Error fetching tags data:", error);
-  //       setTagsData([]); // Fallback to an empty array
-  //     }
-  //   }
-  // };
+  
   const isAuthenticated = async () => {
     try {
-      const safeEmail = email ?? ""; // Use empty string if email is null
+      const safeEmail = email ?? ""; 
       
       const response = await fetch(
         `${process.env.NEXT_PUBLIC_API_BASE_URL}/api/users/get-access-token?email=${encodeURIComponent(safeEmail)}`,
@@ -316,8 +245,7 @@ useEffect(() => {
       return;
     }
   
-    console.log("Selected tasks:", selectedTask);
-    console.log("Selected ID:", selectedID);
+
   
     try {
       const accessToken = refreshToken;
@@ -338,7 +266,7 @@ useEffect(() => {
         };
       });
   
-      console.log("Prepared tasks:", tasks);
+      //console.log("Prepared tasks:", tasks);
   
       // Save tasks to the database
       const saveResponse = await fetch(
@@ -366,7 +294,6 @@ useEffect(() => {
   
       // Create events in Google Calendar
       for (let task of tasks) {
-        console.log("Creating event for task:", task);
   
         const calendarResponse = await fetch(
           `${process.env.NEXT_PUBLIC_API_BASE_URL}/api/calendar/create-event`,
@@ -400,11 +327,9 @@ useEffect(() => {
   const toggleDropdown1 = () => setDropdownOpen1(!dropdownOpen1);
   const toggleDropdown = () => {
     setDropdownOpen(prev => !prev);
-    console.log("Dropdown toggled:", !dropdownOpen);
   };  const toggleSidebar = () => setIsSidebarOpen(!isSidebarOpen);
-  //const handleShowMore = () => setVisibleCount((prev) => prev + 5); // Show more facilities
   const handleNavigateToPolicy = () => {
-    setActiveTab("Policy"); // Switch to the "Policy" tab // Navigate to the PolicyGenerator page
+    setActiveTab("Policy"); 
   };
   
   const handleEdit = () => {
@@ -417,7 +342,6 @@ useEffect(() => {
         setFacilities([]); // Set facilities to an empty array if email or id is missing
         return;
       }
-      console.log("ID:", id);
       try {
         const response = await fetch(
           `${process.env.NEXT_PUBLIC_API_BASE_URL}/api/files/tags?email=${encodeURIComponent(email)}&id=${encodeURIComponent(id)}`
@@ -426,21 +350,20 @@ useEffect(() => {
         const contentType = response.headers.get("content-type");
         if (response.ok && contentType && contentType.includes("application/json")) {
           const data = await response.json();
-          console.log("Fetched facilities for email and id:", data);
   
           if (Array.isArray(data)) {
-            setFacilities(data); // Set facilities if data is an array
+            setFacilities(data); 
           } else {
             console.error("Fetched data is not an array:", data);
-            setFacilities([]); // Fallback to an empty array
+            setFacilities([]); 
           }
         } else {
           console.error("Unexpected response format or server error:", response.statusText);
-          setFacilities([]); // Fallback to an empty array
+          setFacilities([]); 
         }
       } catch (error) {
         console.error("Error fetching facilities:", error);
-        setFacilities([]); // Fallback to an empty array
+        setFacilities([]); 
       }
     };
   
@@ -479,30 +402,19 @@ useEffect(() => {
         },
         body: JSON.stringify(data),
       });
-  
-      console.log('API response status:', response.status);
-  
+    
       if (!response.ok) {
         throw new Error(`Failed to submit data. Status: ${response.status}`);
       }
   
       const result = await response.json();
-  
-      console.log('API response result:', result);
-  
-    // Close the sidebar
-      setIsSidebarOpen(false);
+          setIsSidebarOpen(false);
       const task = result.tag.response?.task || 'No solution available';
-      console.log('task:', task);
-      // Extract the solution from the response
       const solution = result.tag.response?.solution || 'No solution available';
-      console.log('Solution:', solution);
   
-      //setMessage('Solution generated and saved successfully!');
       setSelectedTask(task);
       setSolution(solution);
     } catch (error) {
-      //setMessage('Failed to generate solution. Please try again.');
     } finally {
       setLoading(false);
     }
@@ -794,9 +706,8 @@ useEffect(() => {
       className="flex justify-between items-center w-full max-w-[190px] h-[40px] px-4 rounded-lg text-sm sm:text-base mb-2"
       style={{ backgroundColor: "#CCE2FF", borderRadius: "12px" }}
       onClick={() => {
-        console.log("Dropdown toggled. Current state:", dropdownOpen2);
         toggleDropdown2();
-      }} // Toggle dropdown on click
+      }} 
     >
       <span>Tags</span>
       <span className="text-gray-500">⋮</span>
@@ -814,7 +725,6 @@ useEffect(() => {
        <ul className="flex flex-col divide-y divide-gray-200">
   {tagsData.map((item, index) => {
     console.log(`Tag ${index} Data:`, item); // ✅ Log each tag data
-    //alert(`Tag ${index} Data:\n` + JSON.stringify(item, null, 2)); // ✅ Show alert
 
     return (
       <li

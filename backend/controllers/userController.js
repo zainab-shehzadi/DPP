@@ -85,8 +85,6 @@ const registerUser = async (req, res) => {
       password: hashedPassword,
       status: "onboarding", 
     });
-
-    // Respond with the created user data
     if (user) {
       console.log("User created successfully:", {
         _id: user.id,

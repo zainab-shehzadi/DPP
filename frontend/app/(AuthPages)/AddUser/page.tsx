@@ -1,5 +1,5 @@
-"use client"; // <-- Mark this file as a client component
-import { useRouter } from 'next/navigation'; // Import the useRouter hook
+"use client"; 
+import { useRouter } from 'next/navigation'; 
 import Image from "next/image";
 import { FaBell } from "react-icons/fa";
 import React, { useState } from "react";
@@ -7,6 +7,8 @@ import { toast } from "react-toastify";
 import Sidebar from "@/components/Admin-sidebar";
 
 export default function Dashboard() {
+  const router = useRouter(); 
+ 
   const [formData, setFormData] = useState({
     firstName: "",
     lastName: "",
@@ -18,8 +20,11 @@ export default function Dashboard() {
     DepartmentName: "",
   });
   const [isSidebarOpen, setIsSidebarOpen] = useState(false);
-
-  // Department-to-Positions Mapping
+  const [facilityName, setFacilityName] = useState("");
+  const [facilityAddress, setFacilityAddress] = useState("");
+  const [noOfBeds, setNoOfBeds] = useState("1");
+    const [email, setEmail] = useState<string | null>(null); 
+  const [isModalOpen, setIsModalOpen] = useState(false);
   const departmentPositions = {
     "Business Office": ["Office Manager", "Biller", "Payroll", "Reception", "Admissions"],
     "Director of Admissions": ["Liaison"],
@@ -39,22 +44,19 @@ export default function Dashboard() {
     "Nursing Department": ["Nursing Development Coordinator"],
     "Quality Assurance Department": ["Nursing Development Coordinator"],
   };
-  const router = useRouter(); // Initialize the router
-  // Leadership and Supporting Roles
   const roleCategories = {
     leadership: ["Director", "Manager", "Supervisor"],
     supporting: ["Staff", "Assistant", "Liaison"],
   };
-
   const leadershipRoles = roleCategories.leadership;
   const supportingRoles = roleCategories.supporting;
 
-  // Derived positions based on selected department
+
   const positions = formData.DepartmentName
     ? departmentPositions[formData.DepartmentName] || []
     : [];
 
-  // State change handler
+
   const handleChange = (e) => {
     const { name, value } = e.target;
     setFormData((prev) => ({
@@ -62,7 +64,6 @@ export default function Dashboard() {
       [name]: value,
     }));
 
-    // Reset position if department changes
     if (name === "DepartmentName") {
       setFormData((prev) => ({
         ...prev,
@@ -70,9 +71,11 @@ export default function Dashboard() {
       }));
     }
   };
-// Submit handler
+  const handleModalClose = () => {
+    setIsModalOpen(false);
+  };
 const handleSubmit = async () => {
-  console.log("Form Data Submitted:", formData); 
+ 
 
   if (
     !formData.firstName ||
@@ -109,7 +112,6 @@ const handleSubmit = async () => {
     if (response.ok) {
       toast.success("User successfully added!", { position: "top-right" });
 
-      
       setFormData({
         firstName: "",
         lastName: "",
@@ -120,8 +122,10 @@ const handleSubmit = async () => {
         position: "",
         DepartmentName: "",
       });
-
-      router.push("/AddNewUser"); // Change the route as necessary
+      const { email } = formData;
+       console.log("Checking Form Data Before Logging:", formData);
+       setEmail(email);
+      setIsModalOpen(true);
     } else {
       toast.error(`Error: ${data.message}`);
     }
@@ -131,6 +135,44 @@ const handleSubmit = async () => {
   }
 };
 
+
+  const handleSubmit1 = async (e: React.FormEvent) => {
+    e.preventDefault();
+
+    if (!facilityName || !facilityAddress || !noOfBeds) {
+      toast.error("All fields are required!", { position: "top-right" });
+      return;
+    }
+    try {
+      const response = await fetch(
+        `${process.env.NEXT_PUBLIC_API_BASE_URL}/api/facility/info`,
+        {
+          method: "POST",
+          headers: { "Content-Type": "application/json" },
+          body: JSON.stringify({
+            email,
+            facilityName,
+            facilityAddress,
+            noOfBeds: parseInt(noOfBeds, 10),
+          }),
+        }
+      );
+  
+      if (!response.ok) {
+        throw new Error("Failed to save facility.");
+      }
+
+      const data = await response.json();
+      toast.success("Facility saved successfully!", { position: "top-right" });
+      setIsModalOpen(false);
+      router.push("/AddNewUser"); 
+    } catch (error) {
+      console.error("Error saving facility:", error);
+      toast.error("Failed to save facility. Please try again.", {
+        position: "top-right",
+      });
+    }
+  };
   // Sidebar toggle
   const toggleSidebar = () => setIsSidebarOpen(!isSidebarOpen);
 
@@ -176,12 +218,10 @@ const handleSubmit = async () => {
   </div>
 </div>
 
-
-
-{/* Progress Bar */}
 <div className="w-full sm:w-3/4 h-6 sm:h-12 lg:h-10 bg-[#002F6C] mt-2 rounded-lg mx-auto mb-8"></div>
 {/* Add User Form */}
         <div className="w-full sm:w-3/4 lg:w-3/3 mx-auto mt-6 sm:mt-8">
+        
           <section className="bg-white p-4 sm:p-6 lg:p-8 ">
             <div className="text-center mb-10">
               <h3 className="font-bold text-2xl sm:text-2xl lg:text-3xl">
@@ -199,7 +239,7 @@ const handleSubmit = async () => {
   <label className="block text-gray-700 font-medium">First Name</label>
   <input
     type="text"
-    name="firstName" // Fixed: Should match formData key
+    name="firstName" 
     value={formData.firstName}
     onChange={handleChange}
     placeholder="Your First Name"
@@ -212,7 +252,7 @@ const handleSubmit = async () => {
   <label className="block text-gray-700 font-medium">Last Name</label>
   <input
     type="text"
-    name="lastName" // Fixed: Should match formData key
+    name="lastName" 
     value={formData.lastName}
     onChange={handleChange}
     placeholder="Your Last Name"
@@ -343,6 +383,86 @@ const handleSubmit = async () => {
             </div>
           </section>
         </div>
+
+
+        {isModalOpen && (
+  <div
+    className="fixed inset-0 bg-gray-800 bg-opacity-50 flex justify-center items-center z-50"
+    onClick={handleModalClose}
+  >
+    <div
+      className="bg-white p-8 rounded-lg shadow-lg w-full max-w-lg space-y-6"
+      onClick={(e) => e.stopPropagation()}
+    >
+      <h2 className="text-2xl font-semibold text-gray-800 text-center">
+        Facility Detail
+      </h2>
+
+      <form onSubmit={handleSubmit1} className="space-y-4">
+        {/* Facility Name (Dropdown) */}
+        <div>
+          <label className="block text-gray-700 font-medium">Facility Name</label>
+          <select
+            value={facilityName}
+            onChange={(e) => setFacilityName(e.target.value)}
+            className="w-full px-3 py-2 border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-blue-500"
+            required
+          >
+            <option value="">Select Facility Name</option>
+            <option value="facility1">Facility1</option>
+            <option value="facility2">Facility2</option>
+            <option value="facility3">Facility3</option>
+            <option value="facility4">Facility4</option>
+          </select>
+        </div>
+
+        {/* Facility Address (Dropdown) */}
+        <div>
+          <label className="block text-gray-700 font-medium">Facility Address</label>
+          <select
+            value={facilityAddress}
+            onChange={(e) => setFacilityAddress(e.target.value)}
+            className="w-full px-3 py-2 border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-blue-500"
+            required
+          >
+            <option value="">Select Facility Address</option>
+            <option value="address1">Address1</option>
+            <option value="address2">Address2</option>
+            <option value="address3">Address3</option>
+            <option value="address4">Address4</option>
+          </select>
+        </div>
+
+        {/* No of Beds (Dropdown) */}
+        <div>
+          <label className="block text-gray-700 font-medium">No. of Beds</label>
+          <select
+            value={noOfBeds}
+            onChange={(e) => setNoOfBeds(e.target.value)}
+            className="w-full px-3 py-2 border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-blue-500"
+            required
+          >
+            <option value="">Select No of Beds</option>
+            <option value="1">1</option>
+            <option value="2">2</option>
+            <option value="3">3</option>
+            <option value="4">4</option>
+          </select>
+        </div>
+
+        <div className="flex justify-center">
+          <button
+            type="submit"
+            className="bg-blue-900 text-white w-full py-3 rounded-md "
+          >
+            Submit
+          </button>
+        </div>
+      </form>
+    </div>
+  </div>
+)}
+
       </div>
     </div>
   );

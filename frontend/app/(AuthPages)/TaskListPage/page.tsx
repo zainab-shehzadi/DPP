@@ -52,10 +52,9 @@ interface Task {
     const department =Cookies.get("DepartmentName");
     setDepartment(department);
     if (department) {
-      console.log("Fetching tasks for department:", department);
       fetchTasks();
     } else {
-      console.warn("Department is not set; skipping fetchTasks.");
+      toast.success("Department is not set; skipping fetchTasks.");
     }
   }, [department]);
 

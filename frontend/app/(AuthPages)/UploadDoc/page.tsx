@@ -59,19 +59,16 @@ const [loading, setLoading] = useState(false);
 const router = useRouter();
 useEffect(() => {
   const storedAccessToken = Cookies.get("accessToken");
-  const storedRefreshToken = Cookies.get("refreshToken"); // Fix variable name
+  const storedRefreshToken = Cookies.get("refreshToken");
   const storedEmail = Cookies.get("email");
 
   if (storedAccessToken) {
-    console.log("Access Token:", storedAccessToken);
     setAccessToken(storedAccessToken);
   } 
   if (storedRefreshToken) { // ✅ Correct condition
-    console.log("Refresh Token:", storedRefreshToken);
     setrefreshToken(storedRefreshToken); 
   } 
   if (storedEmail) {
-    console.log("Email:", storedEmail);
     setEmail(storedEmail);
   } else {
     console.error("Email not found in cookies.");
@@ -90,15 +87,12 @@ useEffect(() => {
         `${process.env.NEXT_PUBLIC_API_BASE_URL}/api/files/docs?email=${encodeURIComponent(email)}`
       );
       const data = await res.json();
-      console.log("API Response:", data); 
   
       if (Array.isArray(data)) {
         setDocuments(data); 
-      } else {
-        console.error("Unexpected API response format", data);
-      }
+      } 
     } catch (error) {
-      console.error("Error fetching documents:", error);
+    toast.error("Error fetching documents");
     }
   };
 
@@ -122,7 +116,6 @@ const handleNavigateToPolicy = () => {
   };
   const fetchDocumentDetails = async (id) => {
     try {
-        console.log(`📤 Fetching Details for Document ID: ${id}`);
 
         const safeEmail = email ?? "";
         const apiUrl = `${process.env.NEXT_PUBLIC_API_BASE_URL}/api/files/tags-with-descriptions?email=${encodeURIComponent(safeEmail)}&id=${encodeURIComponent(id)}`;
@@ -162,7 +155,6 @@ const handleNavigateToPolicy = () => {
         });
 
         setTagsData(formattedTags);
-        console.log("✅ Updated Tags Data:", formattedTags);
        
 
     } catch (error) {
@@ -235,7 +227,6 @@ const handleAssignTask = async () => {
       }
     );
 
-    console.log("Sending request to API:", `${process.env.NEXT_PUBLIC_API_BASE_URL}/api/calendar/save-tasks`);
 
     if (!saveResponse.ok) {
       const error = await saveResponse.json();
@@ -247,7 +238,6 @@ const handleAssignTask = async () => {
     toast.success("Tasks saved successfully:", savedTasks);
 
     for (let task of tasks) {
-      console.log("Creating event for task:", task);
 
       const calendarResponse = await fetch(
         `${process.env.NEXT_PUBLIC_API_BASE_URL}/api/calendar/create-event`,
@@ -266,7 +256,7 @@ const handleAssignTask = async () => {
         console.error("Failed to create event:", error);
         continue; 
       }
-        
+       
       const response =  await fetch(
           `${process.env.NEXT_PUBLIC_API_BASE_URL}/api/files/update-status`,
           {
@@ -281,7 +271,7 @@ const handleAssignTask = async () => {
           }
         );
 
-        const result = await response.json(); // Parse the JSON response
+        const result = await response.json(); 
 
         if (!response.ok) {
           throw new Error(result.message || "Failed to update status");
@@ -346,7 +336,6 @@ const handleSubmit = async (e:any) => {
       }));
 
       setTagsData(formattedTags);
-      console.log("Updated Tags Data:", formattedTags);
 
      
     }
@@ -363,7 +352,6 @@ setAnswer2("");
 const handleTagClick = async (tagName, tagId) => {
     try {
         const apiUrl = `${process.env.NEXT_PUBLIC_API_BASE_URL}/api/files/tag-details?tagId=${tagId}&tagName=${encodeURIComponent(tagName)}`;
-        console.log("📡 API Request URL:", apiUrl);
 
         const response = await fetch(apiUrl, {
             method: "GET",
@@ -393,7 +381,6 @@ const handleTagClick = async (tagName, tagId) => {
         setSelectedLongDesc(result.longDescription || "No long description available");
         setSolution(newSolution);
 
-        console.log("✅ Updated State:", { newSolution, newPolicies, newTasks });
     } catch (error) {
         console.error("❌ Error fetching tag details:", error);
         toast.error(`Error`);
@@ -603,7 +590,7 @@ const handleTagClick = async (tagName, tagId) => {
     style={{ backgroundColor: "#CCE2FF", borderRadius: "12px" }}
     onClick={() => toggleDropdown2()}
   >
-    <span>{selectedTag}</span>
+    <span>{selectedTag || "Select Tag"}</span>
     <span className="text-gray-500">⋮</span>
   </button>
 

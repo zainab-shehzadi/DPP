@@ -13,7 +13,7 @@ const oAuth2Client = new google.auth.OAuth2(
 );
 
 router.get('/auth-url', (req, res) => {
-  console.log('token')
+
   const SCOPES = ["https://www.googleapis.com/auth/calendar"];
   const authUrl = oAuth2Client.generateAuthUrl({
     access_type: 'offline', 
@@ -42,10 +42,6 @@ router.get("/callback", async (req, res) => {
       return res.status(400).json({ error: "Email not found in cookies" });
     }
 
-    console.log("User Email from Cookie:", email);
-    console.log("Access Token:", tokens.access_token);
-    console.log("Refresh Token:", tokens.refresh_token);
-
     const user = await User.findOneAndUpdate(
       { email },
       { 
@@ -70,7 +66,7 @@ router.get("/callback", async (req, res) => {
 });
 
 router.post('/create-event', async (req, res) => {
-  console.log('Received request to create event...');
+
 
   const { summary, start, end } = req.body; 
   const authHeader = req.headers.authorization;
@@ -102,7 +98,7 @@ router.post('/create-event', async (req, res) => {
       resource: event,
     });
 
-    console.log('Event created successfully:', result.data);
+  
     res.status(200).json({
       message: 'Event created successfully!',
       status: 'pending',
@@ -156,12 +152,9 @@ router.post("/save-tasks", async (req, res) => {
         task.TaskPart = taskPart || "No task";
         task.DepartmentName = DepartmentName || "No department"; 
         if (DepartmentName) {
-          console.log("Extracted department:", DepartmentName);
+       
 
 const users = await User.find({ DepartmentName });
-
-console.log("Users found in the department:", users);
-
 
 if (users.length > 0) {
   task.assignedTo = users.map(user => ({

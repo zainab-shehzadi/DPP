@@ -33,7 +33,6 @@ const SubscribeComponent: React.FC<SubscribeProps> = ({ planType, planCycle, pri
       const headers = {
         "Content-Type": "application/json",
       };
-      console.log("API Base URL:", process.env.NEXT_PUBLIC_API_BASE_URL);
       const response = await fetch(`${process.env.NEXT_PUBLIC_API_BASE_URL}/api/stripe/checkout`, {
         method: "POST",
         headers: headers,

@@ -32,14 +32,6 @@ const formDetail: React.FC = () => {
       toast.error("All fields are required!", { position: "top-right" });
       return;
     }
-
-    console.log("Form Data:", {
-      email,
-      facilityName,
-      facilityAddress,
-      noOfBeds: parseInt(noOfBeds, 10),
-    }); // Debugging: Log form data
-
     try {
       const response = await fetch(
         `${process.env.NEXT_PUBLIC_API_BASE_URL}/api/facility/info`,

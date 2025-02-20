@@ -65,15 +65,11 @@ useEffect(() => {
         `${process.env.NEXT_PUBLIC_API_BASE_URL}/api/files/docs?email=${encodeURIComponent(email)}`
       );
       const data = await res.json();
-      console.log("API Response:", data); 
-  
       if (Array.isArray(data)) {
         setDocuments(data); 
-      } else {
-        console.error("Unexpected API response format", data);
       }
     } catch (error) {
-      console.error("Error fetching documents:", error);
+      toast.error("Error fetching documents:");
     }
   };
 
@@ -97,7 +93,6 @@ useEffect(() => {
 const handleTagClick = async (tagName, tagId) => {
     try {
         const apiUrl = `${process.env.NEXT_PUBLIC_API_BASE_URL}/api/files/tag-details?tagId=${tagId}&tagName=${encodeURIComponent(tagName)}`;
-        console.log("📡 API Request URL:", apiUrl);
 
         const response = await fetch(apiUrl, {
             method: "GET",
@@ -120,7 +115,6 @@ const handleTagClick = async (tagName, tagId) => {
 };
   const fetchDocumentDetails = async (id) => {
     try {
-        console.log(`📤 Fetching Details for Document ID: ${id}`);
 
         const safeEmail = email ?? "";
         const apiUrl = `${process.env.NEXT_PUBLIC_API_BASE_URL}/api/files/tags-with-descriptions?email=${encodeURIComponent(safeEmail)}&id=${encodeURIComponent(id)}`;
@@ -141,14 +135,14 @@ const handleTagClick = async (tagName, tagId) => {
             return;
         }
 
-        // ✅ Ensure the correct ID field is used
+   
         const formattedTags = data.tags.map((tag) => ({
-            id: tag.id || tag._id || "❌ Missing ID",
+            id: tag.id || tag._id || "Missing ID",
             tag: tag.tag,
-            shortDesc: tag.shortDescription || "❌ No Short Description",
-            longDesc: tag.longDescription || "❌ No Long Description",
-            solution: tag.solution && tag.solution.trim() !== "" ? tag.solution : "❌ No Solution",  // ✅ Handle empty solution
-            policies: tag.policies || "❌ No Policies",
+            shortDesc: tag.shortDescription || " No Short Description",
+            longDesc: tag.longDescription || " No Long Description",
+            solution: tag.solution && tag.solution.trim() !== "" ? tag.solution : " No Solution", 
+            policies: tag.policies || " No Policies",
             task: tag.task || [],
         }));
 
@@ -158,9 +152,6 @@ const handleTagClick = async (tagName, tagId) => {
         });
 
         setTagsData(formattedTags);
-        console.log("✅ Updated Tags Data:", formattedTags);
-       
-
     } catch (error) {
         toast.error("❌ Error fetching document details:\n" );
     } finally {
@@ -184,8 +175,7 @@ const handleTagClick = async (tagName, tagId) => {
         }
 
         const data = await response.json(); 
-        console.log("Fetched user data:", data);
-
+  
         setFacilityName(data.facilityName || "");
         setFacilityAddress(data.facilityAddress || "");
         setNoOfBeds(data.noOfBeds ? data.noOfBeds.toString() : "");
@@ -198,6 +188,7 @@ const handleTagClick = async (tagName, tagId) => {
 
     fetchUserData();
   }, [email]); 
+  const name = Cookies.get("role") || "Guest"; 
 
   return (
     <div className="flex flex-col lg:flex-row h-screen">
@@ -216,7 +207,7 @@ const handleTagClick = async (tagName, tagId) => {
         <header className="flex items-center justify-between mb-6 w-full flex-wrap">
           {/* Left Side: "Hello, User" */}
           <h2 className="text-lg sm:text-2xl lg:text-3xl font-bold">
-            Hello, <span className="text-blue-900">User</span>
+            Hello, <span className="text-blue-900">{name}</span>
           </h2>
 
           {/* Right Side: Notification Icon and Profile */}
@@ -228,9 +219,9 @@ const handleTagClick = async (tagName, tagId) => {
             <div className="flex items-center border border-gray-300 p-1 sm:p-2 rounded-md space-x-2">
               <Image
                 src="/assets/image.png"
-                width={28}        // Smaller size for mobile screens
-                height={28}       // Smaller size for mobile screens
-                className="rounded-full sm:w-10 sm:h-10 lg:w-12 lg:h-12" // Adjust size for larger screens
+                width={28}        
+                height={28}     
+                className="rounded-full sm:w-10 sm:h-10 lg:w-12 lg:h-12" 
                 alt="User Profile"
               />
               <span className="text-gray-800 text-sm sm:text-base lg:text-lg">User</span>
