@@ -131,7 +131,9 @@ useEffect(() => {
       }
   
       const data = await response.json();
-    
+      console.log("Fetched Document Data:", data);
+  
+      // Ensure `data.tags` exists before setting state
       if (!data || !Array.isArray(data.tags)) {
         alert("Error: `data.tags` is undefined or not an array.");
         console.error("Error: `data.tags` is missing or incorrect format in API response", data);
