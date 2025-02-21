@@ -1,50 +1,57 @@
-
 "use client";
 
 import React, { useEffect, useState } from "react";
 import { FaBell } from "react-icons/fa";
 import io from "socket.io-client";
 import Cookies from "js-cookie";
-const socket = io(process.env.NEXT_PUBLIC_API_BASE_URL);
+
+const socket = io(process.env.NEXT_PUBLIC_API_BASE_URL as string, {
+  transports: ["websocket"],
+});
 
 const NotificationIcon = () => {
-  const [showNotifications, setShowNotifications] = useState<boolean>(false);
+  const [showNotifications, setShowNotifications] = useState(false);
   const [notifications, setNotifications] = useState<any[]>([]);
 
-
-
   useEffect(() => {
-    const email = Cookies.get("email");
   
-    fetch( `${process.env.NEXT_PUBLIC_API_BASE_URL}/api/notifications`)
-      .then((response) => response.json())
-      .then((data) => setNotifications(data))
+    const apiUrl = `${process.env.NEXT_PUBLIC_API_BASE_URL}/api/notifications`;
+    console.log("Fetching notifications from:", apiUrl); 
+
+    fetch(apiUrl)
+      .then((response) => {
+        console.log("Response Status:", response.status); 
+        return response.json();
+      })
+      .then((data) => {
+        console.log("Fetched Notifications:", data); 
+        setNotifications(data);
+      })
       .catch((err) => console.error("Error fetching notifications:", err));
   }, []);
 
-useEffect(() => {
+  useEffect(() => {
+    // Listen for general notification events
     socket.on("notification", (notification) => {
       setNotifications((prev) => [notification, ...prev]);
     });
-  
+
     const email = Cookies.get("email");
-  
+
     socket.on("documentUploaded", (data) => {
       const newNotification = {
         message: data.message,
         documentName: data.documentName,
         documentId: data.documentId,
       };
-  
+
       fetch(`${process.env.NEXT_PUBLIC_API_BASE_URL}/api/notifications`, {
         method: "POST",
         headers: {
           "Content-Type": "application/json",
         },
-        body: JSON.stringify({ 
-          
+        body: JSON.stringify({
           message: newNotification.message,
-        
         }),
       })
         .then((response) => response.json())
@@ -55,39 +62,39 @@ useEffect(() => {
           console.error("Error saving documentUploaded notification:", err)
         );
     });
- // Solution generated event
- socket.on("solutionGenerated", (data) => {
-  const newNotification = {
-    message: data.message,
-    solution: data.solution,
-  };
 
-  fetch(`${process.env.NEXT_PUBLIC_API_BASE_URL}/api/notifications`, {
-    method: "POST",
-    headers: {
-      "Content-Type": "application/json",
-    },
-    body: JSON.stringify({
-      message: newNotification.message,
-      email,
-    }),
-  })
-    .then((response) => response.json())
-    .then((savedNotification) => {
-      setNotifications((prev) => [savedNotification, ...prev]);
-    })
-    .catch((err) => console.error("Error saving solutionGenerated notification:", err));
-});
-  
-    // // Listen for "taskGenerated" event
+    socket.on("solutionGenerated", (data) => {
+      const newNotification = {
+        message: data.message,
+        solution: data.solution,
+      };
+
+      fetch(`${process.env.NEXT_PUBLIC_API_BASE_URL}/api/notifications`, {
+        method: "POST",
+        headers: {
+          "Content-Type": "application/json",
+        },
+        body: JSON.stringify({
+          message: newNotification.message,
+          email,
+        }),
+      })
+        .then((response) => response.json())
+        .then((savedNotification) => {
+          setNotifications((prev) => [savedNotification, ...prev]);
+        })
+        .catch((err) =>
+          console.error("Error saving solutionGenerated notification:", err)
+        );
+    });
+
     socket.on("taskGenerated", (data) => {
       const newNotification = {
         message: data.message,
         task: data.task,
       };
-  
-      // Save the notification in the database
-      fetch("https://aa48-209-105-243-7.ngrok-free.app/api/notifications", {
+
+      fetch(`${process.env.NEXT_PUBLIC_API_BASE_URL}/api/notifications`, {
         method: "POST",
         headers: {
           "Content-Type": "application/json",
@@ -102,24 +109,21 @@ useEffect(() => {
           console.error("Error saving taskGenerated notification:", err)
         );
     });
-  
-    // Cleanup socket listeners on component unmount
+
     return () => {
       socket.off("notification");
       socket.off("documentUploaded");
       socket.off("solutionGenerated");
-      
+      socket.off("taskGenerated");
     };
   }, []);
-  
-  // Mark a notification as read and remove it
+
   const handleMarkAsRead = (index: number) => {
     setNotifications((prev) => prev.filter((_, i) => i !== index));
   };
 
   return (
     <div className="relative">
-      {/* Notification Bell Icon */}
       <div
         className="relative cursor-pointer"
         onClick={() => setShowNotifications(!showNotifications)}
@@ -130,7 +134,6 @@ useEffect(() => {
         )}
       </div>
 
-      {/* Notification Dropdown */}
       {showNotifications && (
         <div className="absolute right-0 mt-2 w-64 bg-white shadow-lg rounded-lg z-50 max-h-96 overflow-y-auto">
           {notifications.length > 0 ? (
@@ -167,6 +170,3 @@ useEffect(() => {
 };
 
 export default NotificationIcon;
-
-
-

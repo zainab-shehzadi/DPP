@@ -51,7 +51,7 @@ const server = http.createServer(app);
 
 const io = new Server(server, {
   cors: {
-    origin: "http://localhost:3000", // Allow frontend connection
+    origin: process.env.NEXT_BASE_URL, 
     methods: ["GET", "POST"],
   },
 });
@@ -78,7 +78,7 @@ app.post('/api/notifications', async (req, res) => {
   const notification = new Notification({ message });
   await notification.save();
 
-  // Emit to all connected clients
+
   io.emit('notification', notification);
   res.status(201).json(notification);
 });

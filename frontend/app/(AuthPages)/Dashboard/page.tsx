@@ -1,7 +1,7 @@
 "use client"; // <-- Add this line to mark this file as a client component
 
 import Image from "next/image";
-import { FaBell } from "react-icons/fa";import React, { useState ,useEffect} from "react";
+import React, { useState ,useEffect} from "react";
 import axios from "axios";
 import Sidebar from "@/components/Sidebar";
 import { useRouter ,useSearchParams } from "next/navigation"; 
@@ -117,7 +117,7 @@ export default function Dashboard() {
       setUploadStatus("Only PDF files are allowed!"); 
       return;
     }
-    setFile(uploadedFile); // Save the file in state
+    setFile(uploadedFile); 
     setUploadStatus(`File "${uploadedFile.name}" is ready to upload.`); 
   };
   const name = Cookies.get("role") || "Guest"; 

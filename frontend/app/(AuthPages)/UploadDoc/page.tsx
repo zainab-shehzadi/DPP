@@ -2,12 +2,12 @@
 "use client"; 
 import React, { useState, useEffect, useRef } from "react";
 import Sidebar from "@/components/Sidebar";
-
+import Image from "next/image";
 import {FaFileAlt} from "react-icons/fa";
 import DatePicker from "react-datepicker";
 import "react-datepicker/dist/react-datepicker.css";
 import { useRouter } from "next/navigation"; // For navigation after successful reset
-// import Notification from '@/components/Notification'
+ import Notification from '@/components/Notification'
 import Cookies from "js-cookie";
 import { toast } from "react-toastify";
 import { constants } from 'node:crypto';
@@ -386,7 +386,7 @@ const handleTagClick = async (tagName, tagId) => {
         toast.error(`Error`);
     }
 };
-
+ const role= Cookies.get("role");
   const toggleDropdown2 = () => setDropdownOpen2(!dropdownOpen2);
   const toggleDropdown1 = () => setDropdownOpen1(!dropdownOpen1);
   const toggleDropdown = () => { setDropdownOpen(prev => !prev); };  
@@ -397,6 +397,28 @@ const handleTagClick = async (tagName, tagId) => {
       <Sidebar isSidebarOpen={isSidebarOpen} toggleSidebar={toggleSidebar} />
       <div className="lg:ml-64 p-4 sm:p-8 w-full">
      
+        {/* Main Content */}
+        <header className="flex items-center justify-between mb-6 w-full flex-wrap">
+          <h2 className="text-lg sm:text-2xl lg:text-3xl font-bold">
+            Hello, <span className="text-blue-900">{role}</span>
+          </h2>
+          <div className="flex items-center space-x-2 sm:space-x-4">
+          < Notification/>
+            <div className="flex items-center border border-gray-300 p-1 sm:p-2 rounded-md space-x-2">
+              <Image
+                src="/assets/image.png"
+                width={28}
+                height={28}
+                className="rounded-full"
+                alt="User Profile"
+              />
+              <span className="text-gray-800 text-sm sm:text-base lg:text-lg">
+                User
+              </span>
+            </div>
+          </div>
+        </header>
+
 {/* Facility Dropdown and Tabs */}
  <div className="flex items-center space-x-4 mt-4 lg:mt-8 ml-4 lg:ml-10 justify-between">
           {/* Facility Dropdown */}
