@@ -77,7 +77,7 @@ const usersetting = () => {
 
   useEffect(() => {
     getAllUser();
-  }, [users]); 
+  }, []); 
   
   const handleUpdate = async (userId) => {
     try {
