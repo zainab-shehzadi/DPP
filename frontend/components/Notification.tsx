@@ -13,7 +13,6 @@
 
 
 
-//   // Fetch existing notifications on component mount
 //   useEffect(() => {
 
 //     const email = Cookies.get("email");

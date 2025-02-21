@@ -5,7 +5,7 @@ import { FaBell } from "react-icons/fa";import React, { useState ,useEffect} fro
 import axios from "axios";
 import Sidebar from "@/components/Sidebar";
 import { useRouter ,useSearchParams } from "next/navigation"; 
-import Notification from '@/components/Notification'
+// import Notification from '@/components/Notification'
 import Cookies from "js-cookie"; 
 
 
@@ -144,7 +144,7 @@ export default function Dashboard() {
   Hello, <span className="text-blue-900">{name}</span>
 </h2>
       <div className="flex items-center space-x-2 sm:space-x-4 mt-2 sm:mt-0">
-      < Notification/>
+      {/* < Notification/> */}
         <div className="flex items-center border border-gray-300 p-1 sm:p-2 rounded-md space-x-2">
           <Image
             src="/assets/image.png"
@@ -220,7 +220,6 @@ export default function Dashboard() {
         </div>
       </div>
     </div>
-
     <div className="w-full border-t border-gray-300 mt-4"></div>
 
     {/* Main Container */}
