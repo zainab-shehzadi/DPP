@@ -1,14 +1,15 @@
 const express = require("express");
 const router = express.Router();
 const upload = require("../config/multer"); // Import multer configuration
-const { uploadFile,fetchTagsByEmail,getTagsWithDescriptions ,fetchDocuments, generateSolution,checkResponse,fetchTagsByEmail1,fetchTagsAndSolutionByEmail} = require("../controllers/fileController");
+const { uploadFile,fetchTagsByEmail, generateSolution,checkResponse,fetchTagsByEmail1,fetchTagsAndSolutionByEmail} = require("../controllers/fileController");
 const mongoose = require("mongoose");
 const File = require("../models/File"); 
 
 
-router.get("/docs", async (req, res) => {
+router.post("/docs", async (req, res) => {
   try {
-    const { email } = req.query;
+    // Extract email from request body (not query)
+    const { email } = req.body;
 
     if (!email) {
       return res.status(400).json({ error: "Email is required" });
@@ -21,12 +22,11 @@ router.get("/docs", async (req, res) => {
     }
 
     // ✅ Ensure proper structure in the response
-    const fileData = userFiles.flatMap(user => 
+    const fileData = userFiles.flatMap(user =>
       user.files.map(file => ({
-        _id: file._id, 
+        _id: file._id,
         originalName: file.originalName,
-        fileUrl: file.fileUrl, 
-        
+        fileUrl: file.fileUrl
       }))
     );
 
@@ -38,10 +38,11 @@ router.get("/docs", async (req, res) => {
 });
 
 
+
 router.post("/upload", upload.single("file"), uploadFile);
-router.get("/tags", fetchTagsByEmail); // Route to fetch tags by a specific ID
-router.get("/tags1", fetchTagsByEmail1); // Route to fetch tags by a specific ID
-//router.get("/tags-with-descriptions", getTagsWithDescriptions);
+router.get("/tags", fetchTagsByEmail); 
+router.get("/tags1", fetchTagsByEmail1); 
+
 router.get("/tags-with-descriptions", async (req, res) => {
   try {
     const { email, id } = req.query;

@@ -128,9 +128,14 @@ export default function Dashboard() {
           return;
         }
   
-        const res = await fetch(
-          `${process.env.NEXT_PUBLIC_API_BASE_URL}/api/files/docs?email=${encodeURIComponent(email)}`
-        );
+        const res = await fetch(`${process.env.NEXT_PUBLIC_API_BASE_URL}/api/files/docs`, {
+          method: "POST", 
+          headers: {
+            "Content-Type": "application/json"
+          },
+          body: JSON.stringify({ email }) 
+        });
+
         const data = await res.json();
         if (Array.isArray(data)) {
           setDocuments(data); 
