@@ -59,19 +59,26 @@ const usersetting = () => {
   const supportingRoles = roleCategories.supporting;
   const positions = departmentName ? departmentPositions[departmentName] || [] : [];
 
+  const getAllUser = async () => {
+    try {
+      const response = await fetch(`${process.env.NEXT_PUBLIC_API_BASE_URL}/api/users/User123`);
+  
+      if (!response.ok) {
+        throw new Error(`HTTP error! Status: ${response.status}`);
+      }
+  
+      const data = await response.json();
+      setUsers(data);
+    } catch (error) {
+      console.error("Error fetching data:", error);
+    }
+  };
+  
+
   useEffect(() => {
-    fetch(`${process.env.NEXT_PUBLIC_API_BASE_URL}/api/users/User123`)
-      .then((response) => {
-        if (!response.ok) {
-          throw new Error(`HTTP error! Status: ${response.status}`);
-        }
-        return response.json();
-      })
-      .then((data) => {
-        setUsers(data);
-      })
-      .catch((error) => console.error('Error fetching data:', error));
-  }, []);
+    getAllUser();
+  }, [users]); 
+  
   const handleUpdate = async (userId) => {
     try {
       const response = await fetch(
@@ -81,7 +88,7 @@ const usersetting = () => {
           headers: {
             "Content-Type": "application/json",
           },
-          body: JSON.stringify({ id: userId }), // Match the key with the backend
+          body: JSON.stringify({ id: userId }), 
         }
       );
     
@@ -119,7 +126,7 @@ const usersetting = () => {
           headers: {
             "Content-Type": "application/json",
           },
-          body: JSON.stringify({ id, ...selectedUser }), // Send _id in the body
+          body: JSON.stringify({ id, ...selectedUser }),
         }
       );
   
