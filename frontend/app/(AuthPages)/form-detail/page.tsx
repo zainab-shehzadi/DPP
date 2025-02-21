@@ -20,7 +20,6 @@ const formDetail: React.FC = () => {
   const searchParams = useSearchParams();
 
   useEffect(() => {
-    // Retrieve email from URL parameters on component mount
     const emailFromParams = searchParams.get("email");
     setEmail(emailFromParams);
   }, [searchParams]);

@@ -16,15 +16,12 @@ const NotificationIcon = () => {
   useEffect(() => {
   
     const apiUrl = `${process.env.NEXT_PUBLIC_API_BASE_URL}/api/notifications`;
-    console.log("Fetching notifications from:", apiUrl); 
 
     fetch(apiUrl)
       .then((response) => {
-        console.log("Response Status:", response.status); 
         return response.json();
       })
       .then((data) => {
-        console.log("Fetched Notifications:", data); 
         setNotifications(data);
       })
       .catch((err) => console.error("Error fetching notifications:", err));

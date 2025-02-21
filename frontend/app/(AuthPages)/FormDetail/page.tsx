@@ -59,7 +59,7 @@ const Signup: React.FC = () => {
       }
 
       const data = await response.json();
-const status = data.userStatusUpdated; // Correct key name from response
+const status = data.userStatusUpdated; 
 Cookies.set("VerifyStatus", status);
 
       toast.success("Facility saved successfully!", { position: "top-right" });

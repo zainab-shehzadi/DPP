@@ -8,12 +8,31 @@ const NotificationComponent: React.FC = () => {
   const [notifications, setNotifications] = useState<any[]>([]);
   const [message, setMessage] = useState('');
 
-  // Fetch existing notifications
-  useEffect(() => {
-    fetch(`${process.env.NEXT_PUBLIC_API_BASE_URL}/api/notifications`)
-      .then((response) => response.json())
-      .then((data) => setNotifications(data));
-  }, []);
+useEffect(() => {
+  const apiUrl = `${process.env.NEXT_PUBLIC_API_BASE_URL}/api/notifications`; // Corrected Template Literal
+
+  fetch(apiUrl)
+    .then((response) => {
+      if (!response.ok) {
+        throw new Error(`HTTP error! Status: ${response.status}`);
+      }
+      return response.json();
+    })
+    .then((data) => {
+      console.log("Fetched Notifications:", data);
+      setNotifications(data);
+    })
+    .catch(async (err) => {
+      console.error("Error fetching notifications:", err);
+      try {
+        const textResponse = await fetch(apiUrl).then((res) => res.text());
+        console.log("Raw Response (Not JSON):", textResponse);
+      } catch (error) {
+        console.error("Error fetching raw response:", error);
+      }
+    });
+}, []);
+
 
   // Listen for new notifications
   useEffect(() => {
