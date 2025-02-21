@@ -23,7 +23,7 @@ export default function Dashboard() {
   return (
     <div className="flex flex-col lg:flex-row h-screen">
   
-      {/* Sidebar */}
+     
       <nav className="bg-[#002F6C] text-white w-full lg:w-64 flex flex-col items-center px-4 py-8 lg:fixed lg:h-full">
         <div className="mb-8 w-full h-24 bg-cover bg-center" style={{ backgroundImage: "url('/assets/logo.avif')" }}></div>
         <ul className="space-y-5 w-full flex flex-col items-center">
@@ -34,7 +34,7 @@ export default function Dashboard() {
               className="flex items-center py-2 px-4 hover:bg-white hover:text-blue-900 rounded-md font-poppins font-bold text-center text-medium leading-6"
             >
               <FaTachometerAlt className="mr-2" />
-              Dashboard
+              Dashboar
             </a>
             {dashboardOpen && (
               <ul className="ml-4 space-y-4">
