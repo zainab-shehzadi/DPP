@@ -72,12 +72,19 @@ const Sidebar: React.FC<SidebarProps> = ({ isSidebarOpen, toggleSidebar }) => {
       return;
     }
       try {
-      // Fetch user role
-      const response = await fetch(`${process.env.NEXT_PUBLIC_API_BASE_URL}/api/users/role/${email}`);
-  
+        const response = await fetch(
+          `${process.env.NEXT_PUBLIC_API_BASE_URL}/api/users/role`,
+          {
+            method: "POST", 
+            headers: {
+              "Content-Type": "application/json",
+            },
+            body: JSON.stringify({ email }),
+          }
+        );
       if (!response.ok) {
         const errorData = await response.json(); // Attempt to read error details from the response
-        //console.error("Failed to fetch user role:", errorData);
+        
   
         // Handle case where user does not exist
         if (response.status === 404) {

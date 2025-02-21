@@ -370,7 +370,7 @@ const createUser = async (req, res) => {
 };
 const deleteUser = async (req, res) => {
   try {
-    const { id } = req.params;
+    const { id } = req.body;
 
     console.log("Received DELETE request for ID:", id);
 
@@ -392,7 +392,7 @@ const deleteUser = async (req, res) => {
 };
 const getUserByEmail = async (req, res) => {
   try {
-    const { email } = req.params;
+    const { email } = req.body;
 
     console.log("Fetching user for email:", email); // Debugging log
 
@@ -424,11 +424,7 @@ const getUserByEmail = async (req, res) => {
 };
 const getUserRole = async (req, res) => {
   try {
-    const { email } = req.params;
-
-    console.log("Fetching role for email:", email); // Debugging log
-
-    // Fetch user by email instead of ID
+    const { email } = req.body;
     const user = await User.findOne({ email });
 
     if (!user) {
@@ -445,7 +441,7 @@ const getUserRole = async (req, res) => {
 };
 const editUserByEmail = async (req, res) => {
   try {
-    const { email } = req.params;
+    const { email } = req.body;
     const { firstname, lastname, role, Position, DepartmentName } = req.body;
 
     // Log the incoming data for debugging

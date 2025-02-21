@@ -74,8 +74,17 @@ const usersetting = () => {
   }, []);
   const handleUpdate = async (userId) => {
     try {
-      const response = await fetch(`${process.env.NEXT_PUBLIC_API_BASE_URL}/api/users/fetch/${userId}`);
-  
+      const response = await fetch(
+        `${process.env.NEXT_PUBLIC_API_BASE_URL}/api/users/fetch`, 
+        {
+          method: "POST", 
+          headers: {
+            "Content-Type": "application/json",
+          },
+          body: JSON.stringify({ id: userId }), // Match the key with the backend
+        }
+      );
+    
       if (!response.ok) {
         throw new Error("Failed to fetch user data");
       }
@@ -102,15 +111,15 @@ const usersetting = () => {
     }
   
     try {
-  
+      const id =selectedUser._id;
       const response = await fetch(
-        `${process.env.NEXT_PUBLIC_API_BASE_URL}/api/users/update/${selectedUser._id}`,
+        `${process.env.NEXT_PUBLIC_API_BASE_URL}/api/users/update`, 
         {
           method: "PUT",
           headers: {
             "Content-Type": "application/json",
           },
-          body: JSON.stringify(selectedUser),
+          body: JSON.stringify({ id, ...selectedUser }), // Send _id in the body
         }
       );
   
@@ -150,9 +159,13 @@ const usersetting = () => {
   
     try {
       const response = await fetch(
-        `${process.env.NEXT_PUBLIC_API_BASE_URL}/api/users/${id}`,
+        `${process.env.NEXT_PUBLIC_API_BASE_URL}/api/users/delete`, 
         {
           method: "DELETE",
+          headers: {
+            "Content-Type": "application/json",
+          },
+          body: JSON.stringify({ id }), // Send id in the request body
         }
       );
       if (!response.ok) {

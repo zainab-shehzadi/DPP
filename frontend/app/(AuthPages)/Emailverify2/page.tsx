@@ -47,7 +47,7 @@ const EmailVerify2: React.FC = () => {
       const response = await fetch(`${process.env.NEXT_PUBLIC_API_BASE_URL}/api/users/verify-token`, {
         method: "POST",
         headers: { "Content-Type": "application/json" },
-        body: JSON.stringify({ email, token: code }), // Pass both email and token
+        body: JSON.stringify({ email, token: code }),
       });
       
 

@@ -97,13 +97,15 @@ useEffect(() => {
   }, []);
 const handleTagClick = async (tagName, tagId) => {
     try {
-        const apiUrl = `${process.env.NEXT_PUBLIC_API_BASE_URL}/api/files/tag-details?tagId=${tagId}&tagName=${encodeURIComponent(tagName)}`;
-
-        const response = await fetch(apiUrl, {
-            method: "GET",
-            headers: { "Content-Type": "application/json" }
-        });
-
+      const response = await fetch(`${process.env.NEXT_PUBLIC_API_BASE_URL}/api/files/tag-details`, {
+        method: "POST",
+        headers: {
+          "Content-Type": "application/json"
+        },
+        body: JSON.stringify({ tagId, tagName }) 
+      });
+      
+  
         if (!response.ok) {
             throw new Error(`API Error - Status: ${response.status}`);
         }
@@ -122,8 +124,13 @@ const handleTagClick = async (tagName, tagId) => {
     try {
 
         const safeEmail = email ?? "";
-        const apiUrl = `${process.env.NEXT_PUBLIC_API_BASE_URL}/api/files/tags-with-descriptions?email=${encodeURIComponent(safeEmail)}&id=${encodeURIComponent(id)}`;
-        const response = await fetch(apiUrl);
+        const response = await fetch(`${process.env.NEXT_PUBLIC_API_BASE_URL}/api/files/tags-with-descriptions`, {
+          method: "POST", 
+          headers: {
+            "Content-Type": "application/json"
+          },
+          body: JSON.stringify({ email: safeEmail, id }) 
+        });
       
 
         if (!response.ok) {
@@ -133,14 +140,12 @@ const handleTagClick = async (tagName, tagId) => {
         }
 
         const data = await response.json();
-      
         if (!data.tags || !Array.isArray(data.tags)) {
           
             console.error("❌ API Error: `data.tags` is undefined or not an array:", data);
             return;
         }
 
-   
         const formattedTags = data.tags.map((tag) => ({
             id: tag.id || tag._id || "Missing ID",
             tag: tag.tag,
@@ -171,9 +176,13 @@ const handleTagClick = async (tagName, tagId) => {
 
 
       try {
-        const response = await fetch(
-          `${process.env.NEXT_PUBLIC_API_BASE_URL}/api/facility/${email}` 
-        );
+        const response = await fetch(`${process.env.NEXT_PUBLIC_API_BASE_URL}/api/facility/fetch`, {
+          method: "POST", 
+          headers: {
+            "Content-Type": "application/json"
+          },
+          body: JSON.stringify({ email })
+        });
 
         if (!response.ok) {
           throw new Error(`Failed to fetch user data. Status: ${response.status}`);

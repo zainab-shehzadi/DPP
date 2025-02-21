@@ -71,7 +71,14 @@ function profileSetting() {
   const fetchUserData = async () => {
     try {
       const response = await fetch(
-        `${process.env.NEXT_PUBLIC_API_BASE_URL}/api/users/email/${email}`
+        `${process.env.NEXT_PUBLIC_API_BASE_URL}/api/users/email`, 
+        {
+          method: "POST", 
+          headers: {
+            "Content-Type": "application/json",
+          },
+          body: JSON.stringify({ email }), 
+        }
       );
       if (!response.ok) throw new Error("Failed to fetch user data.");
       const data = await response.json();
@@ -96,11 +103,13 @@ function profileSetting() {
 
     try {
       const response = await fetch(
-        `${process.env.NEXT_PUBLIC_API_BASE_URL}/api/users/email/${email}`,
+        `${process.env.NEXT_PUBLIC_API_BASE_URL}/api/users/email`, 
         {
           method: "PUT",
-          headers: { "Content-Type": "application/json" },
-          body: JSON.stringify(updatedData),
+          headers: {
+            "Content-Type": "application/json",
+          },
+          body: JSON.stringify({ email, ...updatedData }), 
         }
       );
       if (!response.ok) throw new Error("Failed to update user data.");

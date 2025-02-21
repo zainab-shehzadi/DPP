@@ -5,16 +5,9 @@ const { getFacilityByEmail,requestEdit, statusupdate,updatedata  } = require("..
 
 const router = express.Router();
 
-// Route to create a facility
-router.post("/info", facilityController.createFacility); // POST /api/facility/info
-
-// Route to fetch facility by ID
-router.get("/:email", getFacilityByEmail); // GET /api/facility/:id
-
-
-// Route to update the status
+router.post("/info", facilityController.createFacility); 
+router.post("/fetch", getFacilityByEmail); 
 router.post("/status-update", statusupdate);
-// Route to send email for approval request
 router.post('/request-edit', requestEdit);
 router.put('/update', updatedata);
 

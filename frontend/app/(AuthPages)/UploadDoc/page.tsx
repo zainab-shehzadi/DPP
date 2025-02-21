@@ -123,9 +123,13 @@ const handleNavigateToPolicy = () => {
     try {
 
         const safeEmail = email ?? "";
-        const apiUrl = `${process.env.NEXT_PUBLIC_API_BASE_URL}/api/files/tags-with-descriptions?email=${encodeURIComponent(safeEmail)}&id=${encodeURIComponent(id)}`;
-        const response = await fetch(apiUrl);
-      
+        const response = await fetch(`${process.env.NEXT_PUBLIC_API_BASE_URL}/api/files/tags-with-descriptions`, {
+          method: "POST", 
+          headers: {
+            "Content-Type": "application/json"
+          },
+          body: JSON.stringify({ email: safeEmail, id })
+        });
 
         if (!response.ok) {
             toast.error(`❌ Failed to fetch document details: ${response.statusText}`);
@@ -172,13 +176,26 @@ const handleNavigateToPolicy = () => {
     try {
       const safeEmail = email ?? ""; 
       
+      // const response = await fetch(
+      //   `${process.env.NEXT_PUBLIC_API_BASE_URL}/api/users/get-access-token?email=${encodeURIComponent(safeEmail)}`,
+      //   {
+      //     method: "GET",
+      //     credentials: "include",
+      //   }
+      // );
+
       const response = await fetch(
-        `${process.env.NEXT_PUBLIC_API_BASE_URL}/api/users/get-access-token?email=${encodeURIComponent(safeEmail)}`,
+        `${process.env.NEXT_PUBLIC_API_BASE_URL}/api/users/get-access-token`,
         {
-          method: "GET",
+          method: "POST", 
           credentials: "include",
+          headers: {
+            "Content-Type": "application/json",
+          },
+          body: JSON.stringify({ email: safeEmail }), 
         }
       );
+      
       const data = await response.json();
       const accessToken = data.accessToken;
       const refreshToken = data.refreshToken; 
@@ -356,12 +373,14 @@ setAnswer2("");
 };
 const handleTagClick = async (tagName, tagId) => {
     try {
-        const apiUrl = `${process.env.NEXT_PUBLIC_API_BASE_URL}/api/files/tag-details?tagId=${tagId}&tagName=${encodeURIComponent(tagName)}`;
-
-        const response = await fetch(apiUrl, {
-            method: "GET",
-            headers: { "Content-Type": "application/json" }
-        });
+      const response = await fetch(`${process.env.NEXT_PUBLIC_API_BASE_URL}/api/files/tag-details`, {
+        method: "POST",
+        headers: {
+          "Content-Type": "application/json"
+        },
+        body: JSON.stringify({ tagId, tagName }) 
+      });
+      
 
         if (!response.ok) {
             throw new Error(`API Error - Status: ${response.status}`);

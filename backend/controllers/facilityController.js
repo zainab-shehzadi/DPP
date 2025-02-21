@@ -7,7 +7,6 @@ const createFacility = async (req, res) => {
   try {
     const { email, facilityName, facilityAddress, noOfBeds } = req.body;
 
-    // Validate required fields
     if (!email || !facilityName || !facilityAddress || !noOfBeds) {
       return res.status(400).json({ message: "All fields are required." });
     }
@@ -46,13 +45,42 @@ const createFacility = async (req, res) => {
 };
 
 
+// const getFacilityByEmail = async (req, res) => {
+//   try {
+//     const { email } = req.params; 
+
+//     const facility = await FacilitySignup.findOne({ email });
+//     if (!facility) {
+
+//       return res.status(404).json({ message: "Facility not found" });
+//     }
+
+//     res.status(200).json({
+//       facilityName: facility.facilityName,
+//       facilityAddress: facility.facilityAddress,
+//       noOfBeds: facility.noOfBeds,
+//       status: facility.status,
+//     });
+//   } catch (error) {
+//     console.error("Error fetching facility by email:", error);
+//     res.status(500).json({
+//       message: "Failed to fetch facility data",
+//       error: error.message,
+//     });
+//   }
+// };
+
 const getFacilityByEmail = async (req, res) => {
   try {
-    const { email } = req.params; 
+    const { email } = req.body; 
+
+    if (!email) {
+      return res.status(400).json({ message: "Email is required" });
+    }
 
     const facility = await FacilitySignup.findOne({ email });
-    if (!facility) {
 
+    if (!facility) {
       return res.status(404).json({ message: "Facility not found" });
     }
 
@@ -60,13 +88,13 @@ const getFacilityByEmail = async (req, res) => {
       facilityName: facility.facilityName,
       facilityAddress: facility.facilityAddress,
       noOfBeds: facility.noOfBeds,
-      status: facility.status,
+      status: facility.status
     });
   } catch (error) {
     console.error("Error fetching facility by email:", error);
     res.status(500).json({
       message: "Failed to fetch facility data",
-      error: error.message,
+      error: error.message
     });
   }
 };

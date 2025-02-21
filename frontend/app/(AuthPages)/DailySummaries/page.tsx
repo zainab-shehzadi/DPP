@@ -98,7 +98,6 @@ const renderTasksForColumn = (column: string) => {
         return;
       }
   
-      // Make a POST request to the API with the department in the request body
       const response = await fetch(
         `${process.env.NEXT_PUBLIC_API_BASE_URL}/api/calendar/taskdetail`,
         {
@@ -106,7 +105,7 @@ const renderTasksForColumn = (column: string) => {
           headers: {
             "Content-Type": "application/json",
           },
-          body: JSON.stringify({ department }), // Pass the department as JSON
+          body: JSON.stringify({ department }),
         }
       );
   

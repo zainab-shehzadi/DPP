@@ -17,9 +17,9 @@ const User = require("../models/User");
 
 const router = express.Router();
 
-router.get("/get-access-token", async (req, res) => {
+router.post("/get-access-token", async (req, res) => {
   try {
-    const { email } = req.query; // ✅ Get email from query params
+    const { email } = req.body; 
     console.log("Fetching tokens for email:", email);
 
     if (!email) {
@@ -44,17 +44,17 @@ router.get("/get-access-token", async (req, res) => {
     res.status(500).json({ error: "Internal server error" });
   }
 });
-router.get("/role/:email", getUserRole);
+router.post("/role", getUserRole);
 
-router.get("/email/:email", getUserByEmail);
+router.post("/email", getUserByEmail);
 
 router.post("/signup", registerUser);
 
 router.post("/login", loginUser);
 
-router.put("/email/:email", editUserByEmail);
+router.put("/email", editUserByEmail);
 
-router.delete("/:id", deleteUser);
+router.delete("/delete", deleteUser);
 
 router.post("/forgot-password", forgotPassword);
 
@@ -65,10 +65,14 @@ router.post("/reset-password", resetPassword);
 router.get("/profile", protect, (req, res) => {
   res.json({ message: `Welcome ${req.user.email}` });
 });
-
-router.get("/fetch/:id", async (req, res) => {
+router.post("/fetch", async (req, res) => {
   try {
-    const { id } = req.params;
+    const { id } = req.body;
+
+    if (!id) {
+      return res.status(400).json({ message: "User ID is required" });
+    }
+
     const user = await User.findById(id);
 
     if (!user) {
@@ -77,12 +81,14 @@ router.get("/fetch/:id", async (req, res) => {
 
     res.status(200).json(user);
   } catch (error) {
+    console.error("Error fetching user:", error); // Log error for debugging
     res.status(500).json({ message: "Error fetching user data", error });
   }
 });
-router.put("/update/:id", async (req, res) => {
+
+router.put("/update", async (req, res) => {
   try {
-    const { id } = req.params;
+    const { id } = req.body;
     const updateData = req.body;
 
     if (!id) {
@@ -101,8 +107,6 @@ router.put("/update/:id", async (req, res) => {
     res.status(500).json({ error: "Internal server error" });
   }
 });
-
-
 router.post('/add', createUser); 
 
 router.get('/User123', getAllUsers); 

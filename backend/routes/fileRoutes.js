@@ -41,11 +41,11 @@ router.post("/docs", async (req, res) => {
 
 router.post("/upload", upload.single("file"), uploadFile);
 router.get("/tags", fetchTagsByEmail); 
-router.get("/tags1", fetchTagsByEmail1); 
+router.post("/tags1", fetchTagsByEmail1); 
 
-router.get("/tags-with-descriptions", async (req, res) => {
+router.post("/tags-with-descriptions", async (req, res) => {
   try {
-    const { email, id } = req.query;
+    const { email, id } = req.body;
 
     if (!email || !id) {
       return res.status(400).json({ error: "Email and ID are required" });
@@ -73,9 +73,9 @@ router.get("/tags-with-descriptions", async (req, res) => {
   }
 });
 
-router.get("/tag-details", async (req, res) => {
+router.post("/tag-details", async (req, res) => {
   try {
-    let { tagId, tagName } = req.query;
+    let { tagId, tagName } = req.body;
 
     
     if (!tagId || !tagName) {

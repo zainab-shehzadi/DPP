@@ -38,22 +38,26 @@ function facilitySetting(){
 
   useEffect(() => {
     const fetchUserData = async () => {
-      if (!email) return; // Ensure email is available before making the request
+      if (!email) return; 
   
-      setLoading(true); // Set loading state to true while fetching
+      setLoading(true); 
       try {
-        const response = await fetch(
-          `${process.env.NEXT_PUBLIC_API_BASE_URL}/api/facility/${email}` // Use the API base URL from environment variables
-        );
+        const response = await fetch(`${process.env.NEXT_PUBLIC_API_BASE_URL}/api/facility/fetch`, {
+          method: "POST", 
+          headers: {
+            "Content-Type": "application/json"
+          },
+          body: JSON.stringify({ email })
+        });
+        
   
         if (!response.ok) {
           throw new Error(`Failed to fetch user data. Status: ${response.status}`);
         }
   
-        const data = await response.json(); // Parse the response as JSON
+        const data = await response.json(); 
         console.log("Fetched user data:", data);
   
-        // Safely update the state with data, using empty strings if values are undefined or null
         setFacilityName(data.facilityName || "");
         setFacilityAddress(data.facilityAddress || "");
         setNoOfBeds(data.noOfBeds ? data.noOfBeds.toString() : ""); // Convert noOfBeds to string if it's not null/undefined
@@ -65,26 +69,25 @@ function facilitySetting(){
       }
     };
   
-    fetchUserData(); // Call the async function
-  }, [email]); // Dependency on email to trigger the effect when email changes
+    fetchUserData();
+  }, [email]); 
   
-// Function to send the request to the admin
 const requestAdminApproval = async () => {
   try {
-    setLoading(true); // Show loading state
+    setLoading(true); 
     const response = await fetch(`${process.env.NEXT_PUBLIC_API_BASE_URL}/api/facility/request-edit`, {
       method: "POST",
       headers: {
         "Content-Type": "application/json",
       },
-      body: JSON.stringify({ email }), // Send email for approval request
+      body: JSON.stringify({ email }), 
     });
 
     if (!response.ok) throw new Error("Failed to send approval request");
 
     console.log("Approval request sent");
-    setIsRequestSent(true); // Mark request as sent
-    setLoading(false); // Hide loading state
+    setIsRequestSent(true); 
+    setLoading(false); 
   } catch (error) {
     console.error("Error sending approval request:", error);
     setLoading(false);
@@ -93,7 +96,7 @@ const requestAdminApproval = async () => {
 
 const handleSaveChanges = async () => {
   try {
-    setLoading(true); // Show loading state
+    setLoading(true);
     setMessage(""); // Clear any previous messages
 
     // Prepare the data to send

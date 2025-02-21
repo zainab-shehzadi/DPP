@@ -47,9 +47,13 @@ export default function Dashboard() {
       }
   
       try {
-        const response = await fetch(
-          `${process.env.NEXT_PUBLIC_API_BASE_URL}/api/files/tags1?email=${encodeURIComponent(email)}`
-        );
+        const response = await fetch(`${process.env.NEXT_PUBLIC_API_BASE_URL}/api/files/tags1`, {
+          method: "POST", 
+          headers: {
+            "Content-Type": "application/json"
+          },
+          body: JSON.stringify({ email }) 
+        });
   
         const contentType = response.headers.get("content-type");
         if (response.ok && contentType && contentType.includes("application/json")) {
@@ -77,9 +81,13 @@ export default function Dashboard() {
       try {
   
           const safeEmail = email ?? "";
-          const apiUrl = `${process.env.NEXT_PUBLIC_API_BASE_URL}/api/files/tags-with-descriptions?email=${encodeURIComponent(safeEmail)}&id=${encodeURIComponent(id)}`;
-          const response = await fetch(apiUrl);
-        
+          const response = await fetch(`${process.env.NEXT_PUBLIC_API_BASE_URL}/api/files/tags-with-descriptions`, {
+            method: "POST", 
+            headers: {
+              "Content-Type": "application/json"
+            },
+            body: JSON.stringify({ email: safeEmail, id })
+          });
   
           if (!response.ok) {
               setTagsData([]);

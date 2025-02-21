@@ -83,7 +83,7 @@ const moveTaskToColumn = async (_id: string, column: string) => {
       headers: {
         "Content-Type": "application/json",
       },
-      body: JSON.stringify({ id: _id, status }), // Send status to the backend
+      body: JSON.stringify({ id: _id, status }),
     });
   } catch (error) {
     console.error("Failed to update task status", error);

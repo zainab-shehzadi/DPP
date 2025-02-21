@@ -166,7 +166,7 @@ const fetchTagsByEmail = async (req, res) => {
   }
 };
 const fetchTagsByEmail1 = async (req, res) => {
-  const { email } = req.query; // Extract the email from the query parameters
+  const { email } = req.body;
 
   if (!email) {
     return res.status(400).json({ error: "Email is required in query parameters" });
@@ -193,7 +193,7 @@ const fetchTagsByEmail1 = async (req, res) => {
   }
 };
 const fetchTagsAndSolutionByEmail = async (req, res) => {
-  const { email } = req.query; // Extract email from query parameters
+  const { email } = req.query; 
 
   if (!email) {
     return res.status(400).json({ error: "Email is required in query parameters" });

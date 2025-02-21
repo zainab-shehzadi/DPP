@@ -83,7 +83,6 @@ else {
 
   const handleGoogleLogin = async () => {
     try {
-      // Fetch the Google Auth URL from the backend
       const response = await fetch(`${process.env.NEXT_PUBLIC_API_BASE_URL}/api/calendar/auth-url`);
       if (!response.ok) {
         throw new Error("Failed to fetch Google Auth URL.");
