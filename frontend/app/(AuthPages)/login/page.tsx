@@ -43,7 +43,7 @@ const Login: React.FC = () => {
       const data = await response.json();
       if (response.ok) {
         toast.success("Login successful! Redirecting......", { position: "top-right" }); // Success toast
-        console.log(data);
+    
   
         setCookie("token", data.token); 
         setCookie("email", data.email); 

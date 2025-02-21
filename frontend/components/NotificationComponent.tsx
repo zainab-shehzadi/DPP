@@ -9,7 +9,7 @@ const NotificationComponent: React.FC = () => {
   const [message, setMessage] = useState('');
 
 useEffect(() => {
-  const apiUrl = `${process.env.NEXT_PUBLIC_API_BASE_URL}/api/notifications`; // Corrected Template Literal
+  const apiUrl = `${process.env.NEXT_PUBLIC_API_BASE_URL}/api/notifications`;
 
   fetch(apiUrl)
     .then((response) => {
@@ -19,11 +19,10 @@ useEffect(() => {
       return response.json();
     })
     .then((data) => {
-      console.log("Fetched Notifications:", data);
       setNotifications(data);
     })
     .catch(async (err) => {
-      console.error("Error fetching notifications:", err);
+      //console.error("Error fetching notifications:", err);
       try {
         const textResponse = await fetch(apiUrl).then((res) => res.text());
         console.log("Raw Response (Not JSON):", textResponse);
