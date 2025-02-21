@@ -2,7 +2,7 @@
 import React, { useEffect, useState } from 'react';
 import io from 'socket.io-client';
 
-const socket = io('https://aa48-209-105-243-7.ngrok-free.app'); // Backend URL
+const socket = io(process.env.NEXT_PUBLIC_API_BASE_URL);
 
 const NotificationComponent: React.FC = () => {
   const [notifications, setNotifications] = useState<any[]>([]);

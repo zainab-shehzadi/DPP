@@ -5,7 +5,7 @@ import React, { useEffect, useState } from "react";
 import { FaBell } from "react-icons/fa";
 import io from "socket.io-client";
 import Cookies from "js-cookie";
-const socket = io("https://aa48-209-105-243-7.ngrok-free.app"); 
+const socket = io(process.env.NEXT_PUBLIC_API_BASE_URL);
 
 const NotificationIcon = () => {
   const [showNotifications, setShowNotifications] = useState<boolean>(false);

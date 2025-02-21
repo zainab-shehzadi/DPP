@@ -83,7 +83,7 @@ app.post('/api/notifications', async (req, res) => {
   res.status(201).json(notification);
 });
 app.use((req, res, next) => {
-  req.io = io; // Attach the Socket.IO instance to the req object
+  req.io = io;
   next();
 });
 
