@@ -2,18 +2,16 @@
 
 import React, { useState, useEffect } from "react";
 import {
-  FaClipboard,
+
   FaUserPlus,
   FaSignOutAlt,
   FaCog,
-  FaUser,
-  FaBuilding,
+  
 
 } from "react-icons/fa";
 import { toast } from "react-toastify";
-
 import MobileSidebar from "./MobileSidebar";
-import { useRouter } from "next/navigation"; // Correct import for Next.js App Router
+import { useRouter } from "next/navigation";
 
 
 interface SidebarProps {
@@ -22,7 +20,7 @@ interface SidebarProps {
 }
 
 const Sidebar: React.FC<SidebarProps> = ({ isSidebarOpen }) => {
-  const [settingsOpen, setSettingsOpen] = useState(false);
+ 
   const [isMobileView, setIsMobileView] = useState(false);
   const [activeItem, setActiveItem] = useState<string | null>(null);
   const [isModalOpen, setIsModalOpen] = useState(false);

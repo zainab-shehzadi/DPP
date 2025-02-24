@@ -58,16 +58,15 @@ const usersetting = () => {
   const leadershipRoles = roleCategories.leadership;
   const supportingRoles = roleCategories.supporting;
   const positions = departmentName ? departmentPositions[departmentName] || [] : [];
-
   const getAllUser = async () => {
     try {
-      const response = await axios.get(`${process.env.NEXT_PUBLIC_API_BASE_URL}/api/users/User123`);
+      const response = await axios.get("https://dpp-backend.vercel.app/api/users/User123");
       setUsers(response.data);
     } catch (error) {
       console.error("Error fetching data:", error);
     }
   };
-
+  
   useEffect(() => {
     getAllUser();
   }, []); 
@@ -182,7 +181,7 @@ const usersetting = () => {
 
   return (
     <div className="flex flex-col lg:flex-row h-screen">
-      {/* Sidebar Component */}
+ 
       <Sidebar isSidebarOpen={isSidebarOpen} toggleSidebar={toggleSidebar} />
 
       {/* Main Content */}
@@ -209,8 +208,8 @@ const usersetting = () => {
 
         {/* Progress Bar */}
         <div className="w-full sm:w-3/4 h-6 sm:h-12 lg:h-18 bg-[#002F6C] mt-2 rounded-lg mx-auto mb-8"></div>
-        <div className="overflow-x-auto mx-auto max-w-[980px]">
-        <table className=" w-full text-left border-collapse border border-[#F2F2F2]">
+        <div className="overflow-y-auto mx-auto max-w-[980px]">
+        <table className="max-w-[1200px] w-full text-left border-collapse border border-[#F2F2F2]">
         <thead>
       <tr className="bg-gray-100 text-black border-b border-[#F2F2F2]">
         <th className="px-6 py-6 text-left font-semibold text-sm">Select</th>
@@ -237,35 +236,36 @@ const usersetting = () => {
           <td className="py-4 px-6 text-gray-500 text-sm">{user.firstname}</td>
           <td className="py-4 px-6 text-gray-500 text-sm">{user.email}</td>
           <td className="py-4 px-4 sm:px-6 text-center">
-            <button
-              className="text-blue-500 hover:text-blue-700 mr-4"
-              onClick={() => handleUpdate(user._id)} 
-              title="Update User"
-            >
-              <Image
-                src="/assets/update.png"
-                alt="Update"
-                width={16}
-                height={16}
-                style={{ width: "auto", height: "auto" }}
-              />
-            </button>
-            <button
-  className="text-red-500 hover:text-red-700"
-  onClick={() => handleDeleteClick(user._id)} // Open confirmation modal
-  title="Delete User"
->
-  <Image
-    src="/assets/delete.png"
-    alt="Delete"
-    width={16}
-    height={16}
-    style={{ width: "auto", height: "auto" }}
-  />
-</button>
+  <div className="flex justify-center items-center space-x-2">
+    <button
+      className="text-blue-500 hover:text-blue-700"
+      onClick={() => handleUpdate(user._id)}
+      title="Update User"
+    >
+      <Image
+        src="/assets/update.png"
+        alt="Update"
+        width={16}  
+        height={16} 
+        style={{ width: "auto", height: "auto" }}
+      />
+    </button>
+    <button
+      className="text-red-500 hover:text-red-700"
+      onClick={() => handleDeleteClick(user._id)}
+      title="Delete User"
+    >
+      <Image
+        src="/assets/delete.png"
+        alt="Delete"
+        width={16}  
+        height={16} 
+        style={{ width: "auto", height: "auto" }}
+      />
+    </button>
+  </div>
+</td>
 
-
-          </td>
         </tr>
       ))}
     </tbody>

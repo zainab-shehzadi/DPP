@@ -21,16 +21,16 @@ const Adduser = () => {
   const toggleSidebar = () => setIsSidebarOpen(!isSidebarOpen);
   const [users, setUser] = useState<User[]>([]);
 
-  useEffect(() => {
-    axios.get(`${process.env.NEXT_PUBLIC_API_BASE_URL}/api/users/User123`)
-      .then(response => {
-        console.log('Fetched User Data:', response.data);
-        setUser(response.data);
-      })
-      .catch(error => {
-        console.error('Error fetching data:', error);
-      });
-  }, []);
+useEffect(() => {
+  axios.get("https://dpp-backend.vercel.app/api/users/User123")
+    .then(response => {
+      console.log('Fetched User Data:', response.data);
+      setUser(response.data);
+    })
+    .catch(error => {
+      console.error('Error fetching data:', error);
+    });
+}, []);
   return (
     <div className="flex flex-col lg:flex-row h-screen">
       
