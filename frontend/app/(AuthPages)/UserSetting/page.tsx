@@ -6,7 +6,7 @@ import React, { useState, useEffect } from "react";
 import Sidebar from "@/components/Admin-sidebar";
 import { toast } from "react-toastify";
 import authProtectedRoutes from "@/hoc/authProtectedRoutes";
-// Define the User interface
+import axios from 'axios';
 interface User {
   _id: string;
   createdAt: string;
@@ -61,19 +61,12 @@ const usersetting = () => {
 
   const getAllUser = async () => {
     try {
-      const response = await fetch(`${process.env.NEXT_PUBLIC_API_BASE_URL}/api/users/User123`);
-  
-      if (!response.ok) {
-        throw new Error(`HTTP error! Status: ${response.status}`);
-      }
-  
-      const data = await response.json();
-      setUsers(data);
+      const response = await axios.get(`${process.env.NEXT_PUBLIC_API_BASE_URL}/api/users/User123`);
+      setUsers(response.data);
     } catch (error) {
       console.error("Error fetching data:", error);
     }
   };
-  
 
   useEffect(() => {
     getAllUser();

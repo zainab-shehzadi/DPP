@@ -92,7 +92,7 @@ const renderTasksForColumn = (column: string) => {
 };
   const fetchTasks = async () => {
     try {
-      // Check if department is set
+ 
       if (!department) {
         console.error("Department is not specified.");
         return;
@@ -109,16 +109,13 @@ const renderTasksForColumn = (column: string) => {
         }
       );
   
-      // Parse the JSON response
       const data = await response.json();
-  
-      // Check for a successful response
       if (response.ok && data.success) {
         console.log("Tasks fetched successfully:", data.tasks);
   
       
         const updatedTasks = data.tasks.map((task) => {
-          let column = "Closed"; // Default to "Closed"
+          let column = "Closed"; 
           if (task.status === "pending") {
             column = "In Progress";
           } else if (task.status === "in-progress") {
@@ -141,7 +138,7 @@ const renderTasksForColumn = (column: string) => {
         );
       }
     } catch (error) {
-      console.error("Error fetching tasks:", error); // Log any errors
+      console.error("Error fetching tasks:", error); 
     }
   };
   const name = Cookies.get("role") || "Guest"; 

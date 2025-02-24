@@ -1,14 +1,13 @@
-"use client"; // <-- Add this line to mark this file as a client component
+"use client"; 
 
 import Image from 'next/image';
 import { FaBell } from 'react-icons/fa';
 import React, { useState ,useEffect} from "react";
-
-import Link from "next/link"; // Correct import for Link
+import axios from 'axios';
+import Link from "next/link"; 
 import Sidebar from "@/components/Admin-sidebar";
 import authProtectedRoutes from '@/hoc/authProtectedRoutes';
 
-// Define the User interface
 interface User {
   _id: string;
   createdAt: string;
@@ -22,20 +21,15 @@ const Adduser = () => {
   const toggleSidebar = () => setIsSidebarOpen(!isSidebarOpen);
   const [users, setUser] = useState<User[]>([]);
 
-  
   useEffect(() => {
-    fetch(`${process.env.NEXT_PUBLIC_API_BASE_URL}/api/users/User123`) // Replace 'User123' with a valid user ID from your database
+    axios.get(`${process.env.NEXT_PUBLIC_API_BASE_URL}/api/users/User123`)
       .then(response => {
-        if (!response.ok) {
-          throw new Error(`HTTP error! Status: ${response.status}`);
-        }
-        return response.json();
+        console.log('Fetched User Data:', response.data);
+        setUser(response.data);
       })
-      .then(data => {
-        console.log('Fetched User Data:', data); // Log the fetched data
-        setUser(data);
-      })
-      .catch(error => console.error('Error fetching data:', error));
+      .catch(error => {
+        console.error('Error fetching data:', error);
+      });
   }, []);
   return (
     <div className="flex flex-col lg:flex-row h-screen">

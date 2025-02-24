@@ -34,7 +34,7 @@ export default function Dashboard() {
               className="flex items-center py-2 px-4 hover:bg-white hover:text-blue-900 rounded-md font-poppins font-bold text-center text-medium leading-6"
             >
               <FaTachometerAlt className="mr-2" />
-              Dashboar
+              Dashboard
             </a>
             {dashboardOpen && (
               <ul className="ml-4 space-y-4">
