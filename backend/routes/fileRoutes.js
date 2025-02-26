@@ -158,6 +158,43 @@ router.post("/update-status", async (req, res) => {
   }
 });
 
+router.post("/delete-documents", async (req, res) => {
+  try {
+    const { email, documentIds } = req.body;
+
+    console.log("Received email:", email);
+    console.log("Received document IDs:", documentIds);
+
+    // Validate request body
+    if (!email || !documentIds || !Array.isArray(documentIds) || documentIds.length === 0) {
+      console.log("Validation Failed: Missing email or document IDs");
+      return res.status(400).json({ error: "Email and Document IDs are required." });
+    }
+
+    // Find and update the document by pulling out the selected files
+    const updatedFile = await File.findOneAndUpdate(
+      { email },
+      { $pull: { files: { _id: { $in: documentIds } } } }, // Remove matching files
+      { new: true }
+    );
+
+    if (!updatedFile) {
+      console.log("File Not Found");
+      return res.status(404).json({ error: "No matching files found for this email." });
+    }
+
+    res.status(200).json({
+      message: "Documents deleted successfully.",
+      updatedFiles: updatedFile.files, // Return updated list of files
+    });
+  } catch (error) {
+    console.error("Error deleting documents:", error);
+    res.status(500).json({ error: "Internal server error." });
+  }
+});
+
+
+
 
 
 router.get("/tags2",fetchTagsAndSolutionByEmail ); 

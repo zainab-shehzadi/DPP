@@ -202,7 +202,7 @@ const handleTagClick = async (tagName, tagId) => {
 
     fetchUserData();
   }, [email]); 
-  const name = Cookies.get("role") || "Guest"; 
+  const name = Cookies.get("name"); 
 
   return (
     <div className="flex flex-col lg:flex-row h-screen">
@@ -214,14 +214,14 @@ const handleTagClick = async (tagName, tagId) => {
       </div>
 
       {/* Sidebar Component */}
-      <Sidebar isSidebarOpen={isSidebarOpen} toggleSidebar={toggleSidebar} />
+      <Sidebar isSidebarOpen={isSidebarOpen}/>
 
       {/* Main Content */}
       <div className="lg:ml-64 p-4 sm:p-8 w-full">
         <header className="flex items-center justify-between mb-6 w-full flex-wrap">
           {/* Left Side: "Hello, User" */}
           <h2 className="text-lg sm:text-2xl lg:text-3xl font-bold">
-            Hello, <span className="text-blue-900">{name}</span>
+            Hello, <span className="text-blue-900 capitalize">{name}</span>
           </h2>
 
           {/* Right Side: Notification Icon and Profile */}

@@ -121,6 +121,10 @@ const loginUser = async (req, res) => {
   const { email, password } = req.body;
 
   try {
+    if (!email || !password) {
+      return res.status(400).json({ message: "Email and password are required." });
+    }
+
     // Check email in both User and Admin collections
     const [user, admin] = await Promise.all([
       User.findOne({ email }),
@@ -128,9 +132,9 @@ const loginUser = async (req, res) => {
     ]);
 
     if (user && (await bcrypt.compare(password, user.password))) {
-      // User found, return full response
       const responseData = {
         _id: user.id,
+        name: user.firstname, // ✅ Fix: Ensure 'name' field is included
         email: user.email,
         role: user.role,
         DepartmentName: user.DepartmentName,
@@ -146,6 +150,7 @@ const loginUser = async (req, res) => {
     if (admin && (await bcrypt.compare(password, admin.password))) {
       const responseData = {
         email: admin.email,
+        name: admin.name || "Admin", // ✅ Fix: Ensure name is properly assigned
         role: "admin",
         token: generateToken(admin.id),
       };

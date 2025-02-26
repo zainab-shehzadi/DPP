@@ -15,8 +15,8 @@ interface DocumentType {
 export default function Dashboard() {
   const [isSidebarOpen, setIsSidebarOpen] = useState(false);
   const [dropdownOpen, setDropdownOpen] = useState(false);
-  const [facilities, setFacilities] = useState<string[]>([]); // Explicitly set the type to string[]
-  const [email, setEmail] = useState<string | null>(null); // Email from localStorage
+  const [facilities, setFacilities] = useState<string[]>([]); 
+  const [email, setEmail] = useState<string | null>(null);
   const toggleDropdown = () => setDropdownOpen(!dropdownOpen);
   const toggleSidebar = () => setIsSidebarOpen(!isSidebarOpen);
   const dropdownRef = useRef<HTMLDivElement>(null);
@@ -155,7 +155,7 @@ export default function Dashboard() {
   
     fetchDocuments();
   }, []);
-  const name = Cookies.get("role") || "Guest"; 
+  const name = Cookies.get("name"); 
 
   return (
     <div className="flex flex-col lg:flex-row">
@@ -167,13 +167,13 @@ export default function Dashboard() {
       </div>
 
       {/* Sidebar Component */}
-      <Sidebar isSidebarOpen={isSidebarOpen} toggleSidebar={toggleSidebar} />
+      <Sidebar isSidebarOpen={isSidebarOpen} />
 
       {/* Main Content */}
       <div className="lg:ml-64 p-4 sm:p-8 w-full">
         <header className="flex items-center justify-between mb-6 w-full flex-wrap">
           <h2 className="text-lg sm:text-2xl lg:text-3xl font-bold">
-            Hello, <span className="text-blue-900">{name}</span>
+            Hello, <span className="text-blue-900 capitalize">{name}</span>
           </h2>
           
           <div className="flex items-center space-x-2 sm:space-x-4 mt-2 sm:mt-0">

@@ -5,6 +5,7 @@ import { FaBell } from "react-icons/fa";
 import React, { useState, useEffect } from "react";
 import Sidebar from "@/components/Sidebar";
 import authProtectedRoutes from "@/hoc/authProtectedRoutes";
+import Cookies from "js-cookie"; 
 
 function facilitySetting(){
   const [isEditing, setIsEditing] = useState(false);
@@ -148,6 +149,7 @@ const handleSaveChanges = async () => {
 
 const handleEditClick = () => {requestAdminApproval();};
 
+  const name = Cookies.get("name"); 
 
   return (
     <div className="flex flex-col lg:flex-row h-screen">
@@ -160,14 +162,14 @@ const handleEditClick = () => {requestAdminApproval();};
       </div>
 
       {/* Sidebar */}
-      <Sidebar isSidebarOpen={isSidebarOpen} toggleSidebar={toggleSidebar} />
+      <Sidebar isSidebarOpen={isSidebarOpen}/>
 
       {/* Main Content */}
       <div className="lg:ml-64 p-4 sm:p-8 w-full">
         {/* Header */}
         <header className="flex flex-col sm:flex-row justify-between items-center mb-6">
           <h2 className="text-2xl sm:text-3xl font-bold">
-            Hello, <span className="text-blue-900">User</span>
+            Hello, <span className="text-blue-900 capitalize">{name}</span>
           </h2>
           <div className="flex items-center space-x-4 mt-4 sm:mt-0">
             <FaBell className="text-gray-500 text-lg" />
@@ -207,7 +209,7 @@ const handleEditClick = () => {requestAdminApproval();};
                 alt="Profile Picture"
               />
               <div className="sm:ml-6 mt-4 sm:mt-0 text-center sm:text-left">
-                <h3 className="text-xl font-bold">Alexa Rawles</h3>
+                <h3 className="text-xl font-bold capitalize">{name}</h3>
                 <div>
       {email ? (
         <p className="text-gray-500">{email}</p> // Display email if fetched successfully

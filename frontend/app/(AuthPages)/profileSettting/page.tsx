@@ -5,6 +5,7 @@ import React, { useState, useEffect } from "react";
 import Sidebar from "@/components/Sidebar";
 import authProtectedRoutes from "@/hoc/authProtectedRoutes";
 import { toast } from "react-toastify";
+import Cookies from "js-cookie";
 
 function profileSetting() {
   const [isSidebarOpen, setIsSidebarOpen] = useState(false);
@@ -45,7 +46,6 @@ function profileSetting() {
   const leadershipRoles = roleCategories.leadership;
   const supportingRoles = roleCategories.supporting;
 
-  // Positions based on selected department
   const positions = departmentName ? departmentPositions[departmentName] || [] : [];
 
   const getCookie = (name: string) => {
@@ -91,7 +91,6 @@ function profileSetting() {
       toast.error("Failed to fetch user data. Please try again.");
     }
   };
-
   const handleSave = async () => {
     const updatedData = {
       firstname: firstName,
@@ -113,6 +112,12 @@ function profileSetting() {
         }
       );
       if (!response.ok) throw new Error("Failed to update user data.");
+      const responseData = await response.json(); 
+
+    if (responseData.firstname) {
+      Cookies.set("name", responseData.firstname);
+    }
+
       toast.success("User data updated successfully!");
       setIsEditing(false);
     } catch (error) {
@@ -122,12 +127,12 @@ function profileSetting() {
 
   return (
     <div className="flex flex-col lg:flex-row h-screen">
-      <Sidebar isSidebarOpen={isSidebarOpen} toggleSidebar={toggleSidebar} />
+      <Sidebar isSidebarOpen={isSidebarOpen} />
 
       <div className="lg:ml-64 p-4 sm:p-8 w-full">
         <header className="flex flex-col sm:flex-row justify-between items-center mb-6">
           <h2 className="text-2xl sm:text-3xl font-bold">
-            Hello, <span className="text-blue-900">{firstName || "User"}</span>
+            Hello, <span className="text-blue-900 capitalize">{firstName || "User"}</span>
           </h2>
         </header>
   {/* Date Display */}
@@ -151,7 +156,7 @@ function profileSetting() {
                 alt="Profile Picture"
               />
               <div className="sm:ml-6 mt-4 sm:mt-0 text-center sm:text-left">
-                <h3 className="text-xl font-bold">{firstName}</h3>
+                <h3 className="text-xl font-bold capitalize">{firstName}</h3>
                 <p className="text-gray-500">{email}</p>
               </div>
 

@@ -67,21 +67,21 @@ export default function Dashboard() {
   const handleFileUpload = async () => {
     if (!file) {
       setUploadStatus("Please select a file to upload.");
+      setTimeout(() => setUploadStatus(""), 3000);
       return;
     }
+  
     if (!email) {
       setUploadStatus("Email is missing. Please sign in again.");
+      setTimeout(() => setUploadStatus(""), 3000);
       return;
     }
   
     const formData = new FormData();
-    formData.append("file", file); 
-    formData.append("email", email); 
+    formData.append("file", file);
+    formData.append("email", email);
   
     try {
-     
-  
-
       const response = await axios.post(
         `${process.env.NEXT_PUBLIC_API_BASE_URL}/api/files/upload`,
         formData,
@@ -92,24 +92,23 @@ export default function Dashboard() {
         }
       );
   
-    
-     const uploadedFileId = response.data?.documentId;
-
-      console.log(uploadedFileId);
-      setUploadStatus("Upload successful!");
-      setFile(null);
-  
-  
-      router.push(`/UploadDoc`);
+      if (response.status === 201) {
+        setUploadStatus("Upload successful!");
+        setFile(null);
+        router.push(`/UploadDoc`);
+      } else {
+        setUploadStatus("Unexpected error occurred.");
+      }
     } catch (error: any) {
- 
-      console.error(
-        "Error during file upload:",
-        error.response?.data || error.message
-      );
-      setUploadStatus("Error uploading file. Please try again.");
+      if (error.response && error.response.status === 400 && error.response.data?.error === "File already exists.") {
+        setUploadStatus("File already exists.");
+      } else {
+        setUploadStatus("File upload failed. Please try again.");
+      }
+        setTimeout(() => setUploadStatus(""), 3000);
     }
   };
+  
   
   const handleFileSelect = (e) => {
     const uploadedFile = e.target.files[0]; 
@@ -120,7 +119,7 @@ export default function Dashboard() {
     setFile(uploadedFile); 
     setUploadStatus(`File "${uploadedFile.name}" is ready to upload.`); 
   };
-  const name = Cookies.get("role") || "Guest"; 
+  const name = Cookies.get("name"); 
 
 
   return (
@@ -134,14 +133,13 @@ export default function Dashboard() {
 
   <Sidebar 
     isSidebarOpen={isSidebarOpen} 
-    toggleSidebar={toggleSidebar} 
   />
 
   {/* Main Content */}
   <div className="lg:ml-64 p-4 sm:p-8 md:px-12 lg:px-16 xl:px-20 w-full">
     <header className="flex items-center justify-between mb-6 w-full flex-wrap">
     <h2 className="text-lg sm:text-2xl lg:text-3xl font-bold">
-  Hello, <span className="text-blue-900">{name}</span>
+  Hello, <span className="text-blue-900 capitalize">{name}</span>
 </h2>
       <div className="flex items-center space-x-2 sm:space-x-4 mt-2 sm:mt-0">
       < Notification/>

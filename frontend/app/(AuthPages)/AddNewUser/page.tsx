@@ -61,9 +61,16 @@ useEffect(() => {
 
         {/* Date Display */}
         <div className="flex justify-end pr-4 sm:pr-12 lg:pr-48 mb-4">
-          <div className="border-2 border-black px-5 py-3 rounded-lg shadow-md text-sm bg-white">
+          {/* <div className="border-2 border-black px-5 py-3 rounded-lg shadow-md text-sm bg-white">
             <span className="text-black">30 November 2024</span>
-          </div>
+          </div> */}
+          <span className="text-black">
+    {new Date().toLocaleDateString("en-GB", {
+      day: "numeric",
+      month: "long",
+      year: "numeric",
+    })}
+  </span>
         </div>
 
         {/* Progress Bar */}

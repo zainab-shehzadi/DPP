@@ -59,20 +59,20 @@ const FileSchema = new mongoose.Schema({
     {
       originalName: {
         type: String,
-        required: true, // Original name of the uploaded file
+        required: true,
       },
       fileUrl: {
         type: String,
-        required: true, // URL where the file is stored (e.g., S3)
+        required: true, 
        
       },
       filePath: {
         type: String,
-        required: false, // ✅ Changed to optional since S3 uploads may not have a local path
+        required: false, 
        
       },
       tags: {
-        type: [TagSchema], // Array of tags with descriptions and a response field
+        type: [TagSchema], 
         default: [],
       },
       uploadedAt: {

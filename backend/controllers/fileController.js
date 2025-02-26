@@ -54,6 +54,87 @@ const parsePdfContent = async (fileBuffer) => {
   }
 };
 
+// const uploadFile = async (req, res) => {
+//   try {
+//     if (!req.file) {
+//       return res.status(400).json({ error: "No file uploaded." });
+//     }
+
+//     const { email } = req.body;
+//     if (!email) {
+//       return res.status(400).json({ error: "Email is required." });
+//     }
+
+//      // Check if a file with the same original name already exists for the given email
+//      let existingFileEntry = await File.findOne({ email, "files.originalName": req.file.originalname });
+
+//      if (existingFileEntry) {
+//        return res.status(400).json({ error: "File already exists with the same name." });
+//      }
+ 
+//     const fileUrl = await uploadToS3(req.file);
+
+  
+//     const fileContent = await parsePdfContent(req.file.buffer);
+//     const extractedTags = fileContent.match(/F \d{4}/g) || [];
+//     const tagsWithDescriptions = extractedTags.map((tag) => {
+//       const tagIndex = fileContent.indexOf(tag);
+//       const shortDescription = fileContent.substring(tagIndex, tagIndex + 100).split(".")[0].trim();
+      
+//       const longDescriptionStartIndex = tagIndex + 100;
+//       let longDescriptionEndIndex = fileContent.indexOf("(continued on next page)", longDescriptionStartIndex);
+//       if (longDescriptionEndIndex === -1) longDescriptionEndIndex = fileContent.length;
+//       const longDescription = fileContent.substring(longDescriptionStartIndex, longDescriptionEndIndex).trim();
+
+//       return { tag, shortDescription, longDescription };
+//     });
+
+//     let fileEntry = await File.findOne({ email });
+
+//     let documentId;
+//     if (fileEntry) {
+//       fileEntry.files.push({
+//         originalName: req.file.originalname,
+//         fileUrl, 
+//         filePath: req.file.path || "", 
+//         tags: tagsWithDescriptions,
+//         uploadedAt
+//       });
+//       await fileEntry.save();
+//       documentId = fileEntry.files[fileEntry.files.length - 1]._id;
+//     } else {
+//       fileEntry = await File.create({
+//         email,
+//         files: [{
+//           originalName: req.file.originalname,
+//           fileUrl,
+//           filePath: req.file.path || "", 
+//           tags: tagsWithDescriptions,
+//           uploadedAt
+//         }],
+//       });
+//       documentId = fileEntry.files[0]._id;
+//     }
+    
+//     req.io.emit("documentUploaded", {
+//       message: `A new document "${req.file.originalname}" has been uploaded!`,
+//       documentName: req.file.originalname,
+//       documentId,
+//     });
+
+//     res.status(201).json({
+//       message: "File uploaded to AWS S3 and parsed successfully!",
+//       documentId,
+//       fileUrl,
+//       tags: tagsWithDescriptions,
+//       uploadedAt
+//     });
+//   } catch (error) {
+//     console.error("Error in file upload:", error.message);
+//     res.status(500).json({ error: "File upload failed.", details: error.message });
+//   }
+// };
+
 const uploadFile = async (req, res) => {
   try {
     if (!req.file) {
@@ -64,16 +145,29 @@ const uploadFile = async (req, res) => {
     if (!email) {
       return res.status(400).json({ error: "Email is required." });
     }
+
+    // Check if a file with the same original name already exists for the given email
+    let existingFileEntry = await File.findOne({ email, "files.originalName": req.file.originalname });
+
+    if (existingFileEntry) {
+      return res.status(400).json({
+        error: "File already exists.",
+        message: `A file named "${req.file.originalname}" has already been uploaded.`,
+        existingFile: existingFileEntry.files.find(file => file.originalName === req.file.originalname),
+      });
+    }
+
+    // Upload file to S3
     const fileUrl = await uploadToS3(req.file);
 
-  
+    // Extract and parse content from the PDF
     const fileContent = await parsePdfContent(req.file.buffer);
     const extractedTags = fileContent.match(/F \d{4}/g) || [];
     const tagsWithDescriptions = extractedTags.map((tag) => {
       const tagIndex = fileContent.indexOf(tag);
-      const shortDescription = fileContent.substring(tagIndex, tagIndex + 100).split(".")[0].trim();
-      
-      const longDescriptionStartIndex = tagIndex + 100;
+      const shortDescription = fileContent.substring(tagIndex, tagIndex + 92).split(".")[0].trim();
+
+      const longDescriptionStartIndex = tagIndex + 91;
       let longDescriptionEndIndex = fileContent.indexOf("(continued on next page)", longDescriptionStartIndex);
       if (longDescriptionEndIndex === -1) longDescriptionEndIndex = fileContent.length;
       const longDescription = fileContent.substring(longDescriptionStartIndex, longDescriptionEndIndex).trim();
@@ -82,13 +176,14 @@ const uploadFile = async (req, res) => {
     });
 
     let fileEntry = await File.findOne({ email });
-
     let documentId;
+    const uploadedAt = new Date();
+
     if (fileEntry) {
       fileEntry.files.push({
         originalName: req.file.originalname,
-        fileUrl, 
-        filePath: req.file.path || "", 
+        fileUrl,
+        filePath: req.file.path || "",
         tags: tagsWithDescriptions,
         uploadedAt
       });
@@ -100,14 +195,14 @@ const uploadFile = async (req, res) => {
         files: [{
           originalName: req.file.originalname,
           fileUrl,
-          filePath: req.file.path || "", 
+          filePath: req.file.path || "",
           tags: tagsWithDescriptions,
           uploadedAt
         }],
       });
       documentId = fileEntry.files[0]._id;
     }
-    
+
     req.io.emit("documentUploaded", {
       message: `A new document "${req.file.originalname}" has been uploaded!`,
       documentName: req.file.originalname,
@@ -126,8 +221,6 @@ const uploadFile = async (req, res) => {
     res.status(500).json({ error: "File upload failed.", details: error.message });
   }
 };
-
-
 const fetchTagsByEmail = async (req, res) => {
   const { email, id } = req.query; 
 

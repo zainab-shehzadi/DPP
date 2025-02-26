@@ -26,12 +26,10 @@ const Login: React.FC = () => {
     if (parts.length === 2) return parts.pop()?.split(";").shift();
     return null;
   };
-
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
-    Cookies.get("verifystatus");
+  
     try {
-   
       const response = await fetch(`${process.env.NEXT_PUBLIC_API_BASE_URL}/api/users/login`, {
         method: "POST",
         headers: {
@@ -41,45 +39,44 @@ const Login: React.FC = () => {
       });
   
       const data = await response.json();
-      if (response.ok) {
-        toast.success("Login successful! Redirecting......", { position: "top-right" }); // Success toast
-    
   
-        setCookie("token", data.token); 
-        setCookie("email", data.email); 
-        setCookie("role", data.role);   
-        setCookie("DepartmentName", data.DepartmentName);
-        setCookie("priceType", data.priceType); 
-        setCookie("priceCycle", data.priceCycle); 
-
-        const storedEmail = getCookie("email");
+      if (response.ok) {
+        toast.success("Login successful! Redirecting...", { position: "top-right" });
+  
+        // ✅ Ensure correct field names
+        setCookie("name", data.name); // Fix: Changed from 'data.firstname' to 'data.name'
+        setCookie("token", data.token);
+        setCookie("email", data.email);
+        setCookie("role", data.role);
+        setCookie("DepartmentName", data.DepartmentName || "");
+        setCookie("priceType", data.priceType || "");
+        setCookie("priceCycle", data.priceCycle || "");
+  
         const storedRole = getCookie("role");
         const priceCycle = getCookie("priceCycle");
-        
-       if (storedEmail && storedRole) {
-  if (storedRole === "admin") {
-    setTimeout(() => {
-      router.push(`/UserSetting`);
-    }, 2000);
-  } else if (priceCycle === "Annual" || priceCycle === "Bi-Annual") {
-    setTimeout(() => {
-      router.push(`/Dashboard`);
-    }, 2000);
-  } else if (priceCycle === null || priceCycle === "null") {
-    setTimeout(() => {
-      router.push(`/Pricing`);
-    }, 3000);
-  }
-}
-else {
-          toast.error("Email or role is missing. Please log in again.", { position: "top-right" });}
-      } else {setMessage(data.message || "Login failed!");}
   
+        if (storedRole === "admin") {
+          setTimeout(() => {
+            router.push(`/UserSetting`);
+          }, 2000);
+        } else if (priceCycle === "Annual" || priceCycle === "Bi-Annual") {
+          setTimeout(() => {
+            router.push(`/Dashboard`);
+          }, 2000);
+        } else if (!priceCycle || priceCycle === "null") {
+          setTimeout(() => {
+            router.push(`/Pricing`);
+          }, 3000);
+        }
+      } else {
+        toast.error(data.message || "Login failed!", { position: "top-right" });
+      }
     } catch (error) {
       console.error("Error:", error);
-      setMessage("An error occurred. Please try again."); // Show error message on failure
+      toast.error("An error occurred. Please try again.", { position: "top-right" });
     }
   };
+  
 
   const handleGoogleLogin = async () => {
     try {
