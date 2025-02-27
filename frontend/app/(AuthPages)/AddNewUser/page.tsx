@@ -7,6 +7,7 @@ import axios from 'axios';
 import Link from "next/link"; 
 import Sidebar from "@/components/Admin-sidebar";
 import authProtectedRoutes from '@/hoc/authProtectedRoutes';
+import DateDisplay from '@/components/date';
 
 interface User {
   _id: string;
@@ -35,10 +36,9 @@ useEffect(() => {
     <div className="flex flex-col lg:flex-row h-screen">
       
     
-       {/* Mobile Toggle Button */}
-       <div className="lg:hidden flex items-center justify-between px-4 py-2 bg-[#002F6C] text-white">
-        <div className="h-12 w-12 bg-cover bg-center" style={{ backgroundImage: "url('/assets/logo.avif')" }}></div>
-      </div>
+      <div className="lg:hidden flex items-center justify-between px-4 py-2 bg-[#002F6C] text-white">
+  <img src="/assets/logo-dpp1.png" alt="Logo" className="h-8 w-auto" />
+</div>
 
       {/* Sidebar Component */}
       <Sidebar isSidebarOpen={isSidebarOpen} toggleSidebar={toggleSidebar} />
@@ -51,7 +51,6 @@ useEffect(() => {
             Hello, <span className="text-blue-900">User</span>
           </h2>
           <div className="flex items-center space-x-4 mt-4 sm:mt-0">
-            <FaBell className="text-gray-500 text-lg" />
             <div className="flex items-center border border-gray-300 p-2 rounded-md space-x-2">
               <Image src="/assets/image.png" width={40} height={40} className="rounded-full" alt="User Profile" />
               <span className="text-gray-800">User</span>
@@ -60,18 +59,7 @@ useEffect(() => {
         </header>
 
         {/* Date Display */}
-        <div className="flex justify-end pr-4 sm:pr-12 lg:pr-48 mb-4">
-          {/* <div className="border-2 border-black px-5 py-3 rounded-lg shadow-md text-sm bg-white">
-            <span className="text-black">30 November 2024</span>
-          </div> */}
-          <span className="text-black">
-    {new Date().toLocaleDateString("en-GB", {
-      day: "numeric",
-      month: "long",
-      year: "numeric",
-    })}
-  </span>
-        </div>
+        <div className="flex justify-end pr-4 sm:pr-12 lg:pr-48 mb-4"><DateDisplay/></div>
 
         {/* Progress Bar */}
         <div className="w-full sm:w-3/4 h-6 sm:h-12 lg:h-10 bg-[#002F6C] mt-2 rounded-lg mx-auto mb-8"></div>
@@ -110,18 +98,21 @@ useEffect(() => {
           </tr>
         </thead>
         <tbody>
-          {users.map((user, index) => (
-            <tr key={index} className="hover:bg-gray-100 border-b border-[#F2F2F2] text-gray-900">
-              <td className="py-5 px-8">
-                <input type="checkbox" className="w-5 h-5 rounded border-gray-300" />
-              </td>
-              <td className="py-4 px-6 text-blue-700 font-medium">#{user._id}</td>
-              <td className="py-4 px-6 text-gray-500">{user.createdAt}</td>
-              <td className="py-4 px-6 text-gray-500">{user.firstname}</td>
-              <td className="py-4 px-6 text-gray-500">{user.email}</td>
-            </tr>
-          ))}
-        </tbody>
+  {[...new Map(users.map(user => [user._id, user])).values()] // Remove duplicates
+    .sort((a, b) => new Date(b.createdAt).getTime() - new Date(a.createdAt).getTime()) // Sort in descending order
+    .map((user, index) => (
+      <tr key={user._id} className="hover:bg-gray-100 border-b border-[#F2F2F2] text-gray-900">
+        <td className="py-5 px-8">
+          <input type="checkbox" className="w-5 h-5 rounded border-gray-300" />
+        </td>
+        <td className="py-4 px-6 text-blue-700 font-medium">#{user._id}</td>
+        <td className="py-4 px-6 text-gray-500">{user.createdAt}</td>
+        <td className="py-4 px-6 text-gray-500">{user.firstname}</td>
+        <td className="py-4 px-6 text-gray-500">{user.email}</td>
+      </tr>
+    ))}
+</tbody>
+
       </table>
     </div>
       </div>

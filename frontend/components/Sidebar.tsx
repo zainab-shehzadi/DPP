@@ -209,20 +209,37 @@ const Sidebar: React.FC<SidebarProps> = ({ isSidebarOpen }) => {
             </ul>
           </div>
 
-          {/* Logout Confirmation Modal */}
-          {isModalOpen && (
-            <div className="fixed top-0 left-0 z-50 w-screen min-h-screen h-full bg-[#00000035] flex justify-center items-center">
-              <div className="bg-white p-6 text-center w-[400px] rounded-md">
-                <p className="text-lg font-bold text-gray-900">
-                  Are you sure you want to log out?
-                </p>
-                <div className="mt-6 flex justify-between">
-                  <button className="border border-gray-300 text-black px-6 py-2 rounded-md w-full mr-2" onClick={() => setIsModalOpen(false)}>Cancel</button>
-                  <button className="bg-[#002D62] text-white px-6 py-2 rounded-md w-full ml-2" onClick={handleConfirmLogout}>Log out</button>
-                </div>
-              </div>
-            </div>
-          )}
+         {/* Logout Confirmation Modal */}
+{isModalOpen && (
+  <div
+    className="fixed inset-0 z-50 w-screen min-h-screen h-full bg-[#00000035] flex justify-center items-center"
+    onClick={() => setIsModalOpen(false)} // Close when clicking outside
+  >
+    <div
+      className="bg-white p-8 text-center max-w-md w-full rounded-md shadow-lg"
+      onClick={(e) => e.stopPropagation()} // Prevent close when clicking inside
+    >
+      <p className="text-lg font-bold text-gray-900">
+        Are you sure you want to log out?
+      </p>
+      <div className="mt-6 flex justify-between">
+        <button
+          className="border border-gray-300 text-black px-6 py-2 rounded-md w-full mr-2"
+          onClick={() => setIsModalOpen(false)}
+        >
+          Cancel
+        </button>
+        <button
+          className="bg-[#002D62] text-white px-6 py-2 rounded-md w-full ml-2"
+          onClick={handleConfirmLogout}
+        >
+          Log out
+        </button>
+      </div>
+    </div>
+  </div>
+)}
+
         </nav>
       )}
     </>

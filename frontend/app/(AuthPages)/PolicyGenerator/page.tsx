@@ -24,14 +24,13 @@ export default function Dashboard() {
   return (
     <div className="flex flex-col lg:flex-row">
       
-      {/* Mobile Toggle Button */}
       <div className="lg:hidden flex items-center justify-between px-4 py-2 bg-[#002F6C] text-white">
-        <div className="h-12 w-12 bg-cover bg-center" style={{ backgroundImage: "url('/assets/logo.avif')" }}></div>
-      </div>
+  <img src="/assets/logo-dpp1.png" alt="Logo" className="h-8 w-auto" />
+</div>
 
       <Sidebar
         isSidebarOpen={isSidebarOpen}
-        toggleSidebar={toggleSidebar}
+
       />
       {/* Main Content */}
       <div className="lg:ml-64 p-4 sm:p-8 w-full">

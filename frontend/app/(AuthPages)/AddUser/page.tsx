@@ -5,6 +5,7 @@ import { FaBell } from "react-icons/fa";
 import React, { useState } from "react";
 import { toast } from "react-toastify";
 import Sidebar from "@/components/Admin-sidebar";
+import DateDisplay from '@/components/date';
 
 export default function Dashboard() {
   const router = useRouter(); 
@@ -182,7 +183,7 @@ const handleSubmit = async () => {
       <div className="lg:hidden flex items-center justify-between px-4 py-2 bg-[#002F6C] text-white">
         <div
           className="h-12 w-12 bg-cover bg-center"
-          style={{ backgroundImage: "url('/assets/logo.avif')" }}
+          style={{ backgroundImage: "url('/assets/logo-dpp1.png')" }}
         ></div>
       </div>
 
@@ -196,7 +197,6 @@ const handleSubmit = async () => {
             Hello, <span className="text-blue-900">User</span>
           </h2>
           <div className="flex items-center space-x-2 sm:space-x-4 mt-2 sm:mt-0">
-            <FaBell className="text-gray-500 text-base sm:text-lg lg:text-xl" />
             <div className="flex items-center border border-gray-300 p-1 sm:p-2 rounded-md space-x-2">
               <Image
                 src="/assets/image.png"
@@ -211,12 +211,7 @@ const handleSubmit = async () => {
             </div>
           </div>
         </header>
-{/* Date Display */}
-<div className="flex justify-end pr-4 sm:pr-12 md:pr-24 lg:pr-48 mb-4">
-  <div className="border border-black px-3 py-2 sm:px-4 sm:py-3 rounded-lg shadow-md text-xs sm:text-sm md:text-base bg-white">
-    <span className="text-black">30 November 2024</span>
-  </div>
-</div>
+        <div className="flex justify-end pr-4 sm:pr-12 lg:pr-48 mb-4"><DateDisplay/></div>
 
 <div className="w-full sm:w-3/4 h-6 sm:h-12 lg:h-10 bg-[#002F6C] mt-2 rounded-lg mx-auto mb-8"></div>
 {/* Add User Form */}

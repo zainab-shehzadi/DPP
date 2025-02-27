@@ -6,6 +6,8 @@ import Sidebar from "@/components/Sidebar";
 import authProtectedRoutes from "@/hoc/authProtectedRoutes";
 import { toast } from "react-toastify";
 import Cookies from "js-cookie";
+import UserDropdown from '@/components/profile-dropdown'
+import DateDisplay from "@/components/date";
 
 function profileSetting() {
   const [isSidebarOpen, setIsSidebarOpen] = useState(false);
@@ -124,6 +126,7 @@ function profileSetting() {
       toast.error("Failed to update user data. Please try again.");
     }
   };
+  const name = Cookies.get("name"); 
 
   return (
     <div className="flex flex-col lg:flex-row h-screen">
@@ -132,144 +135,149 @@ function profileSetting() {
       <div className="lg:ml-64 p-4 sm:p-8 w-full">
         <header className="flex flex-col sm:flex-row justify-between items-center mb-6">
           <h2 className="text-2xl sm:text-3xl font-bold">
-            Hello, <span className="text-blue-900 capitalize">{firstName || "User"}</span>
+            Hello, <span className="text-blue-900 capitalize">{name || "User"}</span>
           </h2>
+          <div className="flex items-center space-x-2 sm:space-x-4 mt-2 sm:mt-0">
+     
+      <UserDropdown />
+      </div>
         </header>
   {/* Date Display */}
   <div className="flex justify-end pr-12 sm:pr-48 mb-4">
-          <div className="border-2 border-black px-5 py-3 rounded-lg shadow-md text-sm bg-white">
-            <span className="text-black">30 November 2024</span>
-          </div>
+             {/* Date */}
+             <div className="relative flex items-center space-x-2">
+                 <DateDisplay/>
+                 </div>
         </div>
 
         {/* Progress Bar */}
         <div className="w-full sm:w-3/4 h-12 sm:h-20 bg-[#002F6C] mt-2 rounded-lg mx-auto"></div>
 
         <div className="w-full sm:w-3/4 mx-auto mt-8">
-          <section className="bg-white p-6 rounded-lg shadow-md">
-          <div className="flex flex-col sm:flex-row items-center mb-6">
-              <Image
-                src="/assets/user.png" // Replace with your own image path
-                width={100}
-                height={100}
-                className="rounded-full"
-                alt="Profile Picture"
-              />
-              <div className="sm:ml-6 mt-4 sm:mt-0 text-center sm:text-left">
-                <h3 className="text-xl font-bold capitalize">{firstName}</h3>
-                <p className="text-gray-500">{email}</p>
-              </div>
-
-             
-            </div>
-            <div className="grid grid-cols-1 sm:grid-cols-2 gap-6">
-              <div>
-                <label className="block text-gray-700">First Name</label>
-                <input
-                  type="text"
-                  value={firstName}
-                  onChange={(e) => setFirstName(e.target.value)}
-                  disabled={!isEditing}
-                  className={`mt-2 w-full p-2 rounded-md ${
-                    isEditing ? "bg-[#e2f3ff]" : "bg-[#F9F9F9]"
-                  }`}
-                />
-              </div>
-              <div>
-                <label className="block text-gray-700">Last Name</label>
-                <input
-                  type="text"
-                  value={lastName}
-                  onChange={(e) => setLastName(e.target.value)}
-                  disabled={!isEditing}
-                  className={`mt-2 w-full p-2 rounded-md ${
-                    isEditing ? "bg-[#e2f3ff]" : "bg-[#F9F9F9]"
-                  }`}
-                />
-              </div>
-              <div>
-                <label className="block text-gray-700">Department</label>
-                <select
-                  value={departmentName}
-                  onChange={(e) => setDepartmentName(e.target.value)}
-                  disabled={!isEditing}
-                  className={`mt-2 w-full p-2 rounded-md ${
-                    isEditing ? "bg-[#e2f3ff]" : "bg-[#F9F9F9]"
-                  }`}
-                >
-                  <option value="" disabled>
-                    Select a Department
-                  </option>
-                  {Object.keys(departmentPositions).map((dept) => (
-                    <option key={dept} value={dept}>
-                      {dept}
-                    </option>
-                  ))}
-                </select>
-              </div>
-              <div>
-                <label className="block text-gray-700">Position</label>
-                <select
-                  value={position}
-                  onChange={(e) => setPosition(e.target.value)}
-                  disabled={!isEditing || !positions.length}
-                  className={`mt-2 w-full p-2 rounded-md ${
-                    isEditing ? "bg-[#e2f3ff]" : "bg-[#F9F9F9]"
-                  }`}
-                >
-                  <option value="" disabled>
-                    {positions.length ? "Select a Position" : "Select a Department First"}
-                  </option>
-                  {positions.map((pos) => (
-                    <option key={pos} value={pos}>
-                      {pos}
-                    </option>
-                  ))}
-                </select>
-              </div>
-              <div>
-                <label className="block text-gray-700">Role</label>
-                <select
-                  value={role}
-                  onChange={(e) => setRole(e.target.value)}
-                  disabled={!isEditing}
-                  className={`mt-2 w-full p-2 rounded-md ${
-                    isEditing ? "bg-[#e2f3ff]" : "bg-[#F9F9F9]"
-                  }`}
-                >
-                  <option value="" disabled>
-                    Select a Role
-                  </option>
-                  <optgroup label="Leadership Roles">
-                    {leadershipRoles.map((roleOption) => (
-                      <option key={roleOption} value={roleOption}>
-                        {roleOption}
-                      </option>
-                    ))}
-                  </optgroup>
-                  <optgroup label="Supporting Roles">
-                    {supportingRoles.map((roleOption) => (
-                      <option key={roleOption} value={roleOption}>
-                        {roleOption}
-                      </option>
-                    ))}
-                  </optgroup>
-                </select>
-              </div>
-            </div>
-            <div className="mt-6 text-center">
-              <button
-                className="bg-blue-900 text-white px-6 py-2 rounded-md"
-                onClick={() => {
-                  if (isEditing) handleSave();
-                  setIsEditing(!isEditing);
-                }}
-              >
-                {isEditing ? "Save" : "Edit"}
-              </button>
-            </div>
-          </section>
+      <section className="bg-white p-6 rounded-lg shadow-md relative">
+        <div className="flex flex-col sm:flex-row items-center mb-6">
+          <Image
+            src="/assets/profile-pic.png"
+            width={80}
+            height={80}
+            className="rounded-full"
+            alt="Profile Picture"
+          />
+          <div className="sm:ml-6 mt-4 sm:mt-0 text-center sm:text-left">
+            <h3 className="text-xl font-bold capitalize">{name}</h3>
+            <p className="text-gray-500">{email}</p>
+          </div>
+          <button
+            className="absolute top-6 right-6 bg-blue-900 text-white px-6 py-2 rounded-md"
+            onClick={() => setIsEditing(true)}
+          >
+            Edit
+          </button>
         </div>
+        
+        <div className="grid grid-cols-1 sm:grid-cols-2 gap-6 mt-6">
+          <div>
+            <label className="block text-gray-700">First Name</label>
+            <input
+              type="text"
+              value={firstName}
+              onChange={(e) => setFirstName(e.target.value)}
+              disabled={!isEditing}
+              className="mt-2 w-full p-2 rounded-md bg-[#F9F9F9]"
+            />
+          </div>
+          <div>
+            <label className="block text-gray-700">Last Name</label>
+            <input
+              type="text"
+              value={lastName}
+              onChange={(e) => setLastName(e.target.value)}
+              disabled={!isEditing}
+              className="mt-2 w-full p-2 rounded-md bg-[#F9F9F9]"
+            />
+          </div>
+          <div>
+            <label className="block text-gray-700">Department</label>
+            <select
+              value={departmentName}
+              onChange={(e) => setDepartmentName(e.target.value)}
+              disabled={!isEditing}
+              className="mt-2 w-full p-2 rounded-md bg-[#F9F9F9]"
+            >
+              <option value="" disabled>Select a Department</option>
+              {Object.keys(departmentPositions).map((dept) => (
+                <option key={dept} value={dept}>{dept}</option>
+              ))}
+            </select>
+          </div>
+          <div>
+            <label className="block text-gray-700">Position</label>
+            <select
+              value={position}
+              onChange={(e) => setPosition(e.target.value)}
+              disabled={!isEditing || !positions.length}
+              className="mt-2 w-full p-2 rounded-md bg-[#F9F9F9]"
+            >
+              <option value="" disabled>
+                {positions.length ? "Select a Position" : "Select a Department First"}
+              </option>
+              {positions.map((pos) => (
+                <option key={pos} value={pos}>{pos}</option>
+              ))}
+            </select>
+          </div>
+          <div>
+            <label className="block text-gray-700">Role</label>
+            <select
+              value={role}
+              onChange={(e) => setRole(e.target.value)}
+              disabled={!isEditing}
+              className="mt-2 w-full p-2 rounded-md bg-[#F9F9F9]"
+            >
+              <option value="" disabled>Select a Role</option>
+              <optgroup label="Leadership Roles">
+                {leadershipRoles.map((roleOption) => (
+                  <option key={roleOption} value={roleOption}>{roleOption}</option>
+                ))}
+              </optgroup>
+              <optgroup label="Supporting Roles">
+                {supportingRoles.map((roleOption) => (
+                  <option key={roleOption} value={roleOption}>{roleOption}</option>
+                ))}
+              </optgroup>
+            </select>
+          </div>
+
+          
+        </div>
+        <div className="mt-8">
+        <p className="font-semibold mt-2 text-black">
+  View{" "}
+  <a href="/privacypolicy" className="text-blue-900 underline hover:text-blue-700">
+    Privacy Policy
+  </a>{" "}
+  and{" "}
+  <a href="/termCondition" className="text-blue-900 underline hover:text-blue-700">
+    Terms and Conditions
+  </a>.
+</p>
+</div>
+
+        {isEditing && (
+          <div className="mt-6 text-center">
+            <button
+              className="bg-blue-900 text-white px-6 py-2 rounded-md"
+              onClick={() => {
+                handleSave();
+                setIsEditing(false);
+              }}
+            >
+              Done
+            </button>
+          </div>
+        )}
+      </section>
+    </div>
       </div>
     </div>
   );

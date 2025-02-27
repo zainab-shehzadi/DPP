@@ -31,7 +31,7 @@ export default function Dashboard() {
   return (
     <div className="flex flex-col lg:flex-row">
       {/* Sidebar Component */}
-      <Sidebar isSidebarOpen={isSidebarOpen} toggleSidebar={toggleSidebar} />
+      <Sidebar isSidebarOpen={isSidebarOpen} />
 
       {/* Main Content */}
       <div className="lg:ml-64 p-4 sm:p-8 w-full">

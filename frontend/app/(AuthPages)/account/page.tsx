@@ -25,7 +25,7 @@ export default function Dashboard() {
   
      
       <nav className="bg-[#002F6C] text-white w-full lg:w-64 flex flex-col items-center px-4 py-8 lg:fixed lg:h-full">
-        <div className="mb-8 w-full h-24 bg-cover bg-center" style={{ backgroundImage: "url('/assets/logo.avif')" }}></div>
+        <div className="mb-8 w-full h-24 bg-cover bg-center" style={{ backgroundImage: "url('/assets/logo-dpp1.png')" }}></div>
         <ul className="space-y-5 w-full flex flex-col items-center">
           <li className="w-full">
             <a

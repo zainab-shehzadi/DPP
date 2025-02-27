@@ -6,6 +6,8 @@ import React, { useState, useEffect } from "react";
 import Sidebar from "@/components/Sidebar";
 import authProtectedRoutes from "@/hoc/authProtectedRoutes";
 import Cookies from "js-cookie"; 
+import DateDisplay from "@/components/date";
+import UserDropdown from "@/components/profile-dropdown";
 
 function facilitySetting(){
   const [isEditing, setIsEditing] = useState(false);
@@ -157,7 +159,7 @@ const handleEditClick = () => {requestAdminApproval();};
       <div className="lg:hidden flex items-center justify-between px-4 py-2 bg-[#002F6C] text-white">
         <div
           className="h-12 w-12 bg-cover bg-center"
-          style={{ backgroundImage: "url('/assets/logo.avif')" }}
+          style={{ backgroundImage: "url('/assets/logo-dpp1.png')" }}
         ></div>
       </div>
 
@@ -173,24 +175,13 @@ const handleEditClick = () => {requestAdminApproval();};
           </h2>
           <div className="flex items-center space-x-4 mt-4 sm:mt-0">
             <FaBell className="text-gray-500 text-lg" />
-            <div className="flex items-center border border-gray-300 p-2 rounded-md space-x-2">
-              <Image
-                src="/assets/image.png"
-                width={40}
-                height={40}
-                className="rounded-full"
-                alt="User Profile"
-              />
-              <span className="text-gray-800">User</span>
-            </div>
+            <UserDropdown />
           </div>
         </header>
 
         {/* Date Display */}
         <div className="flex justify-end pr-12 sm:pr-48 mb-4">
-          <div className="border-2 border-black px-5 py-3 rounded-lg shadow-md text-sm bg-white">
-            <span className="text-black">30 November 2024</span>
-          </div>
+           <DateDisplay/>
         </div>
 
         {/* Progress Bar */}
@@ -202,9 +193,9 @@ const handleEditClick = () => {requestAdminApproval();};
             {/* Profile Section */}
             <div className="flex flex-col sm:flex-row items-center mb-6">
               <Image
-                src="/assets/user.png"
-                width={100}
-                height={100}
+                src="/assets/profile-pic.png"
+                width={80}
+                height={80}
                 className="rounded-full"
                 alt="Profile Picture"
               />

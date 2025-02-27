@@ -4,8 +4,9 @@ import Image from 'next/image';
 import { FaBell } from 'react-icons/fa';
 import React, { useState, useEffect } from "react";
 import Cookies from "js-cookie"; 
-
+import UserDropdown from '@/components/profile-dropdown'
 import Sidebar from "@/components/Sidebar";
+import DateDisplay from '@/components/date';
 interface Task {
   _id: string | number; 
   task: string; 
@@ -146,9 +147,9 @@ const renderTasksForColumn = (column: string) => {
   return (
     <div className="flex flex-col lg:flex-row">
 
-      <div className="lg:hidden flex items-center justify-between px-4 py-2 bg-[#002F6C] text-white">
-        <div className="h-12 w-12 bg-cover bg-center" style={{ backgroundImage: "url('/assets/logo.avif')" }}></div>
-      </div>
+<div className="lg:hidden flex items-center justify-between px-4 py-2 bg-[#002F6C] text-white">
+  <img src="/assets/logo-dpp1.png" alt="Logo" className="h-8 w-auto" />
+</div>
 
       <Sidebar isSidebarOpen={isSidebarOpen} />
       <div className="lg:ml-64 p-4 sm:p-8 w-full">
@@ -158,16 +159,7 @@ const renderTasksForColumn = (column: string) => {
           </h2>
           <div className="flex items-center space-x-2 sm:space-x-4 mt-2 sm:mt-0">
             <FaBell className="text-gray-500 text-base sm:text-lg lg:text-xl" />
-            <div className="flex items-center border border-gray-300 p-1 sm:p-2 rounded-md space-x-2">
-              <Image
-                src="/assets/image.png"
-                width={28}
-                height={28}
-                className="rounded-full sm:w-10 sm:h-10 lg:w-12 lg:h-12"
-                alt="User Profile"
-              />
-              <span className="text-gray-800 text-sm sm:text-base lg:text-lg">User</span>
-            </div>
+            <UserDropdown />
           </div>
         </header>
 
@@ -194,6 +186,10 @@ const renderTasksForColumn = (column: string) => {
               )}
             </div>
           </div>
+              {/* Date */}
+                       <div className="relative flex items-center space-x-2">
+                           <DateDisplay/>
+                           </div>
         </div>
 
         <div className="w-full border-t border-gray-300 mt-4" style={{ borderColor: '#E0E0E0' }}></div>

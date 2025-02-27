@@ -4,7 +4,7 @@ import { usePathname, useRouter } from "next/navigation";
 import { useEffect, ComponentType } from "react";
 import Cookies from "js-cookie";
 
-const publicRoutes: string[] = ["/login", "/signup", "/forgetpassword", "/reset-password", "/reset","/verify-email","/form-detail"];
+const publicRoutes: string[] = ["/login", "/signup", "/forgetpassword", "/reset-password", "/reset","/verify-email","/form-detail",];
 
 const authPublicRoutes = <P extends object>(WrappedComponent: ComponentType<P>) => {
   const ProtectedComponent: React.FC<P> = (props) => {

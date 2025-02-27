@@ -48,11 +48,11 @@ export default function Dashboard() {
 
       {/* Mobile Toggle Button */}
       <div className="lg:hidden flex items-center justify-between px-4 py-2 bg-[#002F6C] text-white">
-        <div className="h-12 w-12 bg-cover bg-center" style={{ backgroundImage: "url('/assets/logo.avif')" }}></div>
+        <div className="h-12 w-12 bg-cover bg-center" style={{ backgroundImage: "url('/assets/logo-dpp1.png')" }}></div>
       </div>
 
       {/* Sidebar Component */}
-      <Sidebar isSidebarOpen={isSidebarOpen} toggleSidebar={toggleSidebar} />
+      <Sidebar isSidebarOpen={isSidebarOpen} />
 
       {/* Main Content */}
       <div className="lg:ml-64 p-4 sm:p-8 w-full">

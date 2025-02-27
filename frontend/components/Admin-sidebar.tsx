@@ -6,7 +6,7 @@ import {
   FaUserPlus,
   FaSignOutAlt,
   FaCog,
-  
+  FaClipboard,
 
 } from "react-icons/fa";
 import { toast } from "react-toastify";
@@ -108,6 +108,7 @@ const Sidebar: React.FC<SidebarProps> = ({ isSidebarOpen }) => {
     User Setting
   </a>
 </li>
+
 
 <li className="w-full">
   <a

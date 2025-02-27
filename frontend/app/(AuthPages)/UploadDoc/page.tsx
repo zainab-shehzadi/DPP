@@ -1,15 +1,14 @@
 "use client";
 import React, { useState, useEffect, useRef } from "react";
+import DateDisplay from "@/components/date";
 import Sidebar from "@/components/Sidebar";
-import Image from "next/image";
+import UserDropdown from '@/components/profile-dropdown'
 import { FaFileAlt } from "react-icons/fa";
-import DatePicker from "react-datepicker";
 import "react-datepicker/dist/react-datepicker.css";
-import { useRouter } from "next/navigation"; // For navigation after successful reset
+import { useRouter } from "next/navigation"; 
 import Notification from "@/components/Notification";
 import Cookies from "js-cookie";
 import { toast } from "react-toastify";
-import { constants } from "node:crypto";
 import authProtectedRoutes from "@/hoc/authProtectedRoutes";
 interface DocumentType {
   _id: string;
@@ -49,11 +48,8 @@ function docUpload() {
   const [documents, setDocuments] = useState<DocumentType[]>([]);
   const [refreshToken, setrefreshToken] = useState<string | null>(null);
   const [dropdownOpen2, setDropdownOpen2] = useState(false);
-  const [selectedDescription, setSelectedDescription] = useState<string | null>(
-    null
-  );
+  const [selectedDescription, setSelectedDescription] = useState<string | null>(null);
   const dropdownRef = useRef<HTMLDivElement>(null);
-
   const [answer1, setAnswer1] = useState("");
   const [answer2, setAnswer2] = useState("");
   const [loading, setLoading] = useState(false);
@@ -107,7 +103,6 @@ function docUpload() {
 
     fetchDocuments();
   }, []);
-
   const toggleDropdown = () => {
     setDropdownOpen((prev) => !prev);
   };
@@ -439,6 +434,11 @@ function docUpload() {
     setSelectedDocument(doc.originalName || "Untitled Document");
     fetchDocumentDetails(doc._id);
     setDropdownOpen(false);
+    setSelectedTag("");
+    setSelectedDescription("");
+    setSelectedLongDesc("");
+    setSolution("");
+    setSelectedPPolicy("");
   };
   const deleteDocuments = async (documentIds: string[]) => {
     if (!documentIds || documentIds.length === 0 || !email) {
@@ -474,7 +474,14 @@ function docUpload() {
   const handleDeleteSelected = () => {
     if (selectedDocs.length === 0) return;
     setSelectedDocument("Select Document");
+    setSelectedDescription("");
+    setSelectedLongDesc("");
+    setSolution("");
+    setSelectedPPolicy("");
+
     deleteDocuments(selectedDocs);
+    setSelectedTag("Select Tag");
+
     setSelectedDocs([]);
     setDropdownOpen(false);
   };
@@ -495,18 +502,7 @@ function docUpload() {
           </h2>
           <div className="flex items-center space-x-2 sm:space-x-4">
             <Notification />
-            <div className="flex items-center border border-gray-300 p-1 sm:p-2 rounded-md space-x-2">
-              <Image
-                src="/assets/image.png"
-                width={28}
-                height={28}
-                className="rounded-full"
-                alt="User Profile"
-              />
-              <span className="text-gray-800 text-sm sm:text-base lg:text-lg">
-                User
-              </span>
-            </div>
+            <UserDropdown />
           </div>
         </header>
 
@@ -651,55 +647,9 @@ function docUpload() {
               )}
             </div>
           </div>
-          {/* Date */}
           <div className="relative flex items-center space-x-2">
-            {/* Date Button */}
-            <button
-              onClick={toggleDropdown1}
-              className="flex items-center bg-[#244979] text-white px-4 py-2 rounded-lg shadow-md text-xs sm:text-sm md:text-base font-semibold space-x-2"
-            >
-              {/* Calendar Icon */}
-              <svg
-                className="w-4 h-4 sm:w-5 sm:h-5"
-                fill="currentColor"
-                xmlns="http://www.w3.org/2000/svg"
-                viewBox="0 0 24 24"
-              >
-                <path d="M3 8h18M21 5h-3V3a1 1 0 00-2 0v2H8V3a1 1 0 00-2 0v2H3a1 1 0 00-1 1v14a1 1 0 001 1h18a1 1 0 001-1V6a1 1 0 00-1-1zm0 4H3v10h18V9z"></path>
-              </svg>
-              {/* Selected Date */}
-              <span>{selectedDate.toLocaleDateString("en-GB")}</span>
-              {/* Dropdown Arrow */}
-              <svg
-                className="w-4 h-4 sm:w-5 sm:h-5"
-                fill="currentColor"
-                xmlns="http://www.w3.org/2000/svg"
-                viewBox="0 0 20 20"
-              >
-                <path
-                  fillRule="evenodd"
-                  d="M5.293 7.293a1 1 0 011.414 0L10 10.586l3.293-3.293a1 1 0 111.414 1.414l-4 4a1 1 0 01-1.414 0l-4-4a1 1 0 010-1.414z"
-                  clipRule="evenodd"
-                ></path>
-              </svg>
-            </button>
-
-            {/* Dropdown with Calendar */}
-            {dropdownOpen1 && (
-              <div className="absolute top-12 left-[-30%] md:left-[-50%] z-10 bg-white border border-gray-300 rounded-lg shadow-lg p-2 w-[250px] sm:w-[300px] lg:w-[350px]">
-                <DatePicker
-                  selected={selectedDate}
-                  onChange={(date: Date | null) => {
-                    if (date) {
-                      setSelectedDate(date);
-                    }
-                    setDropdownOpen1(false); // Close dropdown on date select
-                  }}
-                  inline
-                />
-              </div>
-            )}
-          </div>
+                 <DateDisplay />
+                 </div>
         </div>
 
         {activeTab === "POC AI Ally" && (

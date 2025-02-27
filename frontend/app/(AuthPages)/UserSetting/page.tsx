@@ -7,6 +7,7 @@ import Sidebar from "@/components/Admin-sidebar";
 import { toast } from "react-toastify";
 import authProtectedRoutes from "@/hoc/authProtectedRoutes";
 import axios from "axios";
+import DateDisplay from "@/components/date";
 interface User {
   _id: string;
   createdAt: string;
@@ -217,12 +218,8 @@ const usersetting = () => {
         </header>
 
         {/* Date Display */}
-        <div className="flex justify-end pr-4 sm:pr-12 lg:pr-48 mb-4">
-          <div className="border-2 border-black px-5 py-3 rounded-lg shadow-md text-sm bg-white">
-            <span className="text-black">30 November 2024</span>
-          </div>
-        </div>
-
+        <div className="flex justify-end pr-4 sm:pr-12 lg:pr-48 mb-4"><DateDisplay/></div>
+        
         {/* Progress Bar */}
         <div className="w-full sm:w-3/4 h-6 sm:h-12 lg:h-18 bg-[#002F6C] mt-2 rounded-lg mx-auto mb-8"></div>
         <div className="overflow-y-auto mx-auto max-w-[980px]">
@@ -250,92 +247,101 @@ const usersetting = () => {
               </tr>
             </thead>
             <tbody>
-              {users.map((user) => (
-                <tr
-                  key={user._id}
-                  className="hover:bg-gray-100 border-b border-[#F2F2F2] text-gray-900"
-                >
-                  <td className="py-5 px-8">
-                    <input
-                      type="checkbox"
-                      id={`select-user-${user._id}`}
-                      name="select-user"
-                      className="w-5 h-5 rounded border-gray-300"
-                    />
-                  </td>
-                  <td className="py-4 px-6 text-blue-700 font-medium text-sm">
-                    #{user._id}
-                  </td>
-                  <td className="py-4 px-6 text-gray-500 text-sm">
-                    {user.createdAt}
-                  </td>
-                  <td className="py-4 px-6 text-gray-500 text-sm">
-                    {user.firstname}
-                  </td>
-                  <td className="py-4 px-6 text-gray-500 text-sm">
-                    {user.email}
-                  </td>
-                  <td className="py-4 px-4 sm:px-6 text-center">
-                    <div className="flex justify-center items-center space-x-2">
-                      <button
-                        className="text-blue-500 hover:text-blue-700"
-                        onClick={() => handleUpdate(user._id)}
-                        title="Update User"
-                      >
-                        <Image
-                          src="/assets/update.png"
-                          alt="Update"
-                          width={16}
-                          height={16}
-                          style={{ width: "auto", height: "auto" }}
-                        />
-                      </button>
-                      <button
-                        className="text-red-500 hover:text-red-700"
-                        onClick={() => handleDeleteClick(user._id)}
-                        title="Delete User"
-                      >
-                        <Image
-                          src="/assets/delete.png"
-                          alt="Delete"
-                          width={16}
-                          height={16}
-                          style={{ width: "auto", height: "auto" }}
-                        />
-                      </button>
-                    </div>
-                  </td>
-                </tr>
-              ))}
+              {[...new Map(users.map((user) => [user._id, user])).values()] // Remove duplicates
+                .sort(
+                  (a, b) =>
+                    new Date(b.createdAt).getTime() -
+                    new Date(a.createdAt).getTime()
+                ) // Sort in descending order
+                .map((user, index) => (
+                  <tr
+                    key={user._id}
+                    className="hover:bg-gray-100 border-b border-[#F2F2F2] text-gray-900"
+                  >
+                    <td className="py-5 px-8">
+                      <input
+                        type="checkbox"
+                        className="w-5 h-5 rounded border-gray-300"
+                      />
+                    </td>
+                    <td className="py-4 px-6 text-blue-700 text-sm">
+                      #{user._id}
+                    </td>
+                    <td className="py-4 px-6 text-gray-500 text-sm">
+                      {user.createdAt}
+                    </td>
+                    <td className="py-4 px-6 text-gray-500 text-sm">
+                      {user.firstname}
+                    </td>
+                    <td className="py-4 px-6 text-gray-500 text-sm">{user.email}</td>
+                    <td className="py-4 px-4 sm:px-6 text-center">
+                      <div className="flex justify-center items-center space-x-2">
+                        <button
+                          className="text-blue-500 hover:text-blue-700 text-sm"
+                          onClick={() => handleUpdate(user._id)}
+                          title="Update User"
+                        >
+                          <Image
+                            src="/assets/update.png"
+                            alt="Update"
+                            width={16}
+                            height={16}
+                            style={{ width: "auto", height: "auto" }}
+                          />
+                        </button>
+                        <button
+                          className="text-red-500 hover:text-red-700"
+                          onClick={() => handleDeleteClick(user._id)}
+                          title="Delete User"
+                        >
+                          <Image
+                            src="/assets/delete.png"
+                            alt="Delete"
+                            width={16}
+                            height={16}
+                            style={{ width: "auto", height: "auto" }}
+                          />
+                        </button>
+                      </div>
+                    </td>
+                  </tr>
+                ))}
             </tbody>
           </table>
         </div>
       </div>
 
       {isDeleteModalOpen && (
-        <div className="fixed inset-0 bg-gray-800 bg-opacity-50 flex justify-center items-center z-50">
-          <div className="bg-white p-8 rounded-lg shadow-lg w-full max-w-md space-y-6">
-            <h2 className="text-md font-semibold text-gray-800 text-center">
-              Are you sure you want to delete this user?
-            </h2>
+  <div
+    className="fixed inset-0 bg-gray-800 bg-opacity-50 flex justify-center items-center z-50"
+    onClick={() => setIsDeleteModalOpen(false)} // Close when clicking outside
+  >
+    <div
+      className="bg-white p-8 rounded-lg shadow-lg w-full max-w-md space-y-6"
+      onClick={(e) => e.stopPropagation()} // Prevent modal from closing when clicking inside
+    >
+      <h2 className="text-md font-semibold text-gray-800 text-center">
+        Are you sure you want to delete this user?
+      </h2>
 
-            <div className="flex justify-end space-x-4 mt-4">
-              <button
-                onClick={() => setIsDeleteModalOpen(false)}
-                className="bg-gray-300 text-gray-700 py-2 px-6 rounded-md hover:bg-gray-400"
-              >
-                No
-              </button>
-              <button
-                onClick={() => handleDelete(userToDelete)}
-                className="bg-red-500 text-white py-2 px-6 rounded-md hover:bg-red-700"
-              >
-                Yes
-              </button>
-            </div>
-          </div>
-        </div>
-      )}
+      <div className="flex justify-end space-x-4 mt-4">
+        <button
+          onClick={() => setIsDeleteModalOpen(false)}
+          className="bg-gray-300 text-gray-700 py-2 px-6 rounded-md hover:bg-gray-400"
+        >
+          No
+        </button>
+        <button
+          onClick={() => handleDelete(userToDelete)}
+          className="bg-red-500 text-white py-2 px-6 rounded-md hover:bg-red-700"
+        >
+          Yes
+        </button>
+      </div>
+    </div>
+  </div>
+)}
+
       {/* Update Modal */}
       {isModalOpen && selectedUser && (
         <div
