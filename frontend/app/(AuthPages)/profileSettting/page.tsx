@@ -8,7 +8,7 @@ import { toast } from "react-toastify";
 import Cookies from "js-cookie";
 import UserDropdown from '@/components/profile-dropdown'
 import DateDisplay from "@/components/date";
-
+import Notification from "@/components/Notification";
 function profileSetting() {
   const [isSidebarOpen, setIsSidebarOpen] = useState(false);
   const toggleSidebar = () => setIsSidebarOpen(!isSidebarOpen);
@@ -138,7 +138,7 @@ function profileSetting() {
             Hello, <span className="text-blue-900 capitalize">{name || "User"}</span>
           </h2>
           <div className="flex items-center space-x-2 sm:space-x-4 mt-2 sm:mt-0">
-     
+      <Notification/>
       <UserDropdown />
       </div>
         </header>

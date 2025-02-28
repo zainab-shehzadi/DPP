@@ -2,11 +2,11 @@ import mongoose from "mongoose";
 
 const NotificationItemSchema = new mongoose.Schema(
   {
-    message: { type: String, required: true }, // The notification message
-    isRead: { type: Boolean, default: false }, // Whether the notification is read
-    createdAt: { type: Date, default: Date.now }, // Timestamp for when the notification was created
+    message: { type: String, required: true }, 
+    isRead: { type: Boolean, default: false }, 
+    createdAt: { type: Date, default: Date.now }, 
   },
-  { _id: false } // Disables _id for sub-documents in the array
+  { _id: false }
 );
 
 const NotificationSchema = new mongoose.Schema(
@@ -16,10 +16,10 @@ const NotificationSchema = new mongoose.Schema(
       required: true,
     
     },
-    notifications: [NotificationItemSchema], // Array of notification objects
+    notifications: [NotificationItemSchema], 
   },
   {
-    timestamps: true, // Automatically adds `createdAt` and `updatedAt` timestamps
+    timestamps: true,
   }
 );
 

@@ -51,7 +51,7 @@ const UserDropdown = () => {
     className="rounded-full w-10 h-10"
     alt="User Profile"
   />
-  <span className="text-gray-800 text-xs sm:text-sm">Admin</span>
+  <span className="text-gray-800 text-xs sm:text-sm">User</span>
   <span className="text-gray-600 text-xs">▾</span>
 </div>
 

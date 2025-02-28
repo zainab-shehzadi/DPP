@@ -103,6 +103,7 @@ function docUpload() {
 
     fetchDocuments();
   }, []);
+
   const toggleDropdown = () => {
     setDropdownOpen((prev) => !prev);
   };
@@ -856,6 +857,11 @@ function docUpload() {
                 )}
               </div>
             </div>
+
+
+   
+
+
           </>
         )}
 
@@ -960,71 +966,72 @@ function docUpload() {
             </div>
           </>
         )}
-        {/* Bottom Buttons */}
-        <div className="flex justify-end space-x-4 mt-4">
-          {status !== "assigned" && (
-            <>
-              <button
-                onClick={isAuthenticated}
-                className={`flex items-center justify-center border border-[#002F6C] text-[#002F6C] px-4 py-2 rounded-lg text-sm shadow-md transition-colors duration-300 ${
-                  loading
-                    ? "cursor-not-allowed opacity-50"
-                    : "hover:bg-gray-100"
-                }`}
-                disabled={loading}
-              >
-                <svg
-                  xmlns="http://www.w3.org/2000/svg"
-                  fill="none"
-                  viewBox="0 0 24 24"
-                  strokeWidth={1.5}
-                  stroke="currentColor"
-                  className="w-4 h-4 mr-2"
-                >
-                  <path
-                    strokeLinecap="round"
-                    strokeLinejoin="round"
-                    d="M15 10l4.553 4.553-4.553 4.553m-6-9L4.447 14.553 9 19"
-                  />
-                </svg>
-                {loading ? "Assigning..." : "Assign Task"}
-              </button>
+{Array.isArray(solution) && solution.length > 0 && (
+  <div className="flex justify-end space-x-4 mt-4">
+    {status !== "assigned" && (
+      <>
+        <button
+          onClick={isAuthenticated}
+          className={`flex items-center justify-center border border-[#002F6C] text-[#002F6C] px-4 py-2 rounded-lg text-sm shadow-md transition-colors duration-300 ${
+            loading ? "cursor-not-allowed opacity-50" : "hover:bg-gray-100"
+          }`}
+          disabled={loading}
+        >
+          <svg
+            xmlns="http://www.w3.org/2000/svg"
+            fill="none"
+            viewBox="0 0 24 24"
+            strokeWidth={1.5}
+            stroke="currentColor"
+            className="w-4 h-4 mr-2"
+          >
+            <path
+              strokeLinecap="round"
+              strokeLinejoin="round"
+              d="M15 10l4.553 4.553-4.553 4.553m-6-9L4.447 14.553 9 19"
+            />
+          </svg>
+          {loading ? "Assigning..." : "Assign Task"}
+        </button>
 
-              <button
-                onClick={handleNavigateToTags}
-                className="flex items-center justify-center bg-[#002F6C] text-white px-4 py-2 rounded-lg text-sm shadow-md transition-colors duration-300"
-              >
-                Approve
-              </button>
-            </>
-          )}
+        <button
+          onClick={handleNavigateToTags}
+          className="flex items-center justify-center bg-[#002F6C] text-white px-4 py-2 rounded-lg text-sm shadow-md transition-colors duration-300"
+        >
+          Approve
+        </button>
+      </>
+    )}
 
-          {status === "assigned" && (
-            <button
-              onClick={handleNavigateToTags}
-              className={`flex items-center justify-center border border-[#002F6C] text-[#002F6C] px-4 py-2 rounded-lg text-sm shadow-md transition-colors duration-300 ${
-                loading ? "cursor-not-allowed opacity-50" : "hover:bg-gray-100"
-              }`}
-              disabled={loading}
-            >
-              <svg
-                xmlns="http://www.w3.org/2000/svg"
-                fill="none"
-                viewBox="0 0 24 24"
-                strokeWidth={1.5}
-                stroke="currentColor"
-                className="w-4 h-4 mr-2"
-              >
-                <path
-                  strokeLinecap="round"
-                  strokeLinejoin="round"
-                  d="M15 10l4.553 4.553-4.553 4.553m-6-9L4.447 14.553 9 19"
-                />
-              </svg>
-              Assigned
-            </button>
-          )}
-        </div>
+    {status === "assigned" && (
+      <button
+        onClick={handleNavigateToTags}
+        className={`flex items-center justify-center border border-[#002F6C] text-[#002F6C] px-4 py-2 rounded-lg text-sm shadow-md transition-colors duration-300 ${
+          loading ? "cursor-not-allowed opacity-50" : "hover:bg-gray-100"
+        }`}
+        disabled={loading}
+      >
+        <svg
+          xmlns="http://www.w3.org/2000/svg"
+          fill="none"
+          viewBox="0 0 24 24"
+          strokeWidth={1.5}
+          stroke="currentColor"
+          className="w-4 h-4 mr-2"
+        >
+          <path
+            strokeLinecap="round"
+            strokeLinejoin="round"
+            d="M15 10l4.553 4.553-4.553 4.553m-6-9L4.447 14.553 9 19"
+          />
+        </svg>
+        Assigned
+      </button>
+    )}
+  </div>
+)}
+
+
       </div>
     </div>
   );

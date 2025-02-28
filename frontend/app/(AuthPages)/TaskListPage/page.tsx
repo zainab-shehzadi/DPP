@@ -1,12 +1,12 @@
 "use client"; // <-- Ensures this file is treated as a client component
 
-import Image from "next/image";
+
 import { FaBell } from "react-icons/fa";
 import React, { useState, useEffect } from "react";
 import Cookies from "js-cookie";
 import Sidebar from "@/components/Sidebar";
 import UserDropdown from "@/components/profile-dropdown";
-
+import Notification from "@/components/Notification";
 import { toast } from "react-toastify";
 import authProtectedRoutes from "@/hoc/authProtectedRoutes";
 import DateDisplay from "@/components/date";
@@ -220,6 +220,7 @@ function taskList() {
           </h2>
           <div className="flex items-center space-x-2 sm:space-x-4 mt-2 sm:mt-0">
             <FaBell className="text-gray-500 text-base sm:text-lg lg:text-xl" />
+            <Notification/>
             <UserDropdown />
           </div>
         </header>
@@ -234,6 +235,7 @@ function taskList() {
           </div>
               {/* Date */}
               <div className="relative flex items-center space-x-2">
+               
                  <DateDisplay/>
                  </div>
         </div>

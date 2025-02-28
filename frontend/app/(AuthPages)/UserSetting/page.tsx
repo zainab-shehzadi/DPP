@@ -178,9 +178,11 @@ const usersetting = () => {
           headers: {
             "Content-Type": "application/json",
           },
-          body: JSON.stringify({ id }), // Send id in the request body
+          body: JSON.stringify({ id }), 
         }
       );
+
+      
       if (!response.ok) {
         throw new Error(`Failed to delete user with ID: ${id}`);
       }
@@ -535,4 +537,4 @@ const usersetting = () => {
   );
 };
 
-export default authProtectedRoutes(usersetting);
+export default usersetting;

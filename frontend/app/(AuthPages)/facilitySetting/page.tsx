@@ -8,7 +8,7 @@ import authProtectedRoutes from "@/hoc/authProtectedRoutes";
 import Cookies from "js-cookie"; 
 import DateDisplay from "@/components/date";
 import UserDropdown from "@/components/profile-dropdown";
-
+import Notification from "@/components/Notification";
 function facilitySetting(){
   const [isEditing, setIsEditing] = useState(false);
   const [isSidebarOpen, setIsSidebarOpen] = useState(false);
@@ -174,7 +174,7 @@ const handleEditClick = () => {requestAdminApproval();};
             Hello, <span className="text-blue-900 capitalize">{name}</span>
           </h2>
           <div className="flex items-center space-x-4 mt-4 sm:mt-0">
-            <FaBell className="text-gray-500 text-lg" />
+            <Notification/>
             <UserDropdown />
           </div>
         </header>

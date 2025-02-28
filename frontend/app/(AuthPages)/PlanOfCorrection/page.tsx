@@ -8,6 +8,7 @@ import "react-datepicker/dist/react-datepicker.css";
 import Sidebar from "@/components/Sidebar";
 import { useRouter } from "next/navigation";
 import { toast } from "react-toastify";
+import Notification from "@/components/Notification";
 
 export default function Dashboard() {
  
@@ -65,8 +66,7 @@ export default function Dashboard() {
   {/* Right Side: Notification Icon and Profile */}
   <div className="flex items-center space-x-2 sm:space-x-4 mt-2 sm:mt-0">
     {/* Notification Icon */}
-    <FaBell className="text-gray-500 text-base sm:text-lg lg:text-xl" />
-
+    <Notification/> 
     {/* Profile Picture and Username */}
     <div className="flex items-center border border-gray-300 p-1 sm:p-2 rounded-md space-x-2">
       <Image

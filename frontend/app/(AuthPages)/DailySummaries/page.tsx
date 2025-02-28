@@ -1,7 +1,6 @@
 "use client"; // <-- Ensures this file is treated as a client component
 
-import Image from 'next/image';
-import { FaBell } from 'react-icons/fa';
+import Notification from "@/components/Notification";
 import React, { useState, useEffect } from "react";
 import Cookies from "js-cookie"; 
 import UserDropdown from '@/components/profile-dropdown'
@@ -158,8 +157,8 @@ const renderTasksForColumn = (column: string) => {
             Hello, <span className="text-blue-900 capitalize">{name}</span>
           </h2>
           <div className="flex items-center space-x-2 sm:space-x-4 mt-2 sm:mt-0">
-            <FaBell className="text-gray-500 text-base sm:text-lg lg:text-xl" />
-            <UserDropdown />
+          <Notification/>         
+          <UserDropdown />
           </div>
         </header>
 

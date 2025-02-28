@@ -1,12 +1,13 @@
 "use client"; 
 
 import Image from 'next/image';
-import { FaBell } from 'react-icons/fa';
 import React, { useState,useEffect,useRef } from "react";
 import Cookies from "js-cookie"; 
 import UserDropdown from '@/components/profile-dropdown'
 import Sidebar from "@/components/Sidebar";
 import DateDisplay from "@/components/date";
+import Notification from "@/components/Notification";
+
 import { toast } from "react-toastify";
 interface DocumentType {
   _id: string;
@@ -233,7 +234,7 @@ export default function Dashboard() {
           </h2>
           
           <div className="flex items-center space-x-2 sm:space-x-4 mt-2 sm:mt-0">
-            <FaBell className="text-gray-500 text-base sm:text-lg lg:text-xl" />
+<Notification/>
             <UserDropdown />
           </div>
         </header>

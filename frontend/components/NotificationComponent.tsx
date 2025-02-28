@@ -1,97 +1,50 @@
-"use client"
-import React, { useEffect, useState } from 'react';
-import io from 'socket.io-client';
+"use client";
 
-const socket = io(process.env.NEXT_PUBLIC_API_BASE_URL);
+import React, { useEffect, useState } from "react";
+import { useRouter } from "next/navigation";
 
-const NotificationComponent: React.FC = () => {
+const NotificationsPage = () => {
   const [notifications, setNotifications] = useState<any[]>([]);
-  const [message, setMessage] = useState('');
+  const router = useRouter();
 
-useEffect(() => {
-  const apiUrl = `${process.env.NEXT_PUBLIC_API_BASE_URL}/api/notifications`;
-
-  fetch(apiUrl)
-    .then((response) => {
-      if (!response.ok) {
-        throw new Error(`HTTP error! Status: ${response.status}`);
-      }
-      return response.json();
-    })
-    .then((data) => {
-      setNotifications(data);
-    })
-    .catch(async (err) => {
-      //console.error("Error fetching notifications:", err);
-      try {
-        const textResponse = await fetch(apiUrl).then((res) => res.text());
-        console.log("Raw Response (Not JSON):", textResponse);
-      } catch (error) {
-        console.error("Error fetching raw response:", error);
-      }
-    });
-}, []);
-
-
-  // Listen for new notifications
   useEffect(() => {
-    socket.on('notification', (notification) => {
-      setNotifications((prev) => [notification, ...prev]);
-    });
+    const apiUrl = `${process.env.NEXT_PUBLIC_API_BASE_URL}/api/notifications`;
 
-    return () => {
-      socket.off('notification');
-    };
+    fetch(apiUrl)
+      .then((response) => response.json())
+      .then((data) => setNotifications(data))
+      .catch((err) => console.error("Error fetching notifications:", err));
   }, []);
 
-  // Handle notification creation
-  const handleSendNotification = async () => {
-    if (!message.trim()) return;
-
-    await fetch(`${process.env.NEXT_PUBLIC_API_BASE_URL}/api/notifications`, {
-      method: 'POST',
-      headers: {
-        'Content-Type': 'application/json',
-      },
-      body: JSON.stringify({ message }),
-    });
-
-    setMessage('');
-  };
-
   return (
-    <div style={{ padding: '20px' }}>
-      <h2>In-App Notifications</h2>
-      <div>
-        <input
-          type="text"
-          placeholder="Enter notification message"
-          value={message}
-          onChange={(e) => setMessage(e.target.value)}
-          style={{ marginRight: '10px' }}
-        />
-        <button onClick={handleSendNotification}>Send Notification</button>
-      </div>
+    <div className="max-w-2xl mx-auto p-6">
+      <h1 className="text-2xl font-bold mb-4">All Notifications</h1>
 
-      <ul style={{ marginTop: '20px', listStyle: 'none', padding: 0 }}>
-        {notifications.map((notification, index) => (
-          <li
-            key={notification._id || index}
-            style={{
-              padding: '10px',
-              border: '1px solid #ddd',
-              marginBottom: '10px',
-              borderRadius: '5px',
-            }}
-          >
-            {notification.message}
-            <br />
-            <small>{new Date(notification.timestamp).toLocaleString()}</small>
-          </li>
-        ))}
-      </ul>
+      {notifications.length > 0 ? (
+        <ul className="space-y-3">
+          {notifications.map((notification, index) => (
+            <li key={index} className="p-4 border rounded-lg shadow-sm bg-white">
+              <p>{notification.message}</p>
+              {notification.timestamp && (
+                <small className="text-gray-500">
+                  {new Date(notification.timestamp).toLocaleString()}
+                </small>
+              )}
+            </li>
+          ))}
+        </ul>
+      ) : (
+        <p className="text-gray-500">No notifications found.</p>
+      )}
+
+      <button
+        className="mt-4 px-4 py-2 bg-blue-900 text-white rounded-lg"
+        onClick={() => router.back()}
+      >
+        Back
+      </button>
     </div>
   );
 };
 
-export default NotificationComponent;
+export default NotificationsPage;

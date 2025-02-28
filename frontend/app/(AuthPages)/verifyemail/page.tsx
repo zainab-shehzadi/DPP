@@ -71,7 +71,7 @@ const Login: React.FC = () => {
 </button>
 
 
-<Link href="/LoginPage">
+<Link href="/login">
   <button
     type="button"
     className="w-full px-3 py-2 border border-black-300 rounded-lg font-weight: 700 focus:outline-none mt-5 font-semibold"

@@ -1,7 +1,6 @@
 "use client"; 
 
 import Image from 'next/image';
-import { FaBell } from 'react-icons/fa';
 import React, { useState ,useEffect} from "react";
 import axios from 'axios';
 import Link from "next/link"; 
@@ -90,11 +89,11 @@ useEffect(() => {
       <table className="min-w-full text-left border-collapse border border-[#F2F2F2]">
         <thead>
           <tr className="bg-gray-100 text-black border-b border-[#F2F2F2]">
-            <th className="px-6 py-6 text-left font-semibold">Select</th>
-            <th className="px-6 py-6 text-left font-semibold">User ID</th>
-            <th className="px-6 py-4 text-left font-semibold">Date</th>
-            <th className="px-6 py-4 text-left font-semibold">User Name</th>
-            <th className="px-6 py-4 text-left font-semibold">Email Address</th>
+            
+            <th className="px-6 py-6 text-left font-sm font-semibold">User ID</th>
+            <th className="px-6 py-4 text-left font-sm font-semibold">Date</th>
+            <th className="px-6 py-4 text-left  font-sm font-semibold">User Name</th>
+            <th className="px-6 py-4 text-left font-sm font-semibold">Email Address</th>
           </tr>
         </thead>
         <tbody>
@@ -102,13 +101,11 @@ useEffect(() => {
     .sort((a, b) => new Date(b.createdAt).getTime() - new Date(a.createdAt).getTime()) // Sort in descending order
     .map((user, index) => (
       <tr key={user._id} className="hover:bg-gray-100 border-b border-[#F2F2F2] text-gray-900">
-        <td className="py-5 px-8">
-          <input type="checkbox" className="w-5 h-5 rounded border-gray-300" />
-        </td>
-        <td className="py-4 px-6 text-blue-700 font-medium">#{user._id}</td>
-        <td className="py-4 px-6 text-gray-500">{user.createdAt}</td>
-        <td className="py-4 px-6 text-gray-500">{user.firstname}</td>
-        <td className="py-4 px-6 text-gray-500">{user.email}</td>
+        
+        <td className="py-4 px-6 text-blue-700 font-sm">#{user._id}</td>
+        <td className="py-4 px-6 text-gray-500 font-sm">{user.createdAt}</td>
+        <td className="py-4 px-6 text-gray-500 font-sm">{user.firstname}</td>
+        <td className="py-4 px-6 text-gray-500 font-sm">{user.email}</td>
       </tr>
     ))}
 </tbody>
@@ -120,4 +117,4 @@ useEffect(() => {
   );
 }
 
-export default authProtectedRoutes(Adduser);
+export default Adduser;

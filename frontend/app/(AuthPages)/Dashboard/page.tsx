@@ -1,4 +1,4 @@
-"use client"; 
+"use client";
 
 import Image from "next/image";
 import React, { useState, useEffect } from "react";
@@ -22,6 +22,7 @@ export default function Dashboard() {
   const [dropdownOpen, setDropdownOpen] = useState(false);
   const [activeTab, setActiveTab] = useState("POC AI Ally");
   const [file, setFile] = useState(null);
+  const [loading, setLoading] = useState(false);
   const [uploadStatus, setUploadStatus] = useState("");
   const toggleSidebar = () => setIsSidebarOpen(!isSidebarOpen);
   const toggleDropdown = () => setDropdownOpen(!dropdownOpen);
@@ -80,7 +81,7 @@ export default function Dashboard() {
     const formData = new FormData();
     formData.append("file", file);
     formData.append("email", email);
-
+    setLoading(true); // Show loader
     try {
       const response = await axios.post(
         `${process.env.NEXT_PUBLIC_API_BASE_URL}/api/files/upload`,
@@ -110,6 +111,8 @@ export default function Dashboard() {
         setUploadStatus("File upload failed. Please try again.");
       }
       setTimeout(() => setUploadStatus(""), 3000);
+    } finally {
+      setLoading(false);
     }
   };
 
@@ -127,8 +130,8 @@ export default function Dashboard() {
   return (
     <div className="flex flex-col lg:flex-row">
       <div className="lg:hidden flex items-center justify-between px-4 py-2 bg-[#002F6C] text-white">
-  <img src="/assets/logo-dpp1.png" alt="Logo" className="h-8 w-auto" />
-</div>
+        <img src="/assets/logo-dpp1.png" alt="Logo" className="h-8 w-auto" />
+      </div>
       <Sidebar isSidebarOpen={isSidebarOpen} />
 
       {/* Main Content */}
@@ -142,66 +145,62 @@ export default function Dashboard() {
             <UserDropdown />
           </div>
         </header>
-            {/* Facility Dropdown and Tabs */}
-               <div className="flex items-center space-x-4 mt-4 lg:mt-8 ml-4 lg:ml-10 justify-between">
-                 {/* Facility Dropdown */}
-                 <div className="flex items-center space-x-4">
-                   <h3 className="text-base sm:text-lg md:text-xl lg:text-2xl font-bold text-blue-900">
-                     Facility
-                   </h3>
-                 
-                 </div>
-       
-                 {/* Facility Tabs */}
-                 <div className="flex flex-col items-center w-50 lg:w-auto mx-auto">
-                 {/* Tab Buttons */}
-<div className="flex items-center justify-center space-x-4 sm:space-x-6 lg:space-x-8">
-  <button
-    onClick={() => setActiveTab("POC AI Ally")}
-    className={`pb-2 ${
-      activeTab === "POC AI Ally"
-        ? "text-blue-900 font-semibold"
-        : "text-gray-700 font-medium"
-    } text-xs sm:text-sm md:text-base lg:text-lg`}
-  >
-    POC AI Ally
-  </button>
+        {/* Facility Dropdown and Tabs */}
+        <div className="flex items-center space-x-4 mt-4 lg:mt-8 ml-4 lg:ml-10 justify-between">
+          {/* Facility Dropdown */}
+          <div className="flex items-center space-x-4">
+            <h3 className="text-base sm:text-lg md:text-xl lg:text-2xl font-bold text-blue-900">
+              Facility
+            </h3>
+          </div>
 
-  <button
-    onClick={() => setActiveTab("Tags")}
-    className={`pb-2 ${
-      activeTab === "Tags"
-        ? "text-blue-900 font-semibold"
-        : "text-gray-700 font-medium"
-    } text-xs sm:text-sm md:text-base lg:text-lg`}
-  >
-    Tags
-  </button>
-</div>
+          {/* Facility Tabs */}
+          <div className="flex flex-col items-center w-50 lg:w-auto mx-auto">
+            {/* Tab Buttons */}
+            <div className="flex items-center justify-center space-x-4 sm:space-x-6 lg:space-x-8">
+              <button
+                onClick={() => setActiveTab("POC AI Ally")}
+                className={`pb-2 ${
+                  activeTab === "POC AI Ally"
+                    ? "text-blue-900 font-semibold"
+                    : "text-gray-700 font-medium"
+                } text-xs sm:text-sm md:text-base lg:text-lg`}
+              >
+                POC AI Ally
+              </button>
 
-{/* Progress Bar */}
-<div className="relative w-full mt-2">
-  {/* Gray Background Line */}
-  <div className="absolute h-[3px] w-full bg-gray-300 rounded-full"></div>
+              <button
+                onClick={() => setActiveTab("Tags")}
+                className={`pb-2 ${
+                  activeTab === "Tags"
+                    ? "text-blue-900 font-semibold"
+                    : "text-gray-700 font-medium"
+                } text-xs sm:text-sm md:text-base lg:text-lg`}
+              >
+                Tags
+              </button>
+            </div>
 
-  {/* Active Blue Line */}
-  <div
-    className="absolute h-[3px] bg-blue-900 rounded-full transition-all duration-300"
-    style={{
-      width: "50%", // 50% since there are only two tabs
-      left: activeTab === "Tags" ? "50%" : "0%", // Moves to the right when 'Tags' is active
-    }}
-  ></div>
-</div>
+            {/* Progress Bar */}
+            <div className="relative w-full mt-2">
+              {/* Gray Background Line */}
+              <div className="absolute h-[3px] w-full bg-gray-300 rounded-full"></div>
 
-       
-                 </div>
-                 {/* Date */}
-                 <div className="relative flex items-center space-x-2">
-                 <DateDisplay />
-                 </div>
-               </div>
-       
+              {/* Active Blue Line */}
+              <div
+                className="absolute h-[3px] bg-blue-900 rounded-full transition-all duration-300"
+                style={{
+                  width: "50%", // 50% since there are only two tabs
+                  left: activeTab === "Tags" ? "50%" : "0%", // Moves to the right when 'Tags' is active
+                }}
+              ></div>
+            </div>
+          </div>
+          {/* Date */}
+          <div className="relative flex items-center space-x-2">
+            <DateDisplay />
+          </div>
+        </div>
 
         <div className="w-full border-t border-gray-300 mt-4"></div>
 
@@ -270,15 +269,22 @@ export default function Dashboard() {
                   <button
                     onClick={toggleSidebar}
                     className="font-semibold hover:bg-blue-100 border px-4 py-2 rounded-lg text-sm sm:text-base md:text-lg"
+                    disabled={loading} // Disable button when loading
                   >
                     Cancel
                   </button>
-                  <button
-                    className="font-semibold bg-blue-900 text-white px-4 py-2 rounded-lg text-sm sm:text-base md:text-lg"
-                    onClick={handleFileUpload}
-                  >
-                    Review Deficiencies
-                  </button>
+                  {loading ? (
+                    <div className="flex items-center justify-center">
+                      <div className="animate-spin rounded-full h-8 w-8 border-t-2 border-blue-900"></div>
+                    </div>
+                  ) : (
+                    <button
+                      className="font-semibold bg-blue-900 text-white px-4 py-2 rounded-lg text-sm sm:text-base md:text-lg"
+                      onClick={handleFileUpload}
+                    >
+                      Review Deficiencies
+                    </button>
+                  )}
                 </div>
               </div>
               <div

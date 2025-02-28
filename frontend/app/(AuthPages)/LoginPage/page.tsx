@@ -3,9 +3,12 @@
 import Link from "next/link";
 import React, { useState, useEffect } from "react";
 import { useRouter } from "next/navigation";
-import Image2 from "@/components/imageright"; // Ensure the correct import path
+import Image2 from "@/components/imageright"; 
 import { toast } from "react-toastify";
 import Image from "next/image";
+import Cookies from "js-cookie"; 
+
+
 const Login: React.FC = () => {
   const [email, setEmail] = useState("");
   const [password, setPassword] = useState("");
@@ -13,26 +16,20 @@ const Login: React.FC = () => {
 
   const router = useRouter();
 
-  // Helper function to set cookies
   const setCookie = (name: string, value: string, days = 7) => {
     const expires = new Date(Date.now() + days * 86400000).toUTCString();
     document.cookie = `${name}=${value}; path=/; expires=${expires}; secure`;
   };
-  // Helper function to get cookies
   const getCookie = (name: string) => {
     const value = `; ${document.cookie}`;
     const parts = value.split(`; ${name}=`);
     if (parts.length === 2) return parts.pop()?.split(";").shift();
     return null;
   };
-
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
-    console.log("Email:", email);
-    console.log("Password:", password);
   
     try {
-      // Send login request to the backend
       const response = await fetch(`${process.env.NEXT_PUBLIC_API_BASE_URL}/api/users/login`, {
         method: "POST",
         headers: {
@@ -42,58 +39,47 @@ const Login: React.FC = () => {
       });
   
       const data = await response.json();
-      console.log(data);
   
-      // Check if the login was successful
       if (response.ok) {
-        toast.success("Login successful! Redirecting......", { position: "top-right" }); // Success toast
-        console.log(data);
+        toast.success("Login successful! Redirecting...", { position: "top-right" });
   
-        setCookie("token", data.token); 
-        setCookie("email", data.email); 
-        setCookie("role", data.role);   
-        setCookie("DepartmentName", data.DepartmentName);
-        setCookie("priceType", data.priceType); 
-        setCookie("priceCycle", data.priceCycle); 
 
-        const storedEmail = getCookie("email");
+        setCookie("name", data.name); 
+        setCookie("token", data.token);
+        setCookie("email", data.email);
+        setCookie("role", data.role);
+        setCookie("DepartmentName", data.DepartmentName || "");
+        setCookie("priceType", data.priceType || "");
+        setCookie("priceCycle", data.priceCycle || "");
+  
         const storedRole = getCookie("role");
         const priceCycle = getCookie("priceCycle");
-        
-        if (storedEmail && storedRole) {
-          // Check if priceCycle is "Annual" or "Bi-Annual"
-          if (priceCycle === "Annual" || priceCycle === "Bi-Annual") {
-            // If priceCycle is valid, redirect to Dashboard
-            setTimeout(() => {
-              router.push(`/Dashboard`);
-            }, 2000);
-          } else if (priceCycle === null || priceCycle === "null") {
-            // If priceCycle is null, redirect to Subscription Plan page
-            setTimeout(() => {
-              router.push(`/Pricing`);
-            }, 3000);
-          }
-        
-        } else {
-          toast.error("Email or role is missing. Please log in again.", { position: "top-right" });
-         
-        }
-        
-        
-      } else {
-        
-        setMessage(data.message || "Login failed!");  
-      }
   
+        if (storedRole === "admin") {
+          setTimeout(() => {
+            router.push(`/UserSetting`);
+          }, 2000);
+        } else if (priceCycle === "Annual" || priceCycle === "Bi-Annual") {
+          setTimeout(() => {
+            router.push(`/Dashboard`);
+          }, 2000);
+        } else if (!priceCycle || priceCycle === "null") {
+          setTimeout(() => {
+            router.push(`/Pricing`);
+          }, 3000);
+        }
+      } else {
+        toast.error(data.message || "Login failed!", { position: "top-right" });
+      }
     } catch (error) {
       console.error("Error:", error);
-      setMessage("An error occurred. Please try again."); // Show error message on failure
+      toast.error("An error occurred. Please try again.", { position: "top-right" });
     }
   };
+  
 
   const handleGoogleLogin = async () => {
     try {
-      // Fetch the Google Auth URL from the backend
       const response = await fetch(`${process.env.NEXT_PUBLIC_API_BASE_URL}/api/calendar/auth-url`);
       if (!response.ok) {
         throw new Error("Failed to fetch Google Auth URL.");
@@ -119,11 +105,15 @@ const Login: React.FC = () => {
   useEffect(() => {
     if (message) {
       const timer = setTimeout(() => {
-        setMessage(""); // Clear the message after 2 seconds
+        setMessage(""); 
       }, 2000);
-      return () => clearTimeout(timer); // Cleanup the timer on unmount
+      return () => clearTimeout(timer); 
     }
   }, [message]);
+
+  const role=Cookies.get("role")
+console.log(role);
+
 
   return (
     <div className="flex h-screen font-work-sans bg-gray-50">
@@ -175,7 +165,7 @@ const Login: React.FC = () => {
             {/* Submit Button */}
             <button
               type="submit"
-              className="w-full py-3 bg-[#002f6c] text-white font-semibold rounded-lg hover:bg-blue-800 transition-colors text-sm sm:text-base"
+              className="w-full py-3 bg-[#002f6c] text-white font-semibold rounded-lg transition-colors text-sm sm:text-base"
             >
               Sign in
             </button>
@@ -189,12 +179,7 @@ const Login: React.FC = () => {
 
           {/* Button */}
           <div className="flex gap-4">
-            {/* Google Button */}
-            {/* <button className="flex items-center justify-center w-full py-2 px-4 border border-gray-300 rounded-lg text-gray-700 hover:bg-[#ffffff] hover:text-black transition-colors">
-              <FaGoogle className="mr-3 text-2xl text-[#df837a] hover:text-white" />
-              <span className="ml-2">Log In With Google</span>
-            </button> */}
-{/* Google Button */}
+          
 <button
   onClick={handleGoogleLogin}
   className="flex items-center justify-center w-full py-2 px-4 border border-gray-300 rounded-lg text-gray-700 hover:bg-[#ffffff] hover:text-black transition-colors"
@@ -202,9 +187,9 @@ const Login: React.FC = () => {
 
 
 <Image
-  src="/assets/google-icon.png" // Replace with the correct path to your Google logo image
+  src="/assets/google-icon.png" 
   alt="Google Logo"
-  width={24} // Adjust the size as needed
+  width={24} 
   height={24}
   className="mr-3"
 />
@@ -229,10 +214,8 @@ const Login: React.FC = () => {
         </div>
       </div>
 
-      {/* Right Side: Image with Quote */}
       <Image2 />
 
-      {/* Show the success or error message */}
       {message && (
         <div className="fixed bottom-4 left-4 p-4 bg-green-700 text-white rounded-lg">
           {message}

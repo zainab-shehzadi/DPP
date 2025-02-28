@@ -3,6 +3,7 @@
 import Image from 'next/image';
 import { FaBell } from 'react-icons/fa';
 import React, { useState, useEffect ,useRef } from "react";
+import Notification from "@/components/Notification";
 import Cookies from "js-cookie";
 import { toast } from "react-toastify";
 import UserDropdown from "@/components/profile-dropdown";
@@ -282,6 +283,7 @@ const handleTagClick = async (tagName, tagId) => {
 
           {/* Right Side: Notification Icon and Profile */}
           <div className="flex items-center space-x-2 sm:space-x-4 mt-2 sm:mt-0">
+          <Notification/>
             <UserDropdown />
           </div>
         </header>

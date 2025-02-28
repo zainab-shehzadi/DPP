@@ -7,7 +7,6 @@ import Image2 from "@/components/imageright";
 import { toast } from "react-toastify";
 import Image from "next/image";
 import Cookies from "js-cookie"; 
-import authPublicRoutes from "@/hoc/authPublicRoutes";
 
 const Login: React.FC = () => {
   const [email, setEmail] = useState("");
@@ -43,8 +42,8 @@ const Login: React.FC = () => {
       if (response.ok) {
         toast.success("Login successful! Redirecting...", { position: "top-right" });
   
-        // ✅ Ensure correct field names
-        setCookie("name", data.name); // Fix: Changed from 'data.firstname' to 'data.name'
+
+        setCookie("name", data.name); 
         setCookie("token", data.token);
         setCookie("email", data.email);
         setCookie("role", data.role);
@@ -110,6 +109,10 @@ const Login: React.FC = () => {
       return () => clearTimeout(timer); 
     }
   }, [message]);
+
+  const role=Cookies.get("role")
+console.log(role);
+
 
   return (
     <div className="flex h-screen font-work-sans bg-gray-50">

@@ -19,11 +19,16 @@ dotenv.config();
 connectDB(); 
 
 
-// Notification Schema
 const NotificationSchema = new mongoose.Schema({
-  message: String,
-  timestamp: { type: Date, default: Date.now },
+  email: { type: String, required: true },
+  notifications: [
+    {
+      message: String,
+      timestamp: { type: Date, default: Date.now },
+    }
+  ]
 });
+
 
 const Notification = mongoose.model('Notification', NotificationSchema);
 
@@ -69,19 +74,86 @@ io.on("connection", (socket) => {
 });
 
 app.get('/api/notifications', async (req, res) => {
-  const notifications = await Notification.find().sort({ timestamp: -1 });
-  res.json(notifications);
+  try {
+    const { email } = req.query; 
+
+    if (!email) {
+      return res.status(400).json({ error: "Email is required." });
+    }
+
+    // Find notifications for the given email
+    const notifications = await Notification.findOne({ email });
+
+    if (!notifications) {
+      return res.json({ email, notifications: [] }); 
+    }
+
+    res.json(notifications);
+  } catch (error) {
+    console.error("Error fetching notifications:", error);
+    res.status(500).json({ error: "Internal Server Error" });
+  }
 });
 
 app.post('/api/notifications', async (req, res) => {
-  const { message } = req.body;
-  const notification = new Notification({ message });
-  await notification.save();
+  try {
+    const { email, message } = req.body;
 
+    if (!email || !message) {
+      return res.status(400).json({ error: "Email and message are required." });
+    }
 
-  io.emit('notification', notification);
-  res.status(201).json(notification);
+    // Check if a document already exists for the given email
+    let notificationDoc = await Notification.findOne({ email });
+
+    if (!notificationDoc) {
+      // If no document exists, create a new one
+      notificationDoc = new Notification({
+        email,
+        notifications: [{ message }]
+      });
+    } else {
+      // If a document exists, push the new notification to the array
+      notificationDoc.notifications.push({ message });
+    }
+
+    await notificationDoc.save();
+
+    io.emit('notification', { email, message });
+
+    res.status(201).json(notificationDoc);
+  } catch (error) {
+    console.error("Error saving notification:", error);
+    res.status(500).json({ error: "Internal Server Error" });
+  }
 });
+
+app.delete('/api/notifications/:id', async (req, res) => {
+  try {
+    const { id } = req.params;
+
+    if (!mongoose.Types.ObjectId.isValid(id)) {
+      return res.status(400).json({ error: "Invalid Notification ID." });
+    }
+
+    // Find a document where the notification exists inside the `notifications` array
+    const updatedDoc = await Notification.findOneAndUpdate(
+      { "notifications._id": id },
+      { $pull: { notifications: { _id: id } } }, // Remove the specific notification
+      { new: true }
+    );
+
+    if (!updatedDoc) {
+      return res.status(404).json({ error: "Notification not found." });
+    }
+
+    res.status(200).json({ message: "Notification deleted successfully", updatedDoc });
+  } catch (error) {
+    console.error("Error deleting notification:", error);
+    res.status(500).json({ error: "Internal Server Error" });
+  }
+});
+
 app.use((req, res, next) => {
   req.io = io;
   next();
