@@ -54,86 +54,6 @@ const parsePdfContent = async (fileBuffer) => {
   }
 };
 
-// const uploadFile = async (req, res) => {
-//   try {
-//     if (!req.file) {
-//       return res.status(400).json({ error: "No file uploaded." });
-//     }
-
-//     const { email } = req.body;
-//     if (!email) {
-//       return res.status(400).json({ error: "Email is required." });
-//     }
-
-//      // Check if a file with the same original name already exists for the given email
-//      let existingFileEntry = await File.findOne({ email, "files.originalName": req.file.originalname });
-
-//      if (existingFileEntry) {
-//        return res.status(400).json({ error: "File already exists with the same name." });
-//      }
- 
-//     const fileUrl = await uploadToS3(req.file);
-
-  
-//     const fileContent = await parsePdfContent(req.file.buffer);
-//     const extractedTags = fileContent.match(/F \d{4}/g) || [];
-//     const tagsWithDescriptions = extractedTags.map((tag) => {
-//       const tagIndex = fileContent.indexOf(tag);
-//       const shortDescription = fileContent.substring(tagIndex, tagIndex + 100).split(".")[0].trim();
-      
-//       const longDescriptionStartIndex = tagIndex + 100;
-//       let longDescriptionEndIndex = fileContent.indexOf("(continued on next page)", longDescriptionStartIndex);
-//       if (longDescriptionEndIndex === -1) longDescriptionEndIndex = fileContent.length;
-//       const longDescription = fileContent.substring(longDescriptionStartIndex, longDescriptionEndIndex).trim();
-
-//       return { tag, shortDescription, longDescription };
-//     });
-
-//     let fileEntry = await File.findOne({ email });
-
-//     let documentId;
-//     if (fileEntry) {
-//       fileEntry.files.push({
-//         originalName: req.file.originalname,
-//         fileUrl, 
-//         filePath: req.file.path || "", 
-//         tags: tagsWithDescriptions,
-//         uploadedAt
-//       });
-//       await fileEntry.save();
-//       documentId = fileEntry.files[fileEntry.files.length - 1]._id;
-//     } else {
-//       fileEntry = await File.create({
-//         email,
-//         files: [{
-//           originalName: req.file.originalname,
-//           fileUrl,
-//           filePath: req.file.path || "", 
-//           tags: tagsWithDescriptions,
-//           uploadedAt
-//         }],
-//       });
-//       documentId = fileEntry.files[0]._id;
-//     }
-    
-//     req.io.emit("documentUploaded", {
-//       message: `A new document "${req.file.originalname}" has been uploaded!`,
-//       documentName: req.file.originalname,
-//       documentId,
-//     });
-
-//     res.status(201).json({
-//       message: "File uploaded to AWS S3 and parsed successfully!",
-//       documentId,
-//       fileUrl,
-//       tags: tagsWithDescriptions,
-//       uploadedAt
-//     });
-//   } catch (error) {
-//     console.error("Error in file upload:", error.message);
-//     res.status(500).json({ error: "File upload failed.", details: error.message });
-//   }
-// };
 
 const uploadFile = async (req, res) => {
   try {
@@ -146,7 +66,7 @@ const uploadFile = async (req, res) => {
       return res.status(400).json({ error: "Email is required." });
     }
 
-    // Check if a file with the same original name already exists for the given email
+
     let existingFileEntry = await File.findOne({ email, "files.originalName": req.file.originalname });
 
     if (existingFileEntry) {
@@ -162,12 +82,15 @@ const uploadFile = async (req, res) => {
 
     // Extract and parse content from the PDF
     const fileContent = await parsePdfContent(req.file.buffer);
-    const extractedTags = fileContent.match(/F \d{4}/g) || [];
+    // const extractedTags = fileContent.match(/F \d{4}/g) || [];
+    const extractedTags = fileContent.match(/F\s?\d{3,4}/g) || [];
+     console.log(extractedTags);
+
     const tagsWithDescriptions = extractedTags.map((tag) => {
       const tagIndex = fileContent.indexOf(tag);
       const shortDescription = fileContent.substring(tagIndex, tagIndex + 92).split(".")[0].trim();
 
-      const longDescriptionStartIndex = tagIndex + 91;
+      const longDescriptionStartIndex = tagIndex + 92;
       let longDescriptionEndIndex = fileContent.indexOf("(continued on next page)", longDescriptionStartIndex);
       if (longDescriptionEndIndex === -1) longDescriptionEndIndex = fileContent.length;
       const longDescription = fileContent.substring(longDescriptionStartIndex, longDescriptionEndIndex).trim();
@@ -423,6 +346,8 @@ const generateSolution = async (req, res) => {
   try {
     const { query, id } = req.body; // Extract query and tag id
 
+ console.log("Received Request - Query:", query);
+ console.log("Received Request - ID:", id);
     // Validate required fields
     if (!query || !id) {
       console.error("Query or ID is missing.", req.body);

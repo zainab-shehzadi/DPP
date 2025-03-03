@@ -82,7 +82,6 @@ router.post("/tag-details", async (req, res) => {
       return res.status(400).json({ error: "Both tagId and tagName are required" });
     }
 
-    console.log(`🔍 Received API Request: tagId=${tagId}, tagName=${tagName}`);
     if (mongoose.Types.ObjectId.isValid(tagId)) {
       tagId = new mongoose.Types.ObjectId(tagId);
     } else {
