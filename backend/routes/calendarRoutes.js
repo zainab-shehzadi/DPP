@@ -89,7 +89,6 @@ router.post('/create-event', async (req, res) => {
       summary, 
       start,   
       end,    
-      
     };
 
   

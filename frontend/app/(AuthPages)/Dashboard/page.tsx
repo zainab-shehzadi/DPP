@@ -81,7 +81,7 @@ export default function Dashboard() {
     const formData = new FormData();
     formData.append("file", file);
     formData.append("email", email);
-    setLoading(true); // Show loader
+    setLoading(true); 
     try {
       const response = await axios.post(
         `${process.env.NEXT_PUBLIC_API_BASE_URL}/api/files/upload`,

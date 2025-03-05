@@ -17,9 +17,9 @@ const User = require("../models/User");
 
 const router = express.Router();
 
-router.post("/get-access-token", async (req, res) => {
+router.get("/get-access-token", async (req, res) => {
   try {
-    const { email } = req.body; 
+    const { email } = req.query; 
     console.log("Fetching tokens for email:", email);
 
     if (!email) {

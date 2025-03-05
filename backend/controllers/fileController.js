@@ -54,6 +54,61 @@ const parsePdfContent = async (fileBuffer) => {
   }
 };
 
+const extractTagsFromContent = (fileContent) => {
+  // Match all occurrences of tags in the format "Fxxx" or "F xxxx"
+  const extractedTags = fileContent.match(/F\s?\d{3,4}/g) || [];
+  
+  // Use a Map to store unique tags and their summaries
+  let uniqueTags = new Map();
+   console.log(uniqueTags);
+  let tagPositions = [];
+  
+  extractedTags.forEach(tag => {
+    let standardizedTag = tag.replace(/\s/g, ''); // Normalize tag format (e.g., "F 554" → "F554")
+    let tagKey = standardizedTag.substring(0, 4); // Consider first three digits for uniqueness
+
+    let tagIndex = fileContent.indexOf(tag);
+    
+    tagPositions.push({ tag: standardizedTag, index: tagIndex });
+
+    if (!uniqueTags.has(tagKey)) {
+      uniqueTags.set(tagKey, {
+        tag: standardizedTag,
+        shortDescription: "",
+        longDescription: ""
+      });
+    }
+  });
+
+  // Sort tags by their positions in the document
+  tagPositions.sort((a, b) => a.index - b.index);
+
+  // Extract summaries for each tag
+  for (let i = 0; i < tagPositions.length; i++) {
+    let currentTag = tagPositions[i].tag;
+    let startIndex = tagPositions[i].index;
+    let endIndex = i + 1 < tagPositions.length ? tagPositions[i + 1].index : fileContent.length;
+
+    let summary = fileContent.substring(startIndex, endIndex).trim();
+
+    let tagKey = currentTag.substring(0, 4);
+
+    // Concatenate if the tag appears multiple times
+    if (uniqueTags.has(tagKey)) {
+      let existingEntry = uniqueTags.get(tagKey);
+      existingEntry.longDescription += summary + " ";
+      uniqueTags.set(tagKey, existingEntry);
+    }
+  }
+
+  // Assign short descriptions (first 92 characters of long description)
+  uniqueTags.forEach((value, key) => {
+    value.shortDescription = value.longDescription.substring(0, 92).split(".")[0].trim();
+  });
+
+  return [...uniqueTags.values()];
+};
+
 
 const uploadFile = async (req, res) => {
   try {
@@ -65,7 +120,6 @@ const uploadFile = async (req, res) => {
     if (!email) {
       return res.status(400).json({ error: "Email is required." });
     }
-
 
     let existingFileEntry = await File.findOne({ email, "files.originalName": req.file.originalname });
 
@@ -82,21 +136,10 @@ const uploadFile = async (req, res) => {
 
     // Extract and parse content from the PDF
     const fileContent = await parsePdfContent(req.file.buffer);
-    // const extractedTags = fileContent.match(/F \d{4}/g) || [];
-    const extractedTags = fileContent.match(/F\s?\d{3,4}/g) || [];
-     console.log(extractedTags);
 
-    const tagsWithDescriptions = extractedTags.map((tag) => {
-      const tagIndex = fileContent.indexOf(tag);
-      const shortDescription = fileContent.substring(tagIndex, tagIndex + 92).split(".")[0].trim();
-
-      const longDescriptionStartIndex = tagIndex + 92;
-      let longDescriptionEndIndex = fileContent.indexOf("(continued on next page)", longDescriptionStartIndex);
-      if (longDescriptionEndIndex === -1) longDescriptionEndIndex = fileContent.length;
-      const longDescription = fileContent.substring(longDescriptionStartIndex, longDescriptionEndIndex).trim();
-
-      return { tag, shortDescription, longDescription };
-    });
+    // Extract tags using the new function
+    const tagsWithDescriptions = extractTagsFromContent(fileContent);
+    console.log(tagsWithDescriptions);
 
     let fileEntry = await File.findOne({ email });
     let documentId;
@@ -144,6 +187,9 @@ const uploadFile = async (req, res) => {
     res.status(500).json({ error: "File upload failed.", details: error.message });
   }
 };
+
+
+
 const fetchTagsByEmail = async (req, res) => {
   const { email, id } = req.query; 
 
@@ -248,8 +294,6 @@ const fetchTagsAndSolutionByEmail = async (req, res) => {
     res.status(500).json({ error: "Failed to fetch tags and solutions", details: error.message });
   }
 };
-
-
 const getTagsWithDescriptions = async (req, res) => {
   const { email, id } = req.query; // Extract email and id from query parameters
 
@@ -304,7 +348,6 @@ const getTagsWithDescriptions = async (req, res) => {
     res.status(500).json({ error: "Failed to fetch tag details", details: error.message });
   }
 };
-
 const checkSolution = async (req, res) => {
   try {
 
@@ -340,8 +383,6 @@ const checkSolution = async (req, res) => {
     res.status(500).json({ error: 'Failed to check solution.', details: error.message });
   }
 };
-
-
 const generateSolution = async (req, res) => {
   try {
     const { query, id } = req.body; // Extract query and tag id
@@ -444,8 +485,6 @@ const generateSolution = async (req, res) => {
     });
   }
 };
-
-
 const checkResponse = async (req, res) => {
   try {
 
@@ -478,7 +517,6 @@ const checkResponse = async (req, res) => {
     res.status(500).json({ error: 'Failed to check response.', details: error.message });
   }
 };
-
 module.exports = { 
   uploadFile, 
   fetchTagsByEmail,

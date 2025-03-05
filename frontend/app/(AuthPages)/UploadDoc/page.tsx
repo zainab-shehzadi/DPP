@@ -181,28 +181,29 @@ function docUpload() {
     try {
       const safeEmail = email ?? "";
 
-      // const response = await fetch(
-      //   `${process.env.NEXT_PUBLIC_API_BASE_URL}/api/users/get-access-token?email=${encodeURIComponent(safeEmail)}`,
-      //   {
-      //     method: "GET",
-      //     credentials: "include",
-      //   }
-      // );
-
       const response = await fetch(
-        `${process.env.NEXT_PUBLIC_API_BASE_URL}/api/users/get-access-token`,
+        `${process.env.NEXT_PUBLIC_API_BASE_URL}/api/users/get-access-token?email=${encodeURIComponent(safeEmail)}`,
         {
-          method: "POST",
+          method: "GET",
           credentials: "include",
-          headers: {
-            "Content-Type": "application/json",
-          },
-          body: JSON.stringify({ email: safeEmail }),
         }
       );
 
+      // const response = await fetch(
+      //   `${process.env.NEXT_PUBLIC_API_BASE_URL}/api/users/get-access-token`,
+      //   {
+      //     method: "POST",
+      //     credentials: "include",
+      //     headers: {
+      //       "Content-Type": "application/json",
+      //     },
+      //     body: JSON.stringify({ email: safeEmail }),
+      //   }
+      // );
+
       const data = await response.json();
       const accessToken = data.accessToken;
+      alert(accessToken);
       const refreshToken = data.refreshToken;
 
       if (!accessToken) {

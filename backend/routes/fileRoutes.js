@@ -118,7 +118,7 @@ router.post("/tag-details", async (req, res) => {
       status: tagData.status
     };
 
-    console.log("✅ Found Tag Details:", response);
+    //console.log("✅ Found Tag Details:", response);
     res.status(200).json(response);
 
   } catch (error) {
