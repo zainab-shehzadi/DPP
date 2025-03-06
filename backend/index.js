@@ -173,7 +173,7 @@ app.get("/", (req, res) => {
 app.options("*", cors(corsOptions));
 
 
-cron.schedule("*/5 * * * *", async () => {
+cron.schedule("*/30 * * * *", async () => {
   try {
     const now = new Date();
     await User.updateMany(

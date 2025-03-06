@@ -46,7 +46,7 @@ router.get("/callback", async (req, res) => {
     // expiryTime.setHours(expiryTime.getHours() + 1);
 // Set token expiry time (5 minutes from now)
 const expiryTime = new Date();
-expiryTime.setMinutes(expiryTime.getMinutes() + 5);
+expiryTime.setMinutes(expiryTime.getMinutes() + 30); // Set expiry time to 30 minutes
 
     const user = await User.findOneAndUpdate(
       { email },
