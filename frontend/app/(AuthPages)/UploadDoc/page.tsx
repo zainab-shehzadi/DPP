@@ -2,10 +2,10 @@
 import React, { useState, useEffect, useRef } from "react";
 import DateDisplay from "@/components/date";
 import Sidebar from "@/components/Sidebar";
-import UserDropdown from '@/components/profile-dropdown'
+import UserDropdown from "@/components/profile-dropdown";
 import { FaFileAlt } from "react-icons/fa";
 import "react-datepicker/dist/react-datepicker.css";
-import { useRouter } from "next/navigation"; 
+import { useRouter } from "next/navigation";
 import Notification from "@/components/Notification";
 import Cookies from "js-cookie";
 import { toast } from "react-toastify";
@@ -31,6 +31,8 @@ function docUpload() {
   >([]);
   const [selectedDocs, setSelectedDocs] = useState<string[]>([]);
   const [selectedDocument, setSelectedDocument] = useState("");
+  const [selectedDocumentId, setSelectedDocumentId] = useState("");
+
   const [status, setStatus] = useState<string | null>(null);
   const [selectedTag, setSelectedTag] = useState<string | null>(null);
   const [selectedID, setSelectedID] = useState<number | null>(null);
@@ -43,12 +45,13 @@ function docUpload() {
   const [activeTab, setActiveTab] = useState("POC AI Ally");
   const [solution, setSolution] = useState("");
   const [dropdownOpen1, setDropdownOpen1] = useState(false);
-  const [selectedDate, setSelectedDate] = useState(new Date());
   const [accessToken123, setAccessToken] = useState<string | null>(null);
   const [documents, setDocuments] = useState<DocumentType[]>([]);
   const [refreshToken, setrefreshToken] = useState<string | null>(null);
   const [dropdownOpen2, setDropdownOpen2] = useState(false);
-  const [selectedDescription, setSelectedDescription] = useState<string | null>(null);
+  const [selectedDescription, setSelectedDescription] = useState<string | null>(
+    null
+  );
   const dropdownRef = useRef<HTMLDivElement>(null);
   const [answer1, setAnswer1] = useState("");
   const [answer2, setAnswer2] = useState("");
@@ -182,7 +185,9 @@ function docUpload() {
       const safeEmail = email ?? "";
 
       const response = await fetch(
-        `${process.env.NEXT_PUBLIC_API_BASE_URL}/api/users/get-access-token?email=${encodeURIComponent(safeEmail)}`,
+        `${
+          process.env.NEXT_PUBLIC_API_BASE_URL
+        }/api/users/get-access-token?email=${encodeURIComponent(safeEmail)}`,
         {
           method: "GET",
           credentials: "include",
@@ -250,9 +255,14 @@ function docUpload() {
           headers: {
             "Content-Type": "application/json",
           },
-          body: JSON.stringify({ tagId: selectedID, tasks }),
+          body: JSON.stringify({
+            tagId: selectedID,
+            tasks,
+            docId: selectedDocumentId, // Ensure this is a valid variable, not a function
+          }),
         }
       );
+      
 
       if (!saveResponse.ok) {
         const error = await saveResponse.json();
@@ -261,7 +271,7 @@ function docUpload() {
       }
 
       const savedTasks = await saveResponse.json();
-      toast.success("Tasks saved successfully:", savedTasks);
+      //toast.success("Tasks saved successfully:", savedTasks);
 
       for (let task of tasks) {
         const calendarResponse = await fetch(
@@ -434,6 +444,7 @@ function docUpload() {
   };
   const handleSelectDocument = (doc) => {
     setSelectedDocument(doc.originalName || "Untitled Document");
+    setSelectedDocumentId(doc._id);
     fetchDocumentDetails(doc._id);
     setDropdownOpen(false);
     setSelectedTag("");
@@ -650,8 +661,8 @@ function docUpload() {
             </div>
           </div>
           <div className="relative flex items-center space-x-2">
-                 <DateDisplay />
-                 </div>
+            <DateDisplay />
+          </div>
         </div>
 
         {activeTab === "POC AI Ally" && (
@@ -858,11 +869,6 @@ function docUpload() {
                 )}
               </div>
             </div>
-
-
-   
-
-
           </>
         )}
 
@@ -967,72 +973,75 @@ function docUpload() {
             </div>
           </>
         )}
-{Array.isArray(solution) && solution.length > 0 && (
-  <div className="flex justify-end space-x-4 mt-4">
-    {status !== "assigned" && (
-      <>
-        <button
-          onClick={isAuthenticated}
-          className={`flex items-center justify-center border border-[#002F6C] text-[#002F6C] px-4 py-2 rounded-lg text-sm shadow-md transition-colors duration-300 ${
-            loading ? "cursor-not-allowed opacity-50" : "hover:bg-gray-100"
-          }`}
-          disabled={loading}
-        >
-          <svg
-            xmlns="http://www.w3.org/2000/svg"
-            fill="none"
-            viewBox="0 0 24 24"
-            strokeWidth={1.5}
-            stroke="currentColor"
-            className="w-4 h-4 mr-2"
-          >
-            <path
-              strokeLinecap="round"
-              strokeLinejoin="round"
-              d="M15 10l4.553 4.553-4.553 4.553m-6-9L4.447 14.553 9 19"
-            />
-          </svg>
-          {loading ? "Assigning..." : "Assign Task"}
-        </button>
 
-        <button
-          onClick={handleNavigateToTags}
-          className="flex items-center justify-center bg-[#002F6C] text-white px-4 py-2 rounded-lg text-sm shadow-md transition-colors duration-300"
-        >
-          Approve
-        </button>
-      </>
-    )}
+        {Array.isArray(solution) && solution.length > 0 && (
+          <div className="flex justify-end space-x-4 mt-4">
+            {status !== "assigned" && (
+              <>
+                <button
+                  onClick={isAuthenticated}
+                  className={`flex items-center justify-center border border-[#002F6C] text-[#002F6C] px-4 py-2 rounded-lg text-sm shadow-md transition-colors duration-300 ${
+                    loading
+                      ? "cursor-not-allowed opacity-50"
+                      : "hover:bg-gray-100"
+                  }`}
+                  disabled={loading}
+                >
+                  <svg
+                    xmlns="http://www.w3.org/2000/svg"
+                    fill="none"
+                    viewBox="0 0 24 24"
+                    strokeWidth={1.5}
+                    stroke="currentColor"
+                    className="w-4 h-4 mr-2"
+                  >
+                    <path
+                      strokeLinecap="round"
+                      strokeLinejoin="round"
+                      d="M15 10l4.553 4.553-4.553 4.553m-6-9L4.447 14.553 9 19"
+                    />
+                  </svg>
+                  {loading ? "Assigning..." : "Assign Task"}
+                </button>
 
-    {status === "assigned" && (
-      <button
-        onClick={handleNavigateToTags}
-        className={`flex items-center justify-center border border-[#002F6C] text-[#002F6C] px-4 py-2 rounded-lg text-sm shadow-md transition-colors duration-300 ${
-          loading ? "cursor-not-allowed opacity-50" : "hover:bg-gray-100"
-        }`}
-        disabled={loading}
-      >
-        <svg
-          xmlns="http://www.w3.org/2000/svg"
-          fill="none"
-          viewBox="0 0 24 24"
-          strokeWidth={1.5}
-          stroke="currentColor"
-          className="w-4 h-4 mr-2"
-        >
-          <path
-            strokeLinecap="round"
-            strokeLinejoin="round"
-            d="M15 10l4.553 4.553-4.553 4.553m-6-9L4.447 14.553 9 19"
-          />
-        </svg>
-        Assigned
-      </button>
-    )}
-  </div>
-)}
+                <button
+                  onClick={handleNavigateToTags}
+                  className="flex items-center justify-center bg-[#002F6C] text-white px-4 py-2 rounded-lg text-sm shadow-md transition-colors duration-300"
+                >
+                  Approve
+                </button>
+              </>
+            )}
 
-
+            {status === "assigned" && (
+              <button
+                onClick={handleNavigateToTags}
+                className={`flex items-center justify-center border border-[#002F6C] text-[#002F6C] px-4 py-2 rounded-lg text-sm shadow-md transition-colors duration-300 ${
+                  loading
+                    ? "cursor-not-allowed opacity-50"
+                    : "hover:bg-gray-100"
+                }`}
+                disabled={loading}
+              >
+                <svg
+                  xmlns="http://www.w3.org/2000/svg"
+                  fill="none"
+                  viewBox="0 0 24 24"
+                  strokeWidth={1.5}
+                  stroke="currentColor"
+                  className="w-4 h-4 mr-2"
+                >
+                  <path
+                    strokeLinecap="round"
+                    strokeLinejoin="round"
+                    d="M15 10l4.553 4.553-4.553 4.553m-6-9L4.447 14.553 9 19"
+                  />
+                </svg>
+                Assigned
+              </button>
+            )}
+          </div>
+        )}
       </div>
     </div>
   );

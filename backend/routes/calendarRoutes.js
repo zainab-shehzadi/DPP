@@ -3,7 +3,6 @@ const { google } = require('googleapis');
 
 const router = express.Router();
 const Task = require("../models/taskSchema");
-
 const User = require("../models/User");
 
 const oAuth2Client = new google.auth.OAuth2(
@@ -24,6 +23,7 @@ router.get('/auth-url', (req, res) => {
   res.status(200).json({ authUrl });
 });
 
+
 router.get("/callback", async (req, res) => {
   const { code } = req.query;
 
@@ -32,31 +32,38 @@ router.get("/callback", async (req, res) => {
   }
 
   try {
-
     const { tokens } = await oAuth2Client.getToken(code);
     oAuth2Client.setCredentials(tokens);
- 
+
     const email = req.cookies.email;
 
     if (!email) {
       return res.status(400).json({ error: "Email not found in cookies" });
     }
 
+    // // Set token expiry time (1 hour from now)
+    // const expiryTime = new Date();
+    // expiryTime.setHours(expiryTime.getHours() + 1);
+// Set token expiry time (5 minutes from now)
+const expiryTime = new Date();
+expiryTime.setMinutes(expiryTime.getMinutes() + 5);
+
     const user = await User.findOneAndUpdate(
       { email },
-      { 
-        accessToken: tokens.access_token, 
-        refreshToken: tokens.refresh_token 
+      {
+        accessToken: tokens.access_token,
+        refreshToken: tokens.refresh_token,
+        tokenExpiry: expiryTime, 
       },
-      { new: true, upsert: true } 
+      { new: true, upsert: true }
     );
-    
+
     if (user) {
       console.log("Tokens updated successfully for:", email);
     } else {
       console.log("User not found, unable to update tokens:", email);
     }
-    
+
     const redirectUrl = `${process.env.FRONTEND_URL}/UploadDoc`;
     res.redirect(redirectUrl);
   } catch (error) {
@@ -64,6 +71,47 @@ router.get("/callback", async (req, res) => {
     res.status(500).json({ error: "Failed to exchange token", details: error.message });
   }
 });
+
+// router.get("/callback", async (req, res) => {
+//   const { code } = req.query;
+
+//   if (!code) {
+//     return res.status(400).json({ error: "Authorization code not provided" });
+//   }
+
+//   try {
+
+//     const { tokens } = await oAuth2Client.getToken(code);
+//     oAuth2Client.setCredentials(tokens);
+ 
+//     const email = req.cookies.email;
+
+//     if (!email) {
+//       return res.status(400).json({ error: "Email not found in cookies" });
+//     }
+
+//     const user = await User.findOneAndUpdate(
+//       { email },
+//       { 
+//         accessToken: tokens.access_token, 
+//         refreshToken: tokens.refresh_token 
+//       },
+//       { new: true, upsert: true } 
+//     );
+    
+//     if (user) {
+//       console.log("Tokens updated successfully for:", email);
+//     } else {
+//       console.log("User not found, unable to update tokens:", email);
+//     }
+    
+//     const redirectUrl = `${process.env.FRONTEND_URL}/UploadDoc`;
+//     res.redirect(redirectUrl);
+//   } catch (error) {
+//     console.error("Error during token exchange:", error.message);
+//     res.status(500).json({ error: "Failed to exchange token", details: error.message });
+//   }
+// });
 
 router.post('/create-event', async (req, res) => {
 
@@ -127,10 +175,10 @@ router.post('/create-event', async (req, res) => {
 });
 
 router.post("/save-tasks", async (req, res) => {
-  const { tagId, tasks } = req.body;
+  const { tagId, tasks,docId } = req.body;
+  console.log(docId);
 
-
-  if (!tagId || !Array.isArray(tasks) || tasks.length === 0) {
+  if (!tagId ||!docId || !Array.isArray(tasks) || tasks.length === 0) {
     console.error("Validation failed. Received tagId:", tagId, "and tasks:", tasks);
     return res.status(400).json({
       success: false,
@@ -210,7 +258,6 @@ if (users.length > 0) {
     });
   }
 });
-
 
 router.post("/taskdetail", async (req, res) => {
   const { department } = req.body;

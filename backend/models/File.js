@@ -26,7 +26,7 @@ const TagSchema = new mongoose.Schema({
     },
   
     solution: {
-      type: [String],  // Change this to an array of strings
+      type: [String],  
       required: false,
     },
     supporting_references: {
@@ -49,7 +49,44 @@ const TagSchema = new mongoose.Schema({
   },
 });
 
-
+const TaskSchema = new mongoose.Schema({
+      taskSummary: {
+         type: String,
+         required: true,
+       },
+       DepartmentName: {
+         type: String,
+         required: false,
+       },
+       startDate: {
+         type: Date,
+         required: true,
+       },
+       endDate: {
+         type: Date,
+         required: true,
+       },
+     
+       assignedTo: [
+         {
+           userId: {
+             type: mongoose.Schema.Types.ObjectId,
+             ref: "User",
+             required: false,  
+           },
+           firstname: {
+             type: String,
+             required: false,  
+           },
+         },
+       ],
+     
+       status: {
+         type: String,
+         default: "pending",
+         enum: ["pending", "completed", "in-progress"],
+       },
+});
 const FileSchema = new mongoose.Schema({
   email: {
     type: String,
@@ -73,6 +110,10 @@ const FileSchema = new mongoose.Schema({
       },
       tags: {
         type: [TagSchema], 
+        default: [],
+      },
+      tasks: {
+        type: [TaskSchema], 
         default: [],
       },
       uploadedAt: {

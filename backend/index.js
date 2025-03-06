@@ -14,7 +14,8 @@ const facilityRoutes = require("./routes/facilityRoutes");
 const calendarRoutes = require("./routes/calendarRoutes");
 const mongoose = require('mongoose');
 const cookieParser = require("cookie-parser");
-
+const cron = require("node-cron");
+const User = require("./models/User");
 dotenv.config();
 connectDB(); 
 
@@ -170,6 +171,20 @@ app.get("/", (req, res) => {
 });
 
 app.options("*", cors(corsOptions));
+
+
+cron.schedule("*/5 * * * *", async () => {
+  try {
+    const now = new Date();
+    await User.updateMany(
+      { tokenExpiry: { $lte: now } },
+      { $set: { accessToken: null, refreshToken: null } } 
+    );
+    console.log("Expired tokens cleared successfully.");
+  } catch (error) {
+    console.error("Error clearing expired tokens:", error);
+  }
+});
 
 app.use((err, req, res, next) => {
   console.error(err.stack);

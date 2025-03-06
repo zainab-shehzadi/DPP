@@ -38,15 +38,14 @@ const userSchema = new mongoose.Schema(
       type: String,
     
     },
-     // New fields for pricing information
      priceType: {
       type: String,
-      enum: ["Basic", "Pro", "Enterprise"], // Assuming these are the options for price type
+      enum: ["Basic", "Pro", "Enterprise"], 
       required: [false, "Price type is required"]
     },
     priceCycle: {
       type: String,
-      enum: ["Annual", "Bi-annual"], // Example cycles
+      enum: ["Annual", "Bi-annual"],
       required: [false, "Price cycle is required"]
     },
     resetPasswordSlug: String,
@@ -54,12 +53,15 @@ const userSchema = new mongoose.Schema(
 
     accessToken: {
       type: String,
-      default: null, // Ensure it's not undefined
+      default: null, 
     },
 
     refreshToken: {
       type: String,
       default: null, // Ensure it's not undefined
+    },
+    tokenExpiry: {
+      type: Date, 
     },
     status: { 
       type: String, 
