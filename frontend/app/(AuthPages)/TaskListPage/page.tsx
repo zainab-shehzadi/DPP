@@ -26,6 +26,8 @@ function taskList() {
   const [isSidebarOpen, setIsSidebarOpen] = useState(false);
   const [dropdownOpen, setDropdownOpen] = useState(false);
   const [department, setDepartment] = useState<string | null>(null);
+    const [loading, setLoading] = useState(true);
+  
   const [dropdownOpen1, setDropdownOpen1] = useState<string | number | null>(
     null
   );
@@ -57,13 +59,20 @@ function taskList() {
       toast.success("Department is not set; skipping fetchTasks.");
     }
   }, [department]);
+  useEffect(() => {
+   
+    const timer = setTimeout(() => {
+      setLoading(false);
+    }, 2000); 
 
+    return () => clearTimeout(timer); 
+  }, []);
   const moveTaskToColumn = async (_id: string, column: string) => {
     const statusMap: { [key: string]: string } = {
       "To Do": "pending",
       "In Progress": "in-progress",
       Closed: "completed",
-      Frozen: "frozen",
+      
     };
 
     const status = statusMap[column];
@@ -123,7 +132,7 @@ function taskList() {
             {dropdownOpen1 === uniqueKey && (
               <div className="absolute top-10 right-2 bg-white border rounded-md shadow-lg z-10">
                 <ul className="py-2 text-sm text-gray-700">
-                  {["In Progress", "Closed", "Frozen", "To Do"].map(
+                  {["In Progress", "Closed", "To Do"].map(
                     (status) => (
                       <li
                         key={status}
@@ -175,7 +184,7 @@ function taskList() {
       const data = await response.json();
 
       if (response.ok && data.success) {
-        toast.success("Tasks fetched successfully:", data.tasks);
+        // toast.success("Tasks fetched successfully:", data.tasks);
 
         const updatedTasks = data.tasks.map((task) => {
           let column = "Closed";
@@ -205,12 +214,20 @@ function taskList() {
 
   return (
     <div className="flex flex-col lg:flex-row">
+         <Sidebar isSidebarOpen={isSidebarOpen} />
+       {loading ? (
+        // ✅ **Loader Section**
+        <div className="flex items-center justify-center w-full h-screen ma-10">
+          <div className="animate-spin rounded-full h-16 w-16 border-t-4 border-blue-600"></div>
+        </div>
+      ) : (
+        <>
      <div className="lg:hidden flex items-center justify-between px-4 py-2 bg-[#002F6C] text-white">
   <img src="/assets/logo-dpp1.png" alt="Logo" className="h-8 w-auto" />
 </div>
 
       {/* Sidebar Component */}
-      <Sidebar isSidebarOpen={isSidebarOpen} />
+      {/* <Sidebar isSidebarOpen={isSidebarOpen} /> */}
 
       {/* Main Content */}
       <div className="lg:ml-64 p-4 sm:p-8 w-full">
@@ -219,7 +236,6 @@ function taskList() {
             Hello, <span className="text-blue-900 capitalize">{name}</span>
           </h2>
           <div className="flex items-center space-x-2 sm:space-x-4 mt-2 sm:mt-0">
-            <FaBell className="text-gray-500 text-base sm:text-lg lg:text-xl" />
             <Notification/>
             <UserDropdown />
           </div>
@@ -342,6 +358,8 @@ function taskList() {
           </div>
         </div>
       </div>
+      </>
+      )}
     </div>
   );
 }

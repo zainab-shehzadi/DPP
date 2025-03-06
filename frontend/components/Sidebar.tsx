@@ -102,9 +102,9 @@ const Sidebar: React.FC<SidebarProps> = ({ isSidebarOpen }) => {
               <li>
                 <a
                   href="#"
-                  onClick={() => handleNavigation("/UploadDoc")}
+                  onClick={() => handleNavigation("/pocAI")}
                   className={`flex items-center py-2 px-3 rounded-md font-semibold text-xs lg:text-sm transition ${
-                    pathname === "/UploadDoc"
+                    pathname === "/pocAI"
                       ? "bg-white text-blue-900 shadow-md"
                       : "hover:bg-white hover:text-blue-900"
                   }`}

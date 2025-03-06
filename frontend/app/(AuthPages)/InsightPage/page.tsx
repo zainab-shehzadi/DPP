@@ -37,6 +37,7 @@ export default function Dashboard() {
     const [selectedDocs, setSelectedDocs] = useState<string[]>([]);
     const [selectedDocument, setSelectedDocument] = useState("");
   const [dropdownOpen1, setDropdownOpen1] = useState(false); 
+
   const [isSidebarOpen, setIsSidebarOpen] = useState(false);
   const [tag, setTags] = useState<string[]>([]);
   const [solution, setSolutions] = useState<string[]>([]);
@@ -48,12 +49,28 @@ export default function Dashboard() {
   const dropdownRef = useRef<HTMLDivElement>(null);
 const [selectedTag, setSelectedTag] = useState<string | null>(null); 
 
+useEffect(() => {
+  function handleClickOutside(event) {
+    if (dropdownRef.current && !dropdownRef.current.contains(event.target)) {
+      setDropdownOpen(false); // Close dropdown
+    }
+  }
+
+  document.addEventListener("mousedown", handleClickOutside);
+  return () => {
+    document.removeEventListener("mousedown", handleClickOutside);
+  };
+}, []);
   const toggleSidebar = () => setIsSidebarOpen(!isSidebarOpen);
 
   const toggleDropdown = () => {
     setDropdownOpen(!dropdownOpen);
   };
   const toggleDropdown1 = () => {
+    if (!selectedDocument) {
+      toast.warning("Please select a document first!");
+      return;
+    }
     setDropdownOpen1(!dropdownOpen1);
   };
 useEffect(() => {
@@ -385,7 +402,7 @@ const handleTagClick = async (tagName, tagId) => {
 
             <div className="relative ml-4 sm:ml-6 lg:ml-10">
               <button
-                onClick={() => setDropdownOpen1(!dropdownOpen1)} 
+                onClick={toggleDropdown1}
                 className="flex items-center text-white font-semibold text-[11px] leading-[14px] px-4 py-2 rounded-lg"
               >
                 <span className={`font-[Plus Jakarta Sans] font-bold text-[40px] leading-[50.4px] text-[#494D55]`}>

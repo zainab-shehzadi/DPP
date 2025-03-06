@@ -1,6 +1,6 @@
 const express = require('express');
 const { google } = require('googleapis');
-
+const File = require("../models/File"); // Adjust the path based on your project structure
 const router = express.Router();
 const Task = require("../models/taskSchema");
 const User = require("../models/User");
@@ -41,10 +41,7 @@ router.get("/callback", async (req, res) => {
       return res.status(400).json({ error: "Email not found in cookies" });
     }
 
-    // // Set token expiry time (1 hour from now)
-    // const expiryTime = new Date();
-    // expiryTime.setHours(expiryTime.getHours() + 1);
-// Set token expiry time (5 minutes from now)
+
 const expiryTime = new Date();
 expiryTime.setMinutes(expiryTime.getMinutes() + 30); // Set expiry time to 30 minutes
 
@@ -57,14 +54,14 @@ expiryTime.setMinutes(expiryTime.getMinutes() + 30); // Set expiry time to 30 mi
       },
       { new: true, upsert: true }
     );
-
+   
     if (user) {
       console.log("Tokens updated successfully for:", email);
     } else {
       console.log("User not found, unable to update tokens:", email);
     }
 
-    const redirectUrl = `${process.env.FRONTEND_URL}/UploadDoc`;
+    const redirectUrl = `${process.env.FRONTEND_URL}/pocAI`;
     res.redirect(redirectUrl);
   } catch (error) {
     console.error("Error during token exchange:", error.message);
@@ -105,7 +102,7 @@ expiryTime.setMinutes(expiryTime.getMinutes() + 30); // Set expiry time to 30 mi
 //       console.log("User not found, unable to update tokens:", email);
 //     }
     
-//     const redirectUrl = `${process.env.FRONTEND_URL}/UploadDoc`;
+//     const redirectUrl = `${process.env.FRONTEND_URL}/pocAI`;
 //     res.redirect(redirectUrl);
 //   } catch (error) {
 //     console.error("Error during token exchange:", error.message);
@@ -175,10 +172,9 @@ router.post('/create-event', async (req, res) => {
 });
 
 router.post("/save-tasks", async (req, res) => {
-  const { tagId, tasks,docId } = req.body;
-  console.log(docId);
+  const { tagId, tasks} = req.body;
 
-  if (!tagId ||!docId || !Array.isArray(tasks) || tasks.length === 0) {
+  if (!tagId || !Array.isArray(tasks) || tasks.length === 0) {
     console.error("Validation failed. Received tagId:", tagId, "and tasks:", tasks);
     return res.status(400).json({
       success: false,

@@ -96,7 +96,7 @@ export default function Dashboard() {
       if (response.status === 201) {
         setUploadStatus("Upload successful!");
         setFile(null);
-        router.push(`/UploadDoc`);
+        router.push(`/pocAI`);
       } else {
         setUploadStatus("Unexpected error occurred.");
       }
@@ -154,48 +154,7 @@ export default function Dashboard() {
             </h3>
           </div>
 
-          {/* Facility Tabs */}
-          <div className="flex flex-col items-center w-50 lg:w-auto mx-auto">
-            {/* Tab Buttons */}
-            <div className="flex items-center justify-center space-x-4 sm:space-x-6 lg:space-x-8">
-              <button
-                onClick={() => setActiveTab("POC AI Ally")}
-                className={`pb-2 ${
-                  activeTab === "POC AI Ally"
-                    ? "text-blue-900 font-semibold"
-                    : "text-gray-700 font-medium"
-                } text-xs sm:text-sm md:text-base lg:text-lg`}
-              >
-                POC AI Ally
-              </button>
-
-              <button
-                onClick={() => setActiveTab("Tags")}
-                className={`pb-2 ${
-                  activeTab === "Tags"
-                    ? "text-blue-900 font-semibold"
-                    : "text-gray-700 font-medium"
-                } text-xs sm:text-sm md:text-base lg:text-lg`}
-              >
-                Tags
-              </button>
-            </div>
-
-            {/* Progress Bar */}
-            <div className="relative w-full mt-2">
-              {/* Gray Background Line */}
-              <div className="absolute h-[3px] w-full bg-gray-300 rounded-full"></div>
-
-              {/* Active Blue Line */}
-              <div
-                className="absolute h-[3px] bg-blue-900 rounded-full transition-all duration-300"
-                style={{
-                  width: "50%", // 50% since there are only two tabs
-                  left: activeTab === "Tags" ? "50%" : "0%", // Moves to the right when 'Tags' is active
-                }}
-              ></div>
-            </div>
-          </div>
+        
           {/* Date */}
           <div className="relative flex items-center space-x-2">
             <DateDisplay />

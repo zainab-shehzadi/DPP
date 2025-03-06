@@ -45,7 +45,7 @@ const MobileSidebar = () => {
                 <FaBuilding className="mr-2" /> Dashboard
               </li>
               
-              <li onClick={() => handleNavigation("/UploadDoc")} className="flex items-center cursor-pointer">
+              <li onClick={() => handleNavigation("/pocAI")} className="flex items-center cursor-pointer">
                 <FaClock className="mr-2" /> POC AI
               </li>
 
