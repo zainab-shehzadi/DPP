@@ -291,7 +291,7 @@ useEffect(() => {
             <h3 className="text-base sm:text-lg md:text-xl lg:text-2xl font-bold text-blue-900">
               Facility
             </h3>
-            <div className="relative ml-2 sm:ml-4 lg:ml-6" ref={dropdownRef}>
+            <div className="relative ml-2 sm:ml-4 lg:ml-6 z-[-1]" ref={dropdownRef}>
               <button
                 onClick={toggleDropdown}
                 className="flex items-center bg-[#244979] text-white font-semibold text-sm px-3 py-2 rounded-lg"

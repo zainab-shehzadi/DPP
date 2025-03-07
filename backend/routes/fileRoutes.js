@@ -77,23 +77,38 @@ router.post("/tag-details", async (req, res) => {
   try {
     let { tagId, tagName } = req.body;
 
-    
+    console.log("🔹 Incoming request:", { tagId, tagName });
+
     if (!tagId || !tagName) {
+      console.error("❌ Missing tagId or tagName in request");
       return res.status(400).json({ error: "Both tagId and tagName are required" });
     }
 
-    if (mongoose.Types.ObjectId.isValid(tagId)) {
-      tagId = new mongoose.Types.ObjectId(tagId);
-    } else {
+    if (!mongoose.Types.ObjectId.isValid(tagId)) {
       console.error("❌ Invalid ObjectId format:", tagId);
       return res.status(400).json({ error: "Invalid tagId format" });
     }
 
-    // ✅ Find the document containing the specific tag
-    const document = await File.findOne(
-      { "files.tags._id": tagId, "files.tags.tag": tagName }, // Ensure both tagId and tagName match
-      { "files.$": 1 } // Return only the matching file
-    );
+    tagId = new mongoose.Types.ObjectId(tagId);
+
+    // Retry mechanism for transient failures
+    let document;
+    let attempts = 3;
+    while (attempts > 0) {
+      try {
+        document = await File.findOne(
+          { "files.tags._id": tagId, "files.tags.tag": tagName },
+          { "files.$": 1 }
+        );
+        break; // Exit loop if successful
+      } catch (err) {
+        console.error(`⚠️ MongoDB Query Failed. Attempts left: ${attempts - 1}`, err);
+        attempts--;
+        if (attempts === 0) {
+          throw err; // Throw error after exhausting attempts
+        }
+      }
+    }
 
     if (!document || !document.files.length) {
       console.error(`❌ No document found for tagId=${tagId} and tagName=${tagName}`);
@@ -108,6 +123,7 @@ router.post("/tag-details", async (req, res) => {
       console.error(`❌ Tag ${tagName} with ID ${tagId} not found in document`);
       return res.status(404).json({ error: "Tag not found in document" });
     }
+
     const response = {
       tag: tagData.tag,
       shortDescription: tagData.shortDescription || "",
@@ -118,7 +134,7 @@ router.post("/tag-details", async (req, res) => {
       status: tagData.status
     };
 
-    //console.log("✅ Found Tag Details:", response);
+    console.log("✅ Found Tag Details:", response);
     res.status(200).json(response);
 
   } catch (error) {

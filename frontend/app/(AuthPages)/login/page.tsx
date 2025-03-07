@@ -86,7 +86,6 @@ const Login: React.FC = () => {
    
       const data = await response.json();
       if (data.authUrl) {
-        // Redirect the user to the Google login page
         window.location.href = data.authUrl;
       } else {
         toast.error("Google Auth URL not provided in the response.", { position: "top-right" });

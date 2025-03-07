@@ -40,7 +40,6 @@ const uploadToS3 = async (file) => {
     throw error;
   }
 };
-
 const parsePdfContent = async (fileBuffer) => {
   try {
     if (!Buffer.isBuffer(fileBuffer)) {
@@ -53,7 +52,6 @@ const parsePdfContent = async (fileBuffer) => {
     throw error;
   }
 };
-
 const extractTagsFromContent = (fileContent) => {
   // Match all occurrences of tags in the format "Fxxx" or "F xxxx"
   const extractedTags = fileContent.match(/F\s?\d{3,4}/g) || [];
@@ -108,8 +106,6 @@ const extractTagsFromContent = (fileContent) => {
 
   return [...uniqueTags.values()];
 };
-
-
 const uploadFile = async (req, res) => {
   try {
     if (!req.file) {
@@ -187,9 +183,6 @@ const uploadFile = async (req, res) => {
     res.status(500).json({ error: "File upload failed.", details: error.message });
   }
 };
-
-
-
 const fetchTagsByEmail = async (req, res) => {
   const { email, id } = req.query; 
 

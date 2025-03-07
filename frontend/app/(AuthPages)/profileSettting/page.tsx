@@ -16,8 +16,8 @@ function profileSetting() {
   const [email, setEmail] = useState<string | null>(null); // Email from localStorage
   const [firstName, setFirstName] = useState("");
   const [lastName, setLastName] = useState("");
-  const [departmentName, setDepartmentName] = useState("");
-  const [position, setPosition] = useState("");
+  const [DepartmentName, setDepartmentName] = useState("");
+  const [Position, setPosition] = useState("");
   const [role, setRole] = useState("");
   const [isEditing, setIsEditing] = useState(false);
 
@@ -48,7 +48,7 @@ function profileSetting() {
   const leadershipRoles = roleCategories.leadership;
   const supportingRoles = roleCategories.supporting;
 
-  const positions = departmentName ? departmentPositions[departmentName] || [] : [];
+  const Positions = DepartmentName ? departmentPositions[DepartmentName] || [] : [];
 
   const getCookie = (name: string) => {
     const value = `; ${document.cookie}`;
@@ -86,40 +86,45 @@ function profileSetting() {
       const data = await response.json();
       setFirstName(data.firstName || "");
       setLastName(data.lastName || "");
-      setDepartmentName(data.departmentName || "");
-      setPosition(data.position || "");
+      setDepartmentName(data.DepartmentName || "");
+      setPosition(data.Position || "");
       setRole(data.role || "");
     } catch (error) {
       toast.error("Failed to fetch user data. Please try again.");
     }
   };
+
   const handleSave = async () => {
     const updatedData = {
       firstname: firstName,
       lastname: lastName,
       role,
-      position,
-      departmentName,
+      Position,
+      DepartmentName,
     };
-
+  
     try {
       const response = await fetch(
-        `${process.env.NEXT_PUBLIC_API_BASE_URL}/api/users/email`, 
+        `${process.env.NEXT_PUBLIC_API_BASE_URL}/api/users/email`,
         {
           method: "PUT",
           headers: {
             "Content-Type": "application/json",
           },
-          body: JSON.stringify({ email, ...updatedData }), 
+          body: JSON.stringify({ email, ...updatedData }),
         }
       );
-      if (!response.ok) throw new Error("Failed to update user data.");
-      const responseData = await response.json(); 
-
-    if (responseData.firstname) {
-      Cookies.set("name", responseData.firstname);
-    }
-
+  
+      if (!response.ok) {
+        throw new Error("Failed to update user data.");
+      }
+  
+      const responseData = await response.json();
+  
+      if (responseData.firstname) {
+        Cookies.set("name", responseData.firstname);
+      }
+  
       toast.success("User data updated successfully!");
       setIsEditing(false);
     } catch (error) {
@@ -129,7 +134,7 @@ function profileSetting() {
   const name = Cookies.get("name"); 
 
   return (
-    <div className="flex flex-col lg:flex-row h-screen">
+    <div className="flex flex-col lg:flex-row h-screen z-[-1]">
       <Sidebar isSidebarOpen={isSidebarOpen} />
 
       <div className="lg:ml-64 p-4 sm:p-8 w-full">
@@ -153,7 +158,7 @@ function profileSetting() {
         {/* Progress Bar */}
         <div className="w-full sm:w-3/4 h-12 sm:h-20 bg-[#002F6C] mt-2 rounded-lg mx-auto"></div>
 
-        <div className="w-full sm:w-3/4 mx-auto mt-8">
+        <div className="w-full sm:w-3/4 mx-auto mt-8 z-[-1]">
       <section className="bg-white p-6 rounded-lg shadow-md relative">
         <div className="flex flex-col sm:flex-row items-center mb-6">
           <Image
@@ -199,7 +204,7 @@ function profileSetting() {
           <div>
             <label className="block text-gray-700">Department</label>
             <select
-              value={departmentName}
+              value={DepartmentName}
               onChange={(e) => setDepartmentName(e.target.value)}
               disabled={!isEditing}
               className="mt-2 w-full p-2 rounded-md bg-[#F9F9F9]"
@@ -213,15 +218,15 @@ function profileSetting() {
           <div>
             <label className="block text-gray-700">Position</label>
             <select
-              value={position}
+              value={Position}
               onChange={(e) => setPosition(e.target.value)}
-              disabled={!isEditing || !positions.length}
+              disabled={!isEditing || !Positions.length}
               className="mt-2 w-full p-2 rounded-md bg-[#F9F9F9]"
             >
               <option value="" disabled>
-                {positions.length ? "Select a Position" : "Select a Department First"}
+                {Positions.length ? "Select a Position" : "Select a Department First"}
               </option>
-              {positions.map((pos) => (
+              {Positions.map((pos) => (
                 <option key={pos} value={pos}>{pos}</option>
               ))}
             </select>

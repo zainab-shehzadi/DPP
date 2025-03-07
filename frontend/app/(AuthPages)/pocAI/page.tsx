@@ -65,7 +65,6 @@ function docUpload() {
 
     if (storedAccessToken) {
       setAccessToken(storedAccessToken);
-      
     }
     if (storedRefreshToken) {
       // ✅ Correct condition
@@ -108,12 +107,11 @@ function docUpload() {
     fetchDocuments();
   }, []);
   useEffect(() => {
-  
     const timer = setTimeout(() => {
       setLoading(false);
-    }, 5000); 
+    }, 5000);
 
-    return () => clearTimeout(timer); 
+    return () => clearTimeout(timer);
   }, []);
   const toggleDropdown = () => {
     setDropdownOpen((prev) => !prev);
@@ -216,7 +214,7 @@ function docUpload() {
 
       const data = await response.json();
       const accessToken = data.accessToken;
-      
+
       const refreshToken = data.refreshToken;
 
       if (!accessToken) {
@@ -270,7 +268,6 @@ function docUpload() {
           }),
         }
       );
-      
 
       if (!saveResponse.ok) {
         const error = await saveResponse.json();
@@ -521,8 +518,8 @@ function docUpload() {
 
   return (
     <div className="flex flex-col lg:flex-row">
-       <Sidebar isSidebarOpen={isSidebarOpen} />
-      
+      <Sidebar isSidebarOpen={isSidebarOpen} />
+
       <div className="lg:ml-64 p-4 sm:p-8 w-full">
         {/* Main Content */}
         <header className="flex items-center justify-between mb-6 w-full flex-wrap">
@@ -536,8 +533,8 @@ function docUpload() {
         </header>
 
         {/* Facility Dropdown and Tabs */}
-        <div className="flex items-center space-x-4 mt-4 lg:mt-8 ml-4 lg:ml-10 justify-between">
-          {/* Facility Dropdown */}
+        <div className="flex items-center space-x-4 mt-4 lg:mt-8 ml-4 lg:ml-10 justify-between z-[-1]">
+         
           <div className="flex items-center space-x-4">
             <h3 className="text-base sm:text-lg md:text-xl lg:text-2xl font-bold text-blue-900">
               Facility
@@ -699,17 +696,15 @@ function docUpload() {
                     <div className="relative">
                       {/* Tag Button */}
                       <button
-  className="flex justify-between items-center w-full max-w-[190px] h-[36px] px-3 rounded-lg text-xs sm:text-xs mb-2"
-  style={{
-    backgroundColor: "#CCE2FF",
-    borderRadius: "12px",
-  }}
-  onClick={() => toggleDropdown2()}
->
-  <span>{selectedTag || "Select Tag"}</span>
-  <span className="text-gray-500 text-xs">⋮</span>
-</button>
-
+                        className="flex justify-between items-center w-full max-w-[190px] h-[36px] px-3 rounded-lg text-xs sm:text-xs mb-2"
+                        style={{
+                          backgroundColor: "#CCE2FF",
+                          borderRadius: "12px",
+                        }}
+                        onClick={() => toggleDropdown2()}
+                      >
+                        <span>{selectedTag || "Select Tag"}</span>
+                      </button>
 
                       {/* Dropdown */}
                       {dropdownOpen2 && (
@@ -769,7 +764,8 @@ function docUpload() {
                   >
                     {selectedLongDesc ||
                       "Long description will appear here once you select a tag."}{" "}
-=                  </p>
+                    ={" "}
+                  </p>
                 </div>
               </div>
 
@@ -794,7 +790,7 @@ function docUpload() {
                 {!solution || solution.length === 0 ? (
                   <div className="flex items-center justify-center mt-10">
                     <button
-                      onClick={()=>toggleSidebar()}
+                      onClick={() => toggleSidebar()}
                       className="flex items-center justify-center bg-[#002F6C] text-white w-[160px] h-[40px] rounded-lg text-sm shadow-md transition-colors duration-300"
                     >
                       <FaFileAlt className="mr-2" />
@@ -804,88 +800,89 @@ function docUpload() {
                 ) : null}
 
                 {/* Sidebar - Always show when `loading` is true or `isSidebarOpen` */}
-{(isSidebarOpen || loading) && (!solution || solution.length === 0) && (
-  <>
-    <div className="fixed top-0 right-0 h-full bg-white shadow-lg p-6 sm:p-8 md:p-10 z-50 w-full max-w-lg overflow-y-auto">
-      {loading ? (
-        <div className="flex flex-col items-center justify-center h-full">
-          <p className="text-[#002F6C] text-lg sm:text-xl md:text-2xl font-bold mb-4">
-            Generating Response...
-          </p>
-          <div className="w-12 h-12 border-4 border-blue-600 border-t-transparent rounded-full animate-spin"></div>
-          <div className="mt-6 overflow-y-auto max-h-40 text-sm text-gray-600 p-4 border border-gray-200 rounded-lg">
-            <p>
-              We are processing your request. This may take a few seconds. Please wait...
-            </p>
-          </div>
-        </div>
-      ) : (
-        <>
-          {/* Title */}
-          <h2 className="font-bold text-[#002F6C] mb-1 text-lg sm:text-xl md:text-2xl">
-            Additional Questions
-          </h2>
-          <p className="text-gray-900 mb-6 sm:mb-8 text-sm sm:text-base md:text-lg">
-            Provide us with a little more details
-          </p>
+                {(isSidebarOpen || loading) &&
+                  (!solution || solution.length === 0) && (
+                    <>
+                      <div className="fixed top-0 right-0 h-full bg-white shadow-lg p-6 sm:p-8 md:p-10 z-50 w-full max-w-lg overflow-y-auto">
+                        {loading ? (
+                          <div className="flex flex-col items-center justify-center h-full">
+                            <p className="text-[#002F6C] text-lg sm:text-xl md:text-2xl font-bold mb-4">
+                              Generating Response...
+                            </p>
+                            <div className="w-12 h-12 border-4 border-blue-600 border-t-transparent rounded-full animate-spin"></div>
+                            <div className="mt-6 overflow-y-auto max-h-40 text-sm text-gray-600 p-4 border border-gray-200 rounded-lg">
+                              <p>
+                                We are processing your request. This may take a
+                                few seconds. Please wait...
+                              </p>
+                            </div>
+                          </div>
+                        ) : (
+                          <>
+                            {/* Title */}
+                            <h2 className="font-bold text-[#002F6C] mb-1 text-lg sm:text-xl md:text-2xl">
+                              Additional Questions
+                            </h2>
+                            <p className="text-gray-900 mb-6 sm:mb-8 text-sm sm:text-base md:text-lg">
+                              Provide us with a little more details
+                            </p>
 
-          {/* Question 1 */}
-          <div className="mb-6">
-            <label className="block font-medium mb-2 whitespace-nowrap text-sm sm:text-base md:text-lg">
-              What has been done to address this?
-            </label>
-            <textarea
-              className="w-full h-[60px] sm:h-[70px] px-3 py-2 border border-gray-300 rounded-lg resize-none focus:outline-none focus:border-blue-900 text-xs sm:text-sm md:text-base"
-              placeholder="Enter your answer here..."
-              value={answer1}
-              onChange={(e) => setAnswer1(e.target.value)}
-            ></textarea>
-          </div>
+                            {/* Question 1 */}
+                            <div className="mb-6">
+                              <label className="block font-medium mb-2 whitespace-nowrap text-sm sm:text-base md:text-lg">
+                                What has been done to address this?
+                              </label>
+                              <textarea
+                                className="w-full h-[60px] sm:h-[70px] px-3 py-2 border border-gray-300 rounded-lg resize-none focus:outline-none focus:border-blue-900 text-xs sm:text-sm md:text-base"
+                                placeholder="Enter your answer here..."
+                                value={answer1}
+                                onChange={(e) => setAnswer1(e.target.value)}
+                              ></textarea>
+                            </div>
 
-          {/* Question 2 */}
-          <div className="mb-12">
-            <label className="block font-medium mb-2 whitespace-nowrap text-sm sm:text-base md:text-lg">
-              Anything else we should know?
-            </label>
-            <textarea
-              className="w-full h-[60px] sm:h-[70px] px-3 py-2 border border-gray-300 rounded-lg resize-none focus:outline-none focus:border-blue-900 text-xs sm:text-sm md:text-base"
-              placeholder="Enter additional details..."
-              value={answer2}
-              onChange={(e) => setAnswer2(e.target.value)}
-            ></textarea>
-          </div>
+                            {/* Question 2 */}
+                            <div className="mb-12">
+                              <label className="block font-medium mb-2 whitespace-nowrap text-sm sm:text-base md:text-lg">
+                                Anything else we should know?
+                              </label>
+                              <textarea
+                                className="w-full h-[60px] sm:h-[70px] px-3 py-2 border border-gray-300 rounded-lg resize-none focus:outline-none focus:border-blue-900 text-xs sm:text-sm md:text-base"
+                                placeholder="Enter additional details..."
+                                value={answer2}
+                                onChange={(e) => setAnswer2(e.target.value)}
+                              ></textarea>
+                            </div>
 
-          {/* Buttons */}
-          <div className="flex justify-end space-x-4 mb-10">
-            <button
-              onClick={toggleSidebar}
-              className="flex items-center justify-center text-black w-full sm:w-[191px] h-[40px] sm:h-[56px] rounded-lg text-xs sm:text-sm md:text-base font-semibold shadow-md transition-colors duration-300 border border-gray-300 hover:bg-gray-200"
-              disabled={loading} // Disable button while loading
-            >
-              Back
-            </button>
-            <button
-              onClick={handleSubmit}
-              className="flex items-center justify-center bg-[#002F6C] text-white w-full sm:w-[191px] h-[40px] sm:h-[56px] rounded-lg text-xs sm:text-sm md:text-base font-semibold shadow-md transition-colors duration-300 hover:bg-blue-800"
-              disabled={loading} // Disable button while loading
-            >
-              {loading ? "Submitting..." : "Submit"}
-            </button>
-          </div>
-        </>
-      )}
-    </div>
+                            {/* Buttons */}
+                            <div className="flex justify-end space-x-4 mb-10">
+                              <button
+                                onClick={toggleSidebar}
+                                className="flex items-center justify-center text-black w-full sm:w-[191px] h-[40px] sm:h-[56px] rounded-lg text-xs sm:text-sm md:text-base font-semibold shadow-md transition-colors duration-300 border border-gray-300 hover:bg-gray-200"
+                                disabled={loading} // Disable button while loading
+                              >
+                                Back
+                              </button>
+                              <button
+                                onClick={handleSubmit}
+                                className="flex items-center justify-center bg-[#002F6C] text-white w-full sm:w-[191px] h-[40px] sm:h-[56px] rounded-lg text-xs sm:text-sm md:text-base font-semibold shadow-md transition-colors duration-300 hover:bg-blue-800"
+                                disabled={loading} // Disable button while loading
+                              >
+                                {loading ? "Submitting..." : "Submit"}
+                              </button>
+                            </div>
+                          </>
+                        )}
+                      </div>
 
-    {/* Prevent clicking outside when loading */}
-    {!loading && (
-      <div
-        className="fixed inset-0 bg-black opacity-50 z-40"
-        onClick={toggleSidebar}
-      ></div>
-    )}
-  </>
-)}
-
+                      {/* Prevent clicking outside when loading */}
+                      {!loading && (
+                        <div
+                          className="fixed inset-0 bg-black opacity-50 z-40"
+                          onClick={toggleSidebar}
+                        ></div>
+                      )}
+                    </>
+                  )}
               </div>
             </div>
           </>
@@ -1062,7 +1059,6 @@ function docUpload() {
           </div>
         )}
       </div>
-     
     </div>
   );
 }

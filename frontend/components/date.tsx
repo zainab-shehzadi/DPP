@@ -15,7 +15,7 @@ const DateDisplay: React.FC = () => {
 
   return (
     <div className="flex justify-end ">
-      <div className="border-2 border-blue-900 px-5 py-3 rounded-lg shadow-md text-sm bg-white">
+      <div className="border-2 border-blue-900 px-5 py-3 z-index rounded-lg shadow-md text-sm bg-white z-[-1]">
         <span className="text-black">{currentDate}</span>
       </div>
     </div>

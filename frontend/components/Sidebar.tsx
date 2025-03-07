@@ -11,6 +11,16 @@ import {
 } from "react-icons/fa";
 import MobileSidebar from "./MobileSidebar";
 import { useRouter, usePathname } from "next/navigation";
+import {
+  Dialog,
+  DialogTitle,
+  DialogTrigger,
+  DialogContent,
+  DialogHeader,
+  DialogFooter,
+} from "@/components/ui/dialog";
+import { Button } from "@/components/ui/button";
+import Logout from "./logoutConfirmation";
 
 interface SidebarProps {
   isSidebarOpen: boolean;
@@ -20,7 +30,7 @@ const Sidebar: React.FC<SidebarProps> = ({ isSidebarOpen }) => {
   const [isMobileView, setIsMobileView] = useState(false);
   const [isModalOpen, setIsModalOpen] = useState(false);
   const router = useRouter();
-  const pathname = usePathname(); 
+  const pathname = usePathname();
 
   useEffect(() => {
     const handleResize = () => {
@@ -38,7 +48,8 @@ const Sidebar: React.FC<SidebarProps> = ({ isSidebarOpen }) => {
 
   const handleConfirmLogout = () => {
     try {
-      document.cookie = "token=; path=/; expires=Thu, 01 Jan 1970 00:00:00 UTC;";
+      document.cookie =
+        "token=; path=/; expires=Thu, 01 Jan 1970 00:00:00 UTC;";
       localStorage.clear();
       sessionStorage.clear();
       router.push("/login");
@@ -70,10 +81,9 @@ const Sidebar: React.FC<SidebarProps> = ({ isSidebarOpen }) => {
             {/* Navigation Links */}
             <ul className="space-y-2 w-full">
               <li>
-                <a
-                  href="#"
+                <button
                   onClick={() => handleNavigation("/Dashboard")}
-                  className={`flex items-center py-2 px-3 rounded-md font-semibold text-xs lg:text-sm transition ${
+                  className={`flex items-center w-full py-2 px-3 rounded-md font-semibold text-xs lg:text-sm transition ${
                     pathname === "/Dashboard"
                       ? "bg-white text-blue-900 shadow-md"
                       : "hover:bg-white hover:text-blue-900"
@@ -81,29 +91,13 @@ const Sidebar: React.FC<SidebarProps> = ({ isSidebarOpen }) => {
                 >
                   <FaBuilding className="mr-2" />
                   Dashboard
-                </a>
+                </button>
               </li>
 
-              {/* <li>
-                <a
-                  href="#"
-                  onClick={() => handleNavigation("/Dashboard")}
-                  className={`flex items-center py-2 px-3 rounded-md font-semibold text-xs lg:text-sm transition ${
-                    pathname === "/UploadNew2567"
-                      ? "bg-white text-blue-900 shadow-md"
-                      : "hover:bg-white hover:text-blue-900"
-                  }`}
-                >
-                  <FaBuilding className="mr-2" />
-                  Upload New 2567
-                </a>
-              </li> */}
-
               <li>
-                <a
-                  href="#"
+                <button
                   onClick={() => handleNavigation("/pocAI")}
-                  className={`flex items-center py-2 px-3 rounded-md font-semibold text-xs lg:text-sm transition ${
+                  className={`flex items-center w-full py-2 px-3 rounded-md font-semibold text-xs lg:text-sm transition ${
                     pathname === "/pocAI"
                       ? "bg-white text-blue-900 shadow-md"
                       : "hover:bg-white hover:text-blue-900"
@@ -111,14 +105,13 @@ const Sidebar: React.FC<SidebarProps> = ({ isSidebarOpen }) => {
                 >
                   <FaClock className="mr-2" />
                   POC AI
-                </a>
+                </button>
               </li>
 
               <li>
-                <a
-                  href="#"
+                <button
                   onClick={() => handleNavigation("/HistoryPage")}
-                  className={`flex items-center py-2 px-3 rounded-md font-semibold text-xs lg:text-sm transition ${
+                  className={`flex items-center w-full py-2 px-3 rounded-md font-semibold text-xs lg:text-sm transition ${
                     pathname === "/HistoryPage"
                       ? "bg-white text-blue-900 shadow-md"
                       : "hover:bg-white hover:text-blue-900"
@@ -126,14 +119,13 @@ const Sidebar: React.FC<SidebarProps> = ({ isSidebarOpen }) => {
                 >
                   <FaClipboard className="mr-2" />
                   History
-                </a>
+                </button>
               </li>
 
               <li>
-                <a
-                  href="#"
+                <button
                   onClick={() => handleNavigation("/DailySummaries")}
-                  className={`flex items-center py-2 px-3 rounded-md font-semibold text-xs lg:text-sm transition ${
+                  className={`flex items-center w-full py-2 px-3 rounded-md font-semibold text-xs lg:text-sm transition ${
                     pathname === "/DailySummaries"
                       ? "bg-white text-blue-900 shadow-md"
                       : "hover:bg-white hover:text-blue-900"
@@ -141,14 +133,13 @@ const Sidebar: React.FC<SidebarProps> = ({ isSidebarOpen }) => {
                 >
                   <FaClock className="mr-2" />
                   Daily Summaries
-                </a>
+                </button>
               </li>
 
               <li>
-                <a
-                  href="#"
+                <button
                   onClick={() => handleNavigation("/InsightPage")}
-                  className={`flex items-center py-2 px-3 rounded-md font-semibold text-xs lg:text-sm transition ${
+                  className={`flex items-center w-full py-2 px-3 rounded-md font-semibold text-xs lg:text-sm transition ${
                     pathname === "/InsightPage"
                       ? "bg-white text-blue-900 shadow-md"
                       : "hover:bg-white hover:text-blue-900"
@@ -156,14 +147,13 @@ const Sidebar: React.FC<SidebarProps> = ({ isSidebarOpen }) => {
                 >
                   <FaCreditCard className="mr-2" />
                   Insights
-                </a>
+                </button>
               </li>
 
               <li>
-                <a
-                  href="#"
+                <button
                   onClick={() => handleNavigation("/TaskListPage")}
-                  className={`flex items-center py-2 px-3 rounded-md font-semibold text-xs lg:text-sm transition ${
+                  className={`flex items-center w-full py-2 px-3 rounded-md font-semibold text-xs lg:text-sm transition ${
                     pathname === "/TaskListPage"
                       ? "bg-white text-blue-900 shadow-md"
                       : "hover:bg-white hover:text-blue-900"
@@ -171,77 +161,47 @@ const Sidebar: React.FC<SidebarProps> = ({ isSidebarOpen }) => {
                 >
                   <FaClipboard className="mr-2" />
                   Task List
-                </a>
+                </button>
               </li>
 
               <li>
-                <a
-                  href="#"
+                <button
                   onClick={() => handleNavigation("/profileSettting")}
-                  className="flex items-center py-2 px-3 hover:bg-white hover:text-blue-900 rounded-md font-semibold text-xs lg:text-sm transition"
+                  className="flex items-center w-full py-2 px-3 hover:bg-white hover:text-blue-900 rounded-md font-semibold text-xs lg:text-sm transition"
                 >
                   <FaUser className="mr-2" />
                   Profile Settings
-                </a>
+                </button>
               </li>
 
               <li>
-                <a
-                  href="#"
+                <button
                   onClick={() => handleNavigation("/facilitySetting")}
-                  className="flex items-center py-2 px-3 hover:bg-white hover:text-blue-900 rounded-md font-semibold text-xs lg:text-sm transition"
+                  className="flex items-center w-full py-2 px-3 hover:bg-white hover:text-blue-900 rounded-md font-semibold text-xs lg:text-sm transition"
                 >
                   <FaBuilding className="mr-2" />
                   Facility Settings
-                </a>
+                </button>
               </li>
 
               <li>
-                <a
-                  href="#"
+              <button
                   onClick={() => setIsModalOpen(true)}
-                  className="flex items-center py-2 px-3 hover:bg-white hover:text-blue-900 rounded-md font-semibold text-xs lg:text-sm transition"
+                  className="flex items-center w-full py-2 px-3 hover:bg-white hover:text-blue-900 rounded-md font-semibold text-xs lg:text-sm transition"
                 >
-                  <FaSignOutAlt className="mr-2" />
-                  Logout
-                </a>
+                  <FaBuilding className="mr-2" />
+                 Log out
+                </button>
               </li>
             </ul>
           </div>
-
-         {/* Logout Confirmation Modal */}
-{isModalOpen && (
-  <div
-    className="fixed inset-0 z-50 w-screen min-h-screen h-full bg-[#00000035] flex justify-center items-center"
-    onClick={() => setIsModalOpen(false)} // Close when clicking outside
-  >
-    <div
-      className="bg-white p-8 text-center max-w-md w-full rounded-md shadow-lg"
-      onClick={(e) => e.stopPropagation()} // Prevent close when clicking inside
-    >
-      <p className="text-lg font-bold text-gray-900">
-        Are you sure you want to log out?
-      </p>
-      <div className="mt-6 flex justify-between">
-        <button
-          className="border border-gray-300 text-black px-6 py-2 rounded-md w-full mr-2"
-          onClick={() => setIsModalOpen(false)}
-        >
-          Cancel
-        </button>
-        <button
-          className="bg-[#002D62] text-white px-6 py-2 rounded-md w-full ml-2"
-          onClick={handleConfirmLogout}
-        >
-          Log out
-        </button>
-      </div>
-    </div>
-  </div>
-)}
-
         </nav>
       )}
+      <Logout
+        isModalOpen={isModalOpen}
+        setIsModalOpen={setIsModalOpen}
+        handleConfirmLogout={handleConfirmLogout}
+      />
     </>
   );
 };

@@ -412,11 +412,10 @@ const getUserByEmail = async (req, res) => {
     res.status(200).json({
       firstName: user.firstname,
       lastName: user.lastname,
-      gender: user.gender, // Assuming gender is in the schema
-      position: user.Position,
+      gender: user.gender, 
+      Position: user.Position,
       role: user.role,
-    
-      departmentName: user.DepartmentName, // Added DepartmentName
+      DepartmentName: user.DepartmentName,
     });
   } catch (error) {
     console.error("Error fetching user by email:", error);
@@ -445,44 +444,38 @@ const getUserRole = async (req, res) => {
 };
 const editUserByEmail = async (req, res) => {
   try {
-    const { email } = req.body;
-    const { firstname, lastname, role, Position, DepartmentName } = req.body;
+    const { email, firstname, lastname, role, Position, DepartmentName } = req.body;
 
-    // Log the incoming data for debugging
     console.log("Received data for update:", { email, firstname, lastname, role, Position, DepartmentName });
 
-    // Find and update the user in the database
     const updatedUser = await User.findOneAndUpdate(
-      { email }, // Search by email
+      { email },
       {
-        firstname,  // Update first name
-        lastname,   // Update last name
-        role,       // Update role
-        Position,   // Update position
-        DepartmentName, // Update department name
+        firstname,
+        lastname,
+        role,
+        Position,       // Ensure case matches schema
+        DepartmentName, // Ensure case matches schema
       },
-      { new: true } // Return the updated user document
+      { new: true }
     );
 
-    // If the user is not found, send a 404 error
     if (!updatedUser) {
-      console.log("User not found with email:", email); // Debugging log
+      console.log("User not found with email:", email);
       return res.status(404).json({ message: "User not found" });
     }
 
-    // Log the updated user data for debugging
-    console.log("Updated user data:", updatedUser); 
-
-    // Respond with the updated user
+    console.log("Updated user data:", updatedUser);
     return res.status(200).json(updatedUser);
   } catch (error) {
-    console.error("Error updating user:", error.message); // Debugging log
+    console.error("Error updating user:", error.message);
     return res.status(500).json({
       message: "Failed to update user",
       error: error.message,
     });
   }
 };
+
 module.exports =
  { registerUser,
    loginUser,
