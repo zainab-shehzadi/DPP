@@ -201,7 +201,7 @@ export default function Dashboard() {
           style={{ borderRadius: "16px", border: "1px solid #E0E0E0" }}
         >
           {/* Header Information */}
-          <div className="flex flex-wrap mb-9 justify-between sm:gap-7 z-[-1]">
+          <div className="flex flex-wrap mb-9 justify-between sm:gap-7 ">
             {/* Date and Participants Box */}
             <div className="bg-[#F6F6F6] p-6 rounded-[17px] flex flex-col justify-center w-full sm:w-[48%] md:w-[48%] lg:w-[48%] xl:w-[48%] h-auto sm:h-[120px] mb-4 sm:mb-0">
               <p className="font-bold text-sm">
@@ -250,7 +250,7 @@ export default function Dashboard() {
           <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 xl:grid-cols-3 gap-6">
             {/* Completed Column */}
             <div className="bg-[#F6F6F6] p-6 rounded-[17px] shadow-md w-full h-auto">
-              <div className="flex justify-between items-center mb-6 z-[-1]">
+              <div className="flex justify-between items-center mb-6 ">
                 <h3 className="font-bold text-lg lg:text-xl ">Completed</h3>
               </div>
               {renderTasksForColumn("Closed")}
