@@ -45,7 +45,7 @@ const userSchema = new mongoose.Schema(
     },
     priceCycle: {
       type: String,
-      enum: ["Annual", "Bi-annual"],
+      enum: ["Annual", "Bi-Annual"],
       required: [false, "Price cycle is required"]
     },
     resetPasswordSlug: String,

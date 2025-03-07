@@ -162,38 +162,7 @@ const Pricing: React.FC = () => {
         </div>
       </header>
 
-      {/* Pricing Cards Section
-      <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-8 max-w-7xl w-full">
-        {plans.map((plan) => (
-          <div
-            key={plan.type}
-            className={`p-6 sm:p-8 shadow-lg rounded-lg ${
-              plan.type === "Pro" ? "bg-[#002F6C] text-white relative" : "bg-white"
-            }`}
-          >
-            <h2 className="text-xl sm:text-2xl font-bold">{plan.type}</h2>
-            <p className="mt-4">
-              <span className="text-3xl sm:text-4xl font-extrabold">${plan.price}</span>
-              <br />
-              <span>per user/{billingCycle === "Annual" ? "year" : "bi-annual"}</span>
-            </p>
-            <ul className="mt-6 space-y-4 text-base sm:text-lg">
-              {plan.description
-                .trim()
-                .split("\n")
-                .map((item, idx) => (
-                  <li key={idx}>{item.trim()}</li>
-                ))}
-            </ul>
-            <SubscribeComponent
-              planType={plan.type}
-              planCycle={billingCycle}
-              price={plan.price}
-              description={plan.description}
-            />
-          </div>
-        ))}
-      </div> */}
+    
       {/* Pricing Cards Section */}
 <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-8 max-w-7xl w-full">
   {plans.map((plan) => (
@@ -237,13 +206,13 @@ const Pricing: React.FC = () => {
           ))}
       </ul>
 
-      {/* Subscribe Button */}
       <SubscribeComponent
-        planType={plan.type}
-        planCycle={billingCycle}
-        price={plan.price}
-        description={plan.description}
-      />
+  planType={plan.type}
+  planCycle={billingCycle}  // ✅ This correctly updates the cycle in the backend request
+  price={plan.price}
+  description={plan.description}
+/>
+
     </div>
   ))}
 </div>

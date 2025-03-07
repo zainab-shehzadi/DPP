@@ -18,8 +18,8 @@ exports.createCheckoutSession = async (req, res) => {
    return res.status(404).json({ error: "User not found." });
  }
 // Step 2: Save pricing information (priceType and priceCycle) to the user's record
-user.priceType = planType ; // Assuming priceType is a field in your User model
-user.priceCycle = planCycle;    // Assuming priceCycle is a field in your User model
+user.priceType = planType ; 
+user.priceCycle = planCycle;   
 await user.save();
 
     // Ensure price is a valid number
@@ -40,12 +40,12 @@ await user.save();
       line_items: [
         {
           price_data: {
-            currency: "usd", // You can modify this to the required currency
+            currency: "usd", 
             product_data: {
               name: `${planType} Plan (${planCycle})`,
               description,
             },
-            unit_amount: parsedPrice * 100, // Convert price to cents
+            unit_amount: parsedPrice * 100, 
           },
           quantity: 1,
         },

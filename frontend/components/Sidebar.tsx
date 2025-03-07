@@ -166,23 +166,32 @@ const Sidebar: React.FC<SidebarProps> = ({ isSidebarOpen }) => {
 
               <li>
                 <button
-                  onClick={() => handleNavigation("/profileSettting")}
-                  className="flex items-center w-full py-2 px-3 hover:bg-white hover:text-blue-900 rounded-md font-semibold text-xs lg:text-sm transition"
-                >
-                  <FaUser className="mr-2" />
-                  Profile Settings
-                </button>
-              </li>
-
-              <li>
-                <button
                   onClick={() => handleNavigation("/facilitySetting")}
-                  className="flex items-center w-full py-2 px-3 hover:bg-white hover:text-blue-900 rounded-md font-semibold text-xs lg:text-sm transition"
+                  className={`flex items-center w-full py-2 px-3 rounded-md font-semibold text-xs lg:text-sm transition ${
+                    pathname === "/facilitySetting"
+                      ? "bg-white text-blue-900 shadow-md"
+                      : "hover:bg-white hover:text-blue-900"
+                  }`}
                 >
                   <FaBuilding className="mr-2" />
                   Facility Settings
                 </button>
               </li>
+            
+              <li>
+                <button
+                  onClick={() => handleNavigation("/profileSettting")}
+                  className={`flex items-center w-full py-2 px-3 rounded-md font-semibold text-xs lg:text-sm transition ${
+                    pathname === "/profileSettting"
+                      ? "bg-white text-blue-900 shadow-md"
+                      : "hover:bg-white hover:text-blue-900"
+                  }`}
+                >
+                  <FaUser className="mr-2" />
+                  Profile Settings
+                </button>
+              </li>
+          
 
               <li>
               <button
