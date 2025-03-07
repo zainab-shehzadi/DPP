@@ -2,6 +2,7 @@
 
 import Image from "next/image";
 import React, { useState, useEffect } from "react";
+import { FaCloudUploadAlt } from "react-icons/fa"; // Import the built-in upload icon
 import axios from "axios";
 import Sidebar from "@/components/Sidebar";
 import { useRouter, useSearchParams } from "next/navigation";
@@ -196,12 +197,8 @@ export default function Dashboard() {
                   onDragOver={(e) => e.preventDefault()}
                   onDrop={handleFileDrop}
                 >
-                  <Image
-                    src="/assets/vector.png"
-                    width={50}
-                    height={50}
-                    alt="Upload Icon"
-                  />
+                  <FaCloudUploadAlt size={50} className="text-gray-600" />
+
                   <p className="text-gray-500 text-xs sm:text-sm md:text-base lg:text-lg text-center">
                     Drag and drop file here or{" "}
                     <label

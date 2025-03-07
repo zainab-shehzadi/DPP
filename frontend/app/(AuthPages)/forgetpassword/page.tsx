@@ -1,22 +1,23 @@
 "use client";
+
 import Link from "next/link";
 import React, { useState } from "react";
 import { useRouter } from "next/navigation";
 import "@fortawesome/fontawesome-free/css/all.min.css";
-import Image2 from "@/components/imageright"; // Ensure the correct import path
+import Image2 from "@/components/imageright"; // Ensure correct import path
 import { toast } from "react-toastify";
 import authPublicRoutes from "@/hoc/authPublicRoutes";
 
 const ForgotPassword: React.FC = () => {
   const [email, setEmail] = useState("");
-
-
+  const [isSubmitting, setIsSubmitting] = useState(false); // Track submission state
   const router = useRouter();
-
 
   const handleForgotPassword = async (e: React.FormEvent) => {
     e.preventDefault();
-   
+
+    if (isSubmitting) return; // Prevent multiple submissions
+    setIsSubmitting(true); // Disable button after clicking once
 
     try {
       const response = await fetch(`${process.env.NEXT_PUBLIC_API_BASE_URL}/api/users/forgot-password`, {
@@ -39,14 +40,17 @@ const ForgotPassword: React.FC = () => {
     } catch (error) {
       console.error("Error:", error);
       toast.error("An error occurred. Please try again.", { position: "top-right" });
+    } finally {
+      setIsSubmitting(false); // Re-enable button after process
     }
   };
+
   return (
     <div className="flex h-screen font-work-sans bg-black-50">
       {/* Left Side: Forgot Password Form */}
       <div className="flex flex-1 justify-center items-center bg-white">
         <div className="w-full max-w-md px-6 py-6 text-left">
-          <h2 className="text-2xl sm:text-3xl md:text-4xl font-bold text-gray-800 mb-4 text-left">
+          <h2 className="text-2xl sm:text-3xl md:text-4xl font-bold text-gray-800 mb-4">
             Forgot Your Password
           </h2>
 
@@ -54,30 +58,34 @@ const ForgotPassword: React.FC = () => {
             Enter the email you used to create your account so we can send you instructions on how to reset your password.
           </p>
 
+          {/* Forgot Password Form */}
           <form onSubmit={handleForgotPassword} className="flex flex-col gap-5">
-  {/* Email Input */}
-  <div className="mb-3">
-    <label className="block text-sm sm:text-base md:text-lg font-bold text-gray-700 mb-1">
-      Email
-    </label>
-    <input
-      type="email"
-      placeholder="Email"
-      value={email}
-      onChange={(e) => setEmail(e.target.value)}
-      required
-      className="w-full px-3 py-2 text-sm sm:text-base md:text-lg border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-blue-500"
-    />
-  </div>
+            {/* Email Input */}
+            <div className="mb-3">
+              <label className="block text-sm sm:text-base md:text-lg font-bold text-gray-700 mb-1">
+                Email
+              </label>
+              <input
+                type="email"
+                placeholder="Enter your email"
+                value={email}
+                onChange={(e) => setEmail(e.target.value)}
+                required
+                className="w-full px-3 py-2 text-sm sm:text-base md:text-lg border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-blue-500"
+              />
+            </div>
 
-  <button
-    type="submit" // Changed to submit for form submission
-    className="w-full py-3 bg-[#002f6c] text-white font-semibold rounded-lg transition-colors text-sm sm:text-base md:text-lg"
-  >
-    Send
-  </button>
-</form>
-
+            {/* Submit Button */}
+            <button
+              type="submit"
+              className={`w-full py-3 font-semibold rounded-lg transition-colors text-sm sm:text-base md:text-lg 
+                ${isSubmitting ? "bg-gray-400 cursor-not-allowed" : "bg-[#002f6c] text-white"}
+              `}
+              disabled={isSubmitting} // Disable button while submitting
+            >
+              {isSubmitting ? "Sending..." : "Send"} {/* Show loading state */}
+            </button>
+          </form>
 
           {/* Back to Login Button */}
           <Link href="/login">

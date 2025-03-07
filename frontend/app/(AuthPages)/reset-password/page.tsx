@@ -5,6 +5,8 @@ import "@fortawesome/fontawesome-free/css/all.min.css";
 import Image2 from "@/components/imageright"; // Ensure this path is correct
 import { useRouter } from "next/navigation"; // Correct import for App Router
 import { toast } from "react-toastify";
+import { FaEye, FaEyeSlash } from "react-icons/fa"; // Import eye icons
+
 import Cookies from "js-cookie"; 
 import authPublicRoutes from "@/hoc/authPublicRoutes";
 const ResetPassword: React.FC = () => {
@@ -14,7 +16,8 @@ const ResetPassword: React.FC = () => {
   const [loading, setLoading] = useState(false);
   const [email, setEmail] = useState<string | null>(null); // Email from localStorage
   const router = useRouter();
-  
+  const [showPassword, setShowPassword] = useState(false);
+  const [showConfirmPassword, setShowConfirmPassword] = useState(false);
   useEffect(() => {
     // Retrieve email from localStorage on component mount
     const storedEmail = Cookies.get("email");
@@ -78,32 +81,54 @@ const ResetPassword: React.FC = () => {
             Choose a new password for your account
           </p>
           <form className="flex flex-col gap-5" onSubmit={handleResetPassword}>
-            <div className="mb-4">
-              <label className="block text-sm sm:text-base md:text-lg font-bold text-gray-700 mb-2">
-                New Password
-              </label>
-              <input
-                type="password"
-                placeholder="New Password"
-                value={password}
-                onChange={(e) => setPassword(e.target.value)}
-                required
-                className="w-full px-3 py-2 text-sm sm:text-base md:text-lg border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-blue-500"
-              />
-            </div>
-            <div className="mb-4">
-              <label className="block text-sm sm:text-base md:text-lg font-bold text-gray-700 mb-2">
-                Confirm New Password
-              </label>
-              <input
-                type="password"
-                placeholder="Confirm New Password"
-                value={confirmPassword}
-                onChange={(e) => setConfirmPassword(e.target.value)}
-                required
-                className="w-full px-3 py-2 text-sm sm:text-base md:text-lg border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-blue-500"
-              />
-            </div>
+          <div className="mb-4 relative">
+        <label className="block text-sm sm:text-base md:text-lg font-bold text-gray-700 mb-2">
+          New Password
+        </label>
+        <div className="relative">
+          <input
+            type={showPassword ? "text" : "password"} // Toggle visibility
+            placeholder="New Password"
+            value={password}
+            onChange={(e) => setPassword(e.target.value)}
+            required
+            className="w-full px-3 py-2 text-sm sm:text-base md:text-lg border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-blue-500 pr-10"
+          />
+          {/* Eye Button */}
+          <button
+            type="button"
+            className="absolute right-3 top-3 text-gray-500"
+            onClick={() => setShowPassword(!showPassword)}
+          >
+            {showPassword ? <FaEyeSlash size={20} /> : <FaEye size={20} />}
+          </button>
+        </div>
+      </div>
+
+      {/* Confirm Password Field */}
+      <div className="mb-4 relative">
+        <label className="block text-sm sm:text-base md:text-lg font-bold text-gray-700 mb-2">
+          Confirm New Password
+        </label>
+        <div className="relative">
+          <input
+            type={showConfirmPassword ? "text" : "password"} // Toggle visibility
+            placeholder="Confirm New Password"
+            value={confirmPassword}
+            onChange={(e) => setConfirmPassword(e.target.value)}
+            required
+            className="w-full px-3 py-2 text-sm sm:text-base md:text-lg border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-blue-500 pr-10"
+          />
+          {/* Eye Button */}
+          <button
+            type="button"
+            className="absolute right-3 top-3 text-gray-500"
+            onClick={() => setShowConfirmPassword(!showConfirmPassword)}
+          >
+            {showConfirmPassword ? <FaEyeSlash size={20} /> : <FaEye size={20} />}
+          </button>
+        </div>
+      </div>
             {message && (
               <p
                 className={`text-sm mb-4 ${

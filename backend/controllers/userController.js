@@ -227,7 +227,7 @@ const forgotPassword = async (req, res) => {
     const mailOptions = {
       from: process.env.EMAIL_USER,
       to: email,
-      subject: "Password Reset Verification Code",
+      subject: "Verification Code",
       html: `<p>Your verification code is:</p>
              <h3>${resetToken}</h3>
              <p>This code is valid for 1 hour. If you did not request this, please ignore this email.</p>`,

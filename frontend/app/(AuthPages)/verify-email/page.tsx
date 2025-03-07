@@ -31,10 +31,8 @@ const verifyemail: React.FC = () => {
 
       if (response.ok) {
         toast.success("Email sent successfully!", { position: "top-right" });
-
-        setTimeout(() => {
           router.push(`/Emailverify2`);
-        }, 1000);
+        
       } else {
         toast.error(data.message || "Failed to send reset email.", { position: "top-right" });
       }
