@@ -17,11 +17,11 @@ function facilitySetting() {
   const [facilityAddress, setFacilityAddress] = useState("");
   const [noOfBeds, setNoOfBeds] = useState("");
   const [loading, setLoading] = useState(false);
-  const [email, setEmail] = useState<string | null>(null); // Email from cookies
-  const [isRequestSent, setIsRequestSent] = useState(false); // Track request status
-  const [status, setStatus] = useState<string | null>(null); // Track admin approval status
+  const [email, setEmail] = useState<string | null>(null); 
+  const [isRequestSent, setIsRequestSent] = useState(false); 
+  const [status, setStatus] = useState<string | null>(null); 
   const toggleSidebar = () => setIsSidebarOpen(!isSidebarOpen);
-  const [message, setMessage] = useState(""); // Message to display success/error
+  const [message, setMessage] = useState(""); 
 
   // Helper function to get cookies
   const getCookie = (name: string) => {
