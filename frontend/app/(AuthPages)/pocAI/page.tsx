@@ -337,7 +337,7 @@ function docUpload() {
     setLoading(true);
 
     if (
-      ![selectedTag, selectedLongDesc, selectedID, answer1, answer2].every(
+      ![selectedTag, selectedLongDesc, selectedID].every(
         Boolean
       )
     ) {
@@ -353,7 +353,7 @@ function docUpload() {
           method: "POST",
           headers: { "Content-Type": "application/json" },
           body: JSON.stringify({
-            query: `I belong to Tag ${selectedTag}, "${selectedLongDesc}", ${answer1} and ${answer2}`,
+            query: `I belong to Tag ${selectedTag}, "${selectedLongDesc}", `,
             id: selectedID,
           }),
         }
@@ -534,7 +534,6 @@ function docUpload() {
 
         {/* Facility Dropdown and Tabs */}
         <div className="flex items-center space-x-4 mt-4 lg:mt-8 ml-4 lg:ml-10 justify-between z-[-1]">
-         
           <div className="flex items-center space-x-4">
             <h3 className="text-base sm:text-lg md:text-xl lg:text-2xl font-bold text-blue-900">
               Facility
@@ -689,54 +688,46 @@ function docUpload() {
             {/*Container*/}
             <div className="flex flex-col lg:flex-row justify-center mt-4 lg:mt-8 space-y-4 lg:space-y-0 lg:space-x-4">
               {/* Left Container */}
-              <div className="bg-white shadow-lg p-4 sm:p-6 flex flex-col justify-between w-full lg:w-[300px] h-auto rounded-lg border border-[#E0E0E0] mx-auto">
+              <div className="bg-white shadow-lg p-4 sm:p-6 flex flex-col justify-between w-full lg:w-[350px] h-auto rounded-lg border border-[#E0E0E0] mx-auto">
                 <div>
                   <h4 className="font-bold text-blue-900 text-lg mb-4">Tags</h4>
                   <div>
-                    <div className="relative">
-                      {/* Tag Button */}
-                      <button
-                        className="flex justify-between items-center w-full max-w-[190px] h-[36px] px-3 rounded-lg text-xs sm:text-xs mb-2"
-                        style={{
-                          backgroundColor: "#CCE2FF",
-                          borderRadius: "12px",
-                        }}
-                        onClick={() => toggleDropdown2()}
-                      >
-                        <span>{selectedTag || "Select Tag"}</span>
-                      </button>
+                    <div
+                      className="w-full bg-gray-50 border border-gray-200 rounded-lg shadow-md p-2"
+                      style={{ maxHeight: "300px", overflowY: "auto" }}
+                    >
+                      <ul className="flex flex-col gap-2">
+                        {!selectedDocument ||
+                        (selectedDocument &&
+                          tagsData[selectedDocument]?.length === 0) ? (
+                          <p className="text-xs text-gray-500 text-center p-2">
+                            All tags will be shown here after selecting specific
+                            document.
+                          </p>
+                        ) : null}
 
-                      {/* Dropdown */}
-                      {dropdownOpen2 && (
-                        <div
-                          className="absolute mt-2 w-full max-w-[190px] bg-white border border-gray-300 rounded-lg shadow-lg z-10"
-                          style={{
-                            maxHeight: "200px",
-                            overflowY: "auto",
-                          }}
-                        >
-                          <ul className="flex flex-col divide-y divide-gray-200">
-                            {tagsData.map((item, index) => (
-                              <li
-                                key={item.id || index}
-                                className="px-4 py-2 hover:bg-gray-100 cursor-pointer transition-all duration-300 hover:shadow-md"
-                                onClick={() => {
-                                  setSelectedTag(item.tag);
-                                  handleTagClick(item.tag, item.id);
-                                  setDropdownOpen2(false);
-                                }}
-                              >
-                                <div>
-                                  <strong>{item.tag}</strong>
-                                </div>
-                              </li>
-                            ))}
-                          </ul>
-                        </div>
-                      )}
+                        {tagsData.map((item, index) => (
+                          <li
+                            key={item.id || index}
+                            className={`px-4 py-2 rounded-lg text-sm cursor-pointer transition-all duration-300 flex items-center gap-2
+          ${
+            selectedTag === item.tag
+              ? "bg-blue-900 text-white shadow-lg"
+              : "bg-white hover:bg-blue-100"
+          }`}
+                            onClick={() => {
+                              setSelectedTag(item.tag);
+                              handleTagClick(item.tag, item.id);
+                            }}
+                          >
+                            <span className="w-2 h-2 rounded-full bg-blue-900"></span>
+                            <strong>{item.tag}</strong>
+                          </li>
+                        ))}
+                      </ul>
                     </div>
 
-                    {selectedDescription && (
+                    {/* {selectedDescription && (
                       <div
                         className="mt-4 text-[14px] leading-[17.64px] font-light"
                         style={{
@@ -746,11 +737,12 @@ function docUpload() {
                       >
                         {selectedDescription}
                       </div>
-                    )}
+                    )} */}
                   </div>
                 </div>
               </div>
 
+              {/* center Container
               <div className="bg-white border shadow-lg rounded-lg p-4 sm:p-6 w-full h-auto flex flex-col justify-between">
                 <div>
                   <h4 className="font-bold text-lg sm:text-xl lg:text-2xl leading-tight text-[#494D55] mb-4 lg:mb-12">
@@ -767,24 +759,63 @@ function docUpload() {
                     ={" "}
                   </p>
                 </div>
-              </div>
+              </div> */}
+              {/* Center Container */}
+<div className="bg-white border shadow-lg rounded-lg p-4 sm:p-6 w-full h-auto flex flex-col justify-between">
+  <div>
+    <h4 className="font-bold text-lg sm:text-xl lg:text-2xl leading-tight text-[#494D55] mb-4 lg:mb-12">
+      {selectedTag || "Select a Tag"}{" "}
+    </h4>
+
+    {/* Properly formatted long description with bullet points */}
+    <div
+      className="text-sm sm:text-base lg:text-md font-light leading-relaxed text-[#33343E] space-y-4 mb-8 md:mb-16 lg:mb-32"
+      style={{
+        fontFamily: "'Plus Jakarta Sans', sans-serif",
+      }}
+    >
+      {selectedLongDesc ? (
+        selectedLongDesc.split(/(?<=\.)\s+/).map((sentence, index) => {
+          // Check if sentence starts with a bullet-style character (A., B., 1., 2., etc.)
+          const isBulletPoint = /^[A-Z]\.|^\d+\./.test(sentence.trim());
+
+          return isBulletPoint ? (
+            <ul key={index} className="list-disc pl-6">
+              <li className="mb-2">{sentence.trim()}</li>
+            </ul>
+          ) : (
+            <p key={index} className="mb-2">{sentence.trim()}</p>
+          );
+        })
+      ) : (
+        <p>Long description will appear here once you select a tag.</p>
+      )}
+    </div>
+  </div>
+</div>
+
 
               <div className="bg-white border shadow-lg rounded-lg p-4 sm:p-6 w-full h-auto flex flex-col justify-between">
                 <div>
                   <h4 className="font-bold text-lg sm:text-xl lg:text-2xl leading-tight text-[#494D55] mb-4 lg:mb-12">
                     Plan of Correction
                   </h4>
-                  <p
-                    className="text-sm sm:text-base lg:text-md font-light leading-relaxed text-[#33343E] mb-8 md:mb-16 lg:mb-32"
-                    style={{
-                      fontFamily: "'Plus Jakarta Sans', sans-serif",
-                    }}
-                  >
-                    {solution && solution.length > 0
-                      ? solution
-                      : "No found solution."}{" "}
-                    {/* Show existing solution or default message */}
-                  </p>
+                  <ul
+                  className="list-disc list-inside text-sm sm:text-base lg:text-md font-light leading-relaxed text-[#33343E] mt-6"
+                  style={{
+                    fontFamily: "'Plus Jakarta Sans', sans-serif",
+                  }}
+                >
+                  {Array.isArray(solution) &&
+                  solution.length > 0 ? (
+                    solution.map((policy, index) => (
+                      <li key={index}>{policy}</li>
+                    ))
+                  ) : (
+                    <li>No solution available.</li>
+                  )}
+                </ul>  
+                 
                 </div>
 
                 {!solution || solution.length === 0 ? (
@@ -900,21 +931,37 @@ function docUpload() {
             <div className="flex flex-col lg:flex-row justify-center mt-4 lg:mt-8 space-y-4 lg:space-y-0 lg:space-x-4">
               {/* Center Container */}
               <div className="bg-white border shadow-lg rounded-lg p-4 sm:p-6 w-full h-auto flex flex-col justify-between">
-                <div>
-                  <h4 className="font-bold text-lg sm:text-xl lg:text-2xl leading-tight text-[#494D55] mb-4 lg:mb-12">
-                    {selectedTag || "Select a Tag"}
-                  </h4>
-                  <p
-                    className="text-sm sm:text-base lg:text-md font-light leading-relaxed text-[#33343E] mb-8 md:mb-16 lg:mb-32"
-                    style={{
-                      fontFamily: "'Plus Jakarta Sans', sans-serif",
-                    }}
-                  >
-                    {selectedLongDesc ||
-                      "Long description will appear here once you select a tag."}
-                  </p>
-                </div>
-              </div>
+  <div>
+    <h4 className="font-bold text-lg sm:text-xl lg:text-2xl leading-tight text-[#494D55] mb-4 lg:mb-12">
+      {selectedTag || "Select a Tag"}{" "}
+    </h4>
+
+    {/* Properly formatted long description with bullet points */}
+    <div
+      className="text-sm sm:text-base lg:text-md font-light leading-relaxed text-[#33343E] space-y-4 mb-8 md:mb-16 lg:mb-32"
+      style={{
+        fontFamily: "'Plus Jakarta Sans', sans-serif",
+      }}
+    >
+      {selectedLongDesc ? (
+        selectedLongDesc.split(/(?<=\.)\s+/).map((sentence, index) => {
+          // Check if sentence starts with a bullet-style character (A., B., 1., 2., etc.)
+          const isBulletPoint = /^[A-Z]\.|^\d+\./.test(sentence.trim());
+
+          return isBulletPoint ? (
+            <ul key={index} className="list-disc pl-6">
+              <li className="mb-2">{sentence.trim()}</li>
+            </ul>
+          ) : (
+            <p key={index} className="mb-2">{sentence.trim()}</p>
+          );
+        })
+      ) : (
+        <p>Long description will appear here once you select a tag.</p>
+      )}
+    </div>
+  </div>
+</div>
 
               {/* Right Container */}
               <div className="bg-white border shadow-lg rounded-lg p-4 sm:p-6 w-full h-auto flex flex-col justify-between">
@@ -970,7 +1017,7 @@ function docUpload() {
                   Policy
                 </h4>
 
-                <ul
+              <ul
                   className="list-disc list-inside text-sm sm:text-base lg:text-md font-light leading-relaxed text-[#33343E] mt-6"
                   style={{
                     fontFamily: "'Plus Jakarta Sans', sans-serif",
@@ -984,7 +1031,7 @@ function docUpload() {
                   ) : (
                     <li>No policies available.</li>
                   )}
-                </ul>
+                </ul>  
               </div>
             </div>
           </>
@@ -1021,14 +1068,14 @@ function docUpload() {
                 </button>
 
                 <button
-  onClick={handleNavigateToTags}
-  disabled={true} // Disable the button
-  className="flex items-center justify-center bg-[#002F6C] text-white px-4 py-2 rounded-lg text-sm shadow-md transition-colors duration-300 
+                  onClick={handleNavigateToTags}
+                  disabled={true} // Disable the button
+                  className="flex items-center justify-center bg-[#002F6C] text-white px-4 py-2 rounded-lg text-sm shadow-md transition-colors duration-300 
     disabled:bg-gray-400 disabled:cursor-not-allowed"
->
-  Approve
-</button>
-
+                >
+                  Approve
+                </button>
+                <p> </p>
               </>
             )}
 
