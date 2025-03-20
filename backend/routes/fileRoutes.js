@@ -329,7 +329,6 @@ router.post("/tagDescriptions", async (req, res) => {
 
     console.log("✅ Tag found:", tag);
 
-    // ✅ Ensure solution exists within the response field
     const solution = tag.response?.solution || [];
 
     res.status(200).json({ tag, solution }); // ✅ Send tag and solution separately
