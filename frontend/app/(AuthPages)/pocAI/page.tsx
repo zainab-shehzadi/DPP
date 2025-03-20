@@ -16,6 +16,7 @@ interface DocumentType {
   fileUrl?: string;
   uploadedAt: Date;
 }
+
 function docUpload() {
   const [tagsData, setTagsData] = useState<
     {
@@ -32,7 +33,9 @@ function docUpload() {
   const [selectedDocs, setSelectedDocs] = useState<string[]>([]);
   const [selectedDocument, setSelectedDocument] = useState("");
   const [selectedDocumentId, setSelectedDocumentId] = useState("");
-  const boxRef = useRef<HTMLDivElement | null>(null); // Correct type
+  const boxRef = useRef<HTMLDivElement | null>(null);
+  const [isModalOpen, setIsModalOpen] = useState(false);
+  const [editedText, setEditedText] = useState("");
   const [status, setStatus] = useState<string | null>(null);
   const [selectedTag, setSelectedTag] = useState<string | null>(null);
   const [selectedID, setSelectedID] = useState<number | null>(null);
@@ -52,7 +55,7 @@ function docUpload() {
   const [selectedDescription, setSelectedDescription] = useState<string | null>(
     null
   );
-  const dropdownRef = useRef<HTMLDivElement | null>(null); 
+  const dropdownRef = useRef<HTMLDivElement | null>(null);
   const [answer1, setAnswer1] = useState("");
   const [answer2, setAnswer2] = useState("");
   const [loading, setLoading] = useState(false);
@@ -155,21 +158,21 @@ function docUpload() {
       const data = await response.json();
       if (!data.tags || !Array.isArray(data.tags)) {
         console.error(
-          "❌ API Error: `data.tags` is undefined or not an array:",
+          " API Error: `data.tags` is undefined or not an array:",
           data
         );
         return;
       }
 
       const formattedTags = data.tags.map((tag) => ({
-        id: tag.id || tag._id || "❌Missing ID",
+        id: tag.id || tag._id || "Missing ID",
         tag: tag.tag,
         shortDesc: tag.shortDescription || "No Short Description",
         longDesc: tag.longDescription || "No Long Description",
         solution:
           tag.solution && tag.solution.trim() !== ""
             ? tag.solution
-            : " No Solution", // ✅ Handle empty solution
+            : " No Solution",
         policies: tag.policies || " No Policies",
         task: tag.task || [],
       }));
@@ -186,6 +189,7 @@ function docUpload() {
       setLoading(false);
     }
   };
+
   const isAuthenticated = async () => {
     try {
       const safeEmail = email ?? "";
@@ -500,7 +504,6 @@ function docUpload() {
     setSelectedDocs([]);
     setDropdownOpen(false);
   };
-
   const role = Cookies.get("name");
   const toggleDropdown2 = () => {
     if (!selectedDocument) {
@@ -511,7 +514,6 @@ function docUpload() {
   };
   const toggleDropdown1 = () => setDropdownOpen1(!dropdownOpen1);
   const toggleSidebar = () => setIsSidebarOpen(!isSidebarOpen);
-  // Function to copy text from the box container
   const handleCopy = () => {
     if (boxRef.current) {
       const textToCopy = (boxRef.current as HTMLDivElement).innerText;
@@ -525,6 +527,81 @@ function docUpload() {
         });
     }
   };
+  const handleEdit = () => {
+    if (boxRef.current) {
+      setEditedText(boxRef.current.innerText);
+      setIsModalOpen(true);
+    }
+  };
+
+  const handleSaveChanges = async () => {
+    if (!boxRef.current || !selectedDocumentId || !selectedID) {
+      toast.error("❌ Missing required data. Please try again.");
+      return;
+    }
+
+    const updatedSolution = editedText.trim();
+    const safeEmail = email ?? "";
+    const documentId = selectedDocumentId;
+    const tagId = selectedID;
+
+    console.log("Updated Solution:", updatedSolution);
+    console.log("Email:", safeEmail);
+    console.log("Document ID:", documentId);
+    console.log("Tag ID:", tagId);
+
+    try {
+      const response = await fetch(
+        `${process.env.NEXT_PUBLIC_API_BASE_URL}/api/files/updateSolution`,
+        {
+          method: "PUT",
+          headers: {
+            "Content-Type": "application/json",
+          },
+          body: JSON.stringify({
+            email: safeEmail,
+            id: documentId,
+            tagId: tagId,
+            solution: updatedSolution,
+          }),
+        }
+      );
+
+      if (!response.ok) {
+        const errorMessage = `❌ Failed to save changes: ${response.status} ${response.statusText}`;
+        console.error(errorMessage);
+        toast.error(errorMessage);
+        return;
+      }
+
+      const data = await response.json();
+      console.log("✅ Successfully updated:", data);
+
+      // ✅ Extract updated solution from response
+      let newSolution = data.updatedSolution || [];
+
+      // ✅ Update `tagsData` to show updated solution instantly
+      setTagsData((prevTags) =>
+        prevTags.map((tag) =>
+          tag.id.toString() === tagId.toString()
+            ? { ...tag, solution: newSolution }
+            : tag
+        )
+      );
+
+   
+      setSolution(newSolution);
+      setEditedText(newSolution.join("\n"));
+      toast.success("✅ Plan of Correction updated successfully!");
+      setIsModalOpen(false);
+    } catch (error) {
+      console.error("❌ Error saving data:", error);
+      toast.error(
+        "❌ Failed to save changes. Please check your connection and try again."
+      );
+    }
+  };
+
   return (
     <div className="flex flex-col lg:flex-row">
       <Sidebar isSidebarOpen={isSidebarOpen} />
@@ -657,7 +734,6 @@ function docUpload() {
 
             {/* Progress Bar */}
             <div className="relative w-full mt-2">
-              {/* Gray Background Line */}
               <div className="absolute h-[3px] w-full bg-gray-300 rounded-full"></div>
 
               {/* Active Blue Line */}
@@ -693,7 +769,6 @@ function docUpload() {
               style={{ borderColor: "#E0E0E0" }}
             ></div>
 
-            {/*Container*/}
             <div className="flex flex-col lg:flex-row justify-center mt-4 lg:mt-8 space-y-4 lg:space-y-0 lg:space-x-4">
               {/* Left Container */}
               <div className="bg-white shadow-lg p-4 sm:p-6 flex flex-col justify-between w-full lg:w-[350px] h-auto rounded-lg border border-[#E0E0E0] mx-auto">
@@ -757,7 +832,6 @@ function docUpload() {
                     {selectedTag || "Select a Tag"}{" "}
                   </h4>
 
-                  {/* Properly formatted long description with bullet points */}
                   <div
                     className="text-sm sm:text-base lg:text-md font-light leading-relaxed text-[#33343E] space-y-4 mb-8 md:mb-16 lg:mb-32"
                     style={{
@@ -791,148 +865,190 @@ function docUpload() {
                   </div>
                 </div>
               </div>
+
               <div
-      className="bg-white border shadow-lg rounded-lg p-4 sm:p-6 w-full h-auto flex flex-col justify-between"
-      ref={boxRef} // Attach the ref here
-    >
-      <div>
-        <div className="flex justify-between items-center">
-          <h4 className="font-bold text-lg sm:text-xl lg:text-2xl leading-tight text-[#494D55]">
-            Plan of Correction
-          </h4>
-          <div className="flex space-x-4">
-            {/* Copy Button */}
-            <button
-              onClick={handleCopy}
-              className="p-2 rounded-lg hover:bg-gray-200 transition"
-            >
-              <img
-                src="/assets/copy.png"
-                alt="Copy"
-                className="w-5 h-5"
-              />
-            </button>
+                className="bg-white border shadow-lg rounded-lg p-4 sm:p-6 w-full h-auto flex flex-col justify-between"
+                ref={boxRef}
+              >
+                <div>
+                  <div className="flex justify-between items-center">
+                    <h4 className="font-bold text-lg sm:text-xl lg:text-2xl leading-tight text-[#494D55]">
+                      Plan of Correction
+                    </h4>
+                    <div className="flex space-x-4">
+                      {/* Copy Button */}
+                      <button
+                        onClick={handleCopy}
+                        className="p-2 rounded-lg hover:bg-gray-200 transition"
+                      >
+                        <img
+                          src="/assets/copy.png"
+                          alt="Copy"
+                          className="w-5 h-5"
+                        />
+                      </button>
 
-            {/* Edit Button */}
-            <button className="p-2 rounded-lg hover:bg-gray-200 transition">
-              <img
-                src="/assets/edit.png"
-                alt="Edit"
-                className="w-5 h-5"
-              />
-            </button>
-          </div>
-        </div>
+                      {/* Edit Button */}
+                      <button
+                        onClick={handleEdit}
+                        className="p-2 rounded-lg hover:bg-gray-200 transition"
+                      >
+                        <img
+                          src="/assets/edit.png"
+                          alt="Edit"
+                          className="w-5 h-5"
+                        />
+                      </button>
+                    </div>
+                  </div>
 
-        <ul
-          className="list-disc list-inside text-sm sm:text-base lg:text-md font-light leading-relaxed text-[#33343E] mt-6"
-          style={{ fontFamily: "'Plus Jakarta Sans', sans-serif" }}
-        >
-          {Array.isArray(solution) && solution.length > 0 ? (
-            solution.map((policy, index) => (
-              <li key={index}>{policy}</li>
-            ))
-          ) : (
-            <li>No solution available.</li>
-          )}
-        </ul>
-      </div>
-
-      {!solution || solution.length === 0 ? (
-        <div className="flex items-center justify-center mt-10">
-          <button
-            onClick={() => toggleSidebar()}
-            className="flex items-center justify-center bg-[#002F6C] text-white w-[160px] h-[40px] rounded-lg text-sm shadow-md transition-colors duration-300"
-          >
-            <FaFileAlt className="mr-2" />
-            <span>Generate POC</span>
-          </button>
-        </div>
-      ) : null}
-
-      {/* Sidebar - Always show when `loading` is true or `isSidebarOpen` */}
-      {(isSidebarOpen || loading) && (!solution || solution.length === 0) && (
-        <>
-          <div className="fixed top-0 right-0 h-full bg-white shadow-lg p-6 sm:p-8 md:p-10 z-50 w-full max-w-lg overflow-y-auto">
-            {loading ? (
-              <div className="flex flex-col items-center justify-center h-full">
-                <p className="text-[#002F6C] text-lg sm:text-xl md:text-2xl font-bold mb-4">
-                  Generating Response...
-                </p>
-                <div className="w-12 h-12 border-4 border-blue-600 border-t-transparent rounded-full animate-spin"></div>
-                <div className="mt-6 overflow-y-auto max-h-40 text-sm text-gray-600 p-4 border border-gray-200 rounded-lg">
-                  <p>
-                    We are processing your request. This may take a few seconds. Please wait...
-                  </p>
+                  <ul
+                    className="list-disc list-inside text-sm sm:text-base lg:text-md font-light leading-relaxed text-[#33343E] mt-6"
+                    style={{ fontFamily: "'Plus Jakarta Sans', sans-serif" }}
+                  >
+                    {Array.isArray(solution) && solution.length > 0 ? (
+                      solution.map((policy, index) => (
+                        <li key={index}>{policy}</li>
+                      ))
+                    ) : (
+                      <li>No solution available.</li>
+                    )}
+                  </ul>
                 </div>
+
+                {!solution || solution.length === 0 ? (
+                  <div className="flex items-center justify-center mt-10">
+                    <button
+                      onClick={() => toggleSidebar()}
+                      className="flex items-center justify-center bg-[#002F6C] text-white w-[160px] h-[40px] rounded-lg text-sm shadow-md transition-colors duration-300"
+                    >
+                      <FaFileAlt className="mr-2" />
+                      <span>Generate POC</span>
+                    </button>
+                  </div>
+                ) : null}
+
+                {/* Sidebar - Always show when `loading` is true or `isSidebarOpen` */}
+                {(isSidebarOpen || loading) &&
+                  (!solution || solution.length === 0) && (
+                    <>
+                      <div className="fixed top-0 right-0 h-full bg-white shadow-lg p-6 sm:p-8 md:p-10 z-50 w-full max-w-lg overflow-y-auto">
+                        {loading ? (
+                          <div className="flex flex-col items-center justify-center h-full">
+                            <p className="text-[#002F6C] text-lg sm:text-xl md:text-2xl font-bold mb-4">
+                              Generating Response...
+                            </p>
+                            <div className="w-12 h-12 border-4 border-blue-600 border-t-transparent rounded-full animate-spin"></div>
+                            <div className="mt-6 overflow-y-auto max-h-40 text-sm text-gray-600 p-4 border border-gray-200 rounded-lg">
+                              <p>
+                                We are processing your request. This may take a
+                                few seconds. Please wait...
+                              </p>
+                            </div>
+                          </div>
+                        ) : (
+                          <>
+                            {/* Title */}
+                            <h2 className="font-bold text-[#002F6C] mb-1 text-lg sm:text-xl md:text-2xl">
+                              Additional Questions (Optional)
+                            </h2>
+                            <p className="text-gray-900 mb-6 sm:mb-8 text-sm sm:text-base md:text-lg">
+                              Provide us with a little more details
+                            </p>
+
+                            {/* Question 1 */}
+                            <div className="mb-6">
+                              <label className="block font-medium mb-2 whitespace-nowrap text-sm sm:text-base md:text-lg">
+                                What has been done to address this?
+                              </label>
+                              <textarea
+                                className="w-full h-[60px] sm:h-[70px] px-3 py-2 border border-gray-300 rounded-lg resize-none focus:outline-none focus:border-blue-900 text-xs sm:text-sm md:text-base"
+                                placeholder="Enter your answer here..."
+                                value={answer1}
+                                onChange={(e) => setAnswer1(e.target.value)}
+                              ></textarea>
+                            </div>
+
+                            {/* Question 2 */}
+                            <div className="mb-12">
+                              <label className="block font-medium mb-2 whitespace-nowrap text-sm sm:text-base md:text-lg">
+                                Anything else we should know?
+                              </label>
+                              <textarea
+                                className="w-full h-[60px] sm:h-[70px] px-3 py-2 border border-gray-300 rounded-lg resize-none focus:outline-none focus:border-blue-900 text-xs sm:text-sm md:text-base"
+                                placeholder="Enter additional details..."
+                                value={answer2}
+                                onChange={(e) => setAnswer2(e.target.value)}
+                              ></textarea>
+                            </div>
+
+                            {/* Buttons */}
+                            <div className="flex justify-end space-x-4 mb-10">
+                              <button
+                                onClick={toggleSidebar}
+                                className="flex items-center justify-center text-black w-full sm:w-[191px] h-[40px] sm:h-[56px] rounded-lg text-xs sm:text-sm md:text-base font-semibold shadow-md transition-colors duration-300 border border-gray-300 hover:bg-gray-200"
+                                disabled={loading}
+                              >
+                                Back
+                              </button>
+                              <button
+                                onClick={handleSubmit}
+                                className="flex items-center justify-center bg-[#002F6C] text-white w-full sm:w-[191px] h-[40px] sm:h-[56px] rounded-lg text-xs sm:text-sm md:text-base font-semibold shadow-md transition-colors duration-300 hover:bg-blue-800"
+                                disabled={loading}
+                              >
+                                {loading ? "Submitting..." : "Submit"}
+                              </button>
+                            </div>
+                          </>
+                        )}
+                      </div>
+
+                      {/* Prevent clicking outside when sidebar is open (and not loading) */}
+                      {!loading && (
+                        <div
+                          className="fixed inset-0 bg-black opacity-50 z-40"
+                          onClick={toggleSidebar}
+                        ></div>
+                      )}
+                    </>
+                  )}
               </div>
-            ) : (
-              <>
-                {/* Title */}
-                <h2 className="font-bold text-[#002F6C] mb-1 text-lg sm:text-xl md:text-2xl">
-                  Additional Questions (Optional)
-                </h2>
-                <p className="text-gray-900 mb-6 sm:mb-8 text-sm sm:text-base md:text-lg">
-                  Provide us with a little more details
-                </p>
-
-                {/* Question 1 */}
-                <div className="mb-6">
-                  <label className="block font-medium mb-2 whitespace-nowrap text-sm sm:text-base md:text-lg">
-                    What has been done to address this?
-                  </label>
-                  <textarea
-                    className="w-full h-[60px] sm:h-[70px] px-3 py-2 border border-gray-300 rounded-lg resize-none focus:outline-none focus:border-blue-900 text-xs sm:text-sm md:text-base"
-                    placeholder="Enter your answer here..."
-                    value={answer1}
-                    onChange={(e) => setAnswer1(e.target.value)}
-                  ></textarea>
-                </div>
-
-                {/* Question 2 */}
-                <div className="mb-12">
-                  <label className="block font-medium mb-2 whitespace-nowrap text-sm sm:text-base md:text-lg">
-                    Anything else we should know?
-                  </label>
-                  <textarea
-                    className="w-full h-[60px] sm:h-[70px] px-3 py-2 border border-gray-300 rounded-lg resize-none focus:outline-none focus:border-blue-900 text-xs sm:text-sm md:text-base"
-                    placeholder="Enter additional details..."
-                    value={answer2}
-                    onChange={(e) => setAnswer2(e.target.value)}
-                  ></textarea>
-                </div>
-
-                {/* Buttons */}
-                <div className="flex justify-end space-x-4 mb-10">
-                  <button
-                    onClick={toggleSidebar}
-                    className="flex items-center justify-center text-black w-full sm:w-[191px] h-[40px] sm:h-[56px] rounded-lg text-xs sm:text-sm md:text-base font-semibold shadow-md transition-colors duration-300 border border-gray-300 hover:bg-gray-200"
-                    disabled={loading}
+              {isModalOpen && (
+                <div
+                  className="fixed inset-0 bg-black bg-opacity-50 flex justify-center items-center z-50"
+                  onClick={() => setIsModalOpen(false)}
+                >
+                  <div
+                    className="bg-white p-6 rounded-lg shadow-lg w-[600px] h-[400px] max-h-screen flex flex-col"
+                    onClick={(e) => e.stopPropagation()}
                   >
-                    Back
-                  </button>
-                  <button
-                    onClick={handleSubmit}
-                    className="flex items-center justify-center bg-[#002F6C] text-white w-full sm:w-[191px] h-[40px] sm:h-[56px] rounded-lg text-xs sm:text-sm md:text-base font-semibold shadow-md transition-colors duration-300 hover:bg-blue-800"
-                    disabled={loading}
-                  >
-                    {loading ? "Submitting..." : "Submit"}
-                  </button>
-                </div>
-              </>
-            )}
-          </div>
+                    <h2 className="text-xl font-bold mb-4">
+                      Edit Plan of Correction
+                    </h2>
 
-          {/* Prevent clicking outside when sidebar is open (and not loading) */}
-          {!loading && (
-            <div
-              className="fixed inset-0 bg-black opacity-50 z-40"
-              onClick={toggleSidebar}
-            ></div>
-          )}
-        </>
-      )}
-    </div>
+                    <textarea
+                      className="w-full flex-grow border border-gray-300 rounded-lg p-2 focus:outline-none focus:border-blue-500 resize-none"
+                      value={editedText}
+                      onChange={(e) => setEditedText(e.target.value)}
+                    ></textarea>
+
+                    <div className="flex justify-end space-x-4 mt-4">
+                      <button
+                        onClick={() => setIsModalOpen(false)}
+                        className="px-5 py-2 bg-gray-300 rounded-lg"
+                      >
+                        Cancel
+                      </button>
+                      <button
+                        onClick={handleSaveChanges}
+                        className="px-5 py-2 bg-[#002f6c] text-white rounded-lg"
+                      >
+                        Save Changes
+                      </button>
+                    </div>
+                  </div>
+                </div>
+              )}
             </div>
           </>
         )}

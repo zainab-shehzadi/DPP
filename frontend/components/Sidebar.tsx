@@ -44,7 +44,7 @@ const Sidebar: React.FC<SidebarProps> = ({ isSidebarOpen }) => {
 
     const resetTimer = () => {
       clearTimeout(timeout);
-      timeout = setTimeout(() => handleConfirmLogout(), 1 * 60 * 1000); 
+      timeout = setTimeout(() => handleConfirmLogout(), 5 * 60 * 1000); 
     };
 
     window.addEventListener("mousemove", resetTimer);
