@@ -521,7 +521,7 @@ export default function Dashboard() {
                       className="bg-white p-6 sm:p-8 md:p-10 rounded-lg shadow-lg w-full max-w-[600px] max-h-[90vh] flex flex-col overflow-hidden"
                       onClick={(e) => e.stopPropagation()}
                     >
-                       <h2>{selectedTag?.tag} Details</h2>{/* ✅ Now TypeScript won't complain */}
+                       <h2 className="text-xl font-bold mb-4">{selectedTag?.tag} Details</h2>{/* ✅ Now TypeScript won't complain */}
 
 
                       {/* Plan of Correction Header */}
