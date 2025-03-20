@@ -4,7 +4,6 @@ import DateDisplay from "@/components/date";
 import Sidebar from "@/components/Sidebar";
 import UserDropdown from "@/components/profile-dropdown";
 import { FaFileAlt, FaSlash } from "react-icons/fa";
-import { Clipboard, Pencil } from "lucide-react";
 import "react-datepicker/dist/react-datepicker.css";
 import { useRouter } from "next/navigation";
 import Notification from "@/components/Notification";
@@ -33,7 +32,7 @@ function docUpload() {
   const [selectedDocs, setSelectedDocs] = useState<string[]>([]);
   const [selectedDocument, setSelectedDocument] = useState("");
   const [selectedDocumentId, setSelectedDocumentId] = useState("");
-  const boxRef = useRef();
+  const boxRef = useRef<HTMLDivElement | null>(null); // Correct type
   const [status, setStatus] = useState<string | null>(null);
   const [selectedTag, setSelectedTag] = useState<string | null>(null);
   const [selectedID, setSelectedID] = useState<number | null>(null);
@@ -53,7 +52,7 @@ function docUpload() {
   const [selectedDescription, setSelectedDescription] = useState<string | null>(
     null
   );
-  const dropdownRef = useRef<HTMLDivElement>(null);
+  const dropdownRef = useRef<HTMLDivElement | null>(null); 
   const [answer1, setAnswer1] = useState("");
   const [answer2, setAnswer2] = useState("");
   const [loading, setLoading] = useState(false);
