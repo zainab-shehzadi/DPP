@@ -32,37 +32,49 @@ export default function StatePage({ params }: StatePageProps) {
   const [tags, setTags] = useState<{ [key: string]: number }>({});
   const [email, setEmail] = useState<string | null>(null);
 
-  // ✅ Fetch Tags Data
-  useEffect(() => {
-    if (!stateName) {
-      console.warn("⛔ `stateName` is missing, skipping API call.");
-      return;
-    }
+// ✅ Fetch Tags Data Using POST
+useEffect(() => {
+  if (!stateName) {
+    console.warn("⛔ `stateName` is missing, skipping API call.");
+    return;
+  }
 
-    const fetchTags = async () => {
-      try {
-        // ✅ Check API Base URL
-        const baseUrl = process.env.NEXT_PUBLIC_API_BASE_URL;
-        if (!baseUrl) throw new Error("❌ `NEXT_PUBLIC_API_BASE_URL` is not defined in .env.local");
+  const fetchTags = async () => {
+    try {
+      // ✅ Check API Base URL
+      const baseUrl = process.env.NEXT_PUBLIC_API_BASE_URL;
+      if (!baseUrl) throw new Error("❌ `NEXT_PUBLIC_API_BASE_URL` is not defined in .env.local");
 
-        // ✅ Construct API URL
-        const apiUrl = `${baseUrl}/api/users/state/${stateName}`;
-        console.log(`🚀 Fetching data from: ${apiUrl}`);
+      // ✅ Construct API URL
+      const apiUrl = `${baseUrl}/api/users/state/tags`; // New API Endpoint
+      console.log(`🚀 Sending POST request to: ${apiUrl}`);
 
-        const response = await fetch(apiUrl);
-        if (!response.ok) throw new Error(`❌ API request failed with status: ${response.status}`);
+      // ✅ Send `POST` request with stateName in body
+      const response = await fetch(apiUrl, {
+        method: "POST",
+        headers: {
+          "Content-Type": "application/json",
+        },
+        body: JSON.stringify({ stateName }), // ✅ Send stateName in request body
+      });
 
-        const data = await response.json();
-        console.log("✅ Parsed Data:", data);
+      console.log("📝 Raw Response:", response);
 
-        setTags(data.tags || {}); // ✅ Set tags from API response
-      } catch (error) {
-        console.error("❌ Error fetching tags:", error);
+      if (!response.ok) {
+        throw new Error(`❌ API request failed with status: ${response.status}`);
       }
-    };
 
-    fetchTags();
-  }, [stateName]);
+      const data = await response.json();
+      console.log("✅ Parsed Data:", data);
+
+      setTags(data.tags || {}); // ✅ Set tags from API response
+    } catch (error) {
+      console.error("❌ Error fetching tags:", error);
+    }
+  };
+
+  fetchTags();
+}, [stateName]);
 
   // ✅ Manage Cookies
   useEffect(() => {

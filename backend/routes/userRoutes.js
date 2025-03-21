@@ -137,15 +137,21 @@ router.post("/state", async (req, res) => {
 });
 
 
-router.get("/state/:state", async (req, res) => {
+router.post("/state/tags", async (req, res) => {
   try {
-      const stateData = await State.findOne({ state: req.params.state });
+    const { stateName } = req.body; 
+    if (!stateName) {
+      return res.status(400).json({ error: "State name is required" });
+    }
+    const stateData = await State.findOne({ state: stateName });
 
-      if (!stateData) return res.status(404).json({ message: "State not found" });
-
-      res.status(200).json(stateData);
+    if (!stateData) {
+      return res.status(404).json({ error: "State not found" });
+    }
+    res.status(200).json({ tags: stateData.tags });
   } catch (error) {
-      res.status(500).json({ message: "Error fetching state data", error });
+    console.error("❌ Error fetching state tags:", error);
+    res.status(500).json({ error: "Internal server error", details: error.message });
   }
 });
 
