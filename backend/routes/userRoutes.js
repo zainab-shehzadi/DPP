@@ -14,6 +14,7 @@ const {
 } = require("../controllers/userController");
 const { protect } = require("../middlewares/authMiddleware");
 const User = require("../models/User");
+const State = require("../models/StateTag"); 
 
 const router = express.Router();
 
@@ -110,4 +111,43 @@ router.put("/update", async (req, res) => {
 router.post('/add', createUser); 
 
 router.get('/User123', getAllUsers); 
+
+router.post("/state", async (req, res) => {
+    try {
+        const data = req.body; // Receive JSON data
+
+        if (!data || Object.keys(data).length === 0) {
+            return res.status(400).json({ message: "State and tags are required" });
+        }
+
+        // Convert JSON object into an array of state documents
+        const formattedData = Object.entries(data).map(([state, tags]) => ({
+            state,
+            tags
+        }));
+
+        // Insert multiple states into MongoDB
+        await State.insertMany(formattedData);
+
+        return res.status(201).json({ message: "States added successfully!" });
+    } catch (error) {
+        console.error("Error inserting states:", error);
+        return res.status(500).json({ message: "Error inserting states", error });
+    }
+});
+
+
+router.get("/state/:state", async (req, res) => {
+  try {
+      const stateData = await State.findOne({ state: req.params.state });
+
+      if (!stateData) return res.status(404).json({ message: "State not found" });
+
+      res.status(200).json(stateData);
+  } catch (error) {
+      res.status(500).json({ message: "Error fetching state data", error });
+  }
+});
+
+
 module.exports = router;

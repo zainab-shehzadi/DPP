@@ -1,6 +1,6 @@
 const mongoose = require("mongoose");
 
-// Main file schema
+
 const taskSchema = new mongoose.Schema({
   tagId: {
     type: String,

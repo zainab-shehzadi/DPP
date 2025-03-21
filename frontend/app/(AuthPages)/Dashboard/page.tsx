@@ -1,6 +1,5 @@
 "use client";
 
-import Image from "next/image";
 import React, { useState, useEffect } from "react";
 import { FaCloudUploadAlt } from "react-icons/fa"; // Import the built-in upload icon
 import axios from "axios";
@@ -167,7 +166,7 @@ export default function Dashboard() {
         {/* Main Container */}
         <div className="flex flex-col md:flex-row gap-4 p-4 min-h-screen">
           {/* Container */}
-          <div className="bg-white shadow-lg p-4 sm:p-6 md:p-8 lg:p-10 flex flex-col items-center justify-center w-full lg:w-2/3 h-auto rounded-lg border border-gray-300">
+          <div className="shadow-lg p-4 sm:p-6 md:p-8 lg:p-10 flex flex-col items-center justify-center w-full lg:w-2/3 h-auto rounded-lg border border-gray-300">
             <h4 className="text-gray-500 text-sm sm:text-base md:text-lg lg:text-xl font-semibold mb-4 text-center">
               No <span className="text-blue-900">Plan Of Correction</span> Yet
             </h4>

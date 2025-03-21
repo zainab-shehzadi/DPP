@@ -536,69 +536,71 @@ function docUpload() {
 
   const handleSaveChanges = async () => {
     if (!boxRef.current || !selectedDocumentId || !selectedID) {
-      toast.error("❌ Missing required data. Please try again.");
-      return;
+        toast.error("❌ Missing required data. Please try again.");
+        return;
     }
 
-    const updatedSolution = editedText.trim();
-    const safeEmail = email ?? "";
+    const updatedSolution = editedText.trim() === "" ? null : editedText.trim(); // ✅ Convert empty text to null
+    const safeEmail = email ?? ""; // Ensure email is not undefined
     const documentId = selectedDocumentId;
     const tagId = selectedID;
 
-    console.log("Updated Solution:", updatedSolution);
-    console.log("Email:", safeEmail);
-    console.log("Document ID:", documentId);
-    console.log("Tag ID:", tagId);
+    // ✅ Log request data before sending
+    console.log("Sending API request with:", {
+        email: safeEmail,
+        id: documentId,
+        tagId: tagId,
+        solution: updatedSolution
+    });
 
     try {
-      const response = await fetch(
-        `${process.env.NEXT_PUBLIC_API_BASE_URL}/api/files/updateSolution`,
-        {
-          method: "PUT",
-          headers: {
-            "Content-Type": "application/json",
-          },
-          body: JSON.stringify({
-            email: safeEmail,
-            id: documentId,
-            tagId: tagId,
-            solution: updatedSolution,
-          }),
+        const response = await fetch(
+            `${process.env.NEXT_PUBLIC_API_BASE_URL}/api/files/updateSolution`,
+            {
+                method: "PUT",
+                headers: {
+                    "Content-Type": "application/json",
+                },
+                body: JSON.stringify({
+                    email: safeEmail,
+                    id: documentId,
+                    tagId: tagId,
+                    solution: updatedSolution, // ✅ Sends null if empty
+                }),
+            }
+        );
+
+        if (!response.ok) {
+            const errorText = await response.text(); // Get more error details
+            console.error(`❌ Failed to save changes: ${response.status} ${response.statusText}`, errorText);
+            toast.error(`❌ Failed to save changes: ${response.status} ${response.statusText}`);
+            return;
         }
-      );
 
-      if (!response.ok) {
-        const errorMessage = `❌ Failed to save changes: ${response.status} ${response.statusText}`;
-        console.error(errorMessage);
-        toast.error(errorMessage);
-        return;
-      }
+        const data = await response.json();
+        console.log("✅ Successfully updated:", data);
 
-      const data = await response.json();
-      console.log("Successfully updated:", data);
+        let newSolution = data.updatedSolution || [];
 
-      let newSolution = data.updatedSolution || [];
+        setTagsData((prevTags) =>
+            prevTags.map((tag) =>
+                tag.id.toString() === tagId.toString()
+                    ? { ...tag, solution: newSolution }
+                    : tag
+            )
+        );
 
-      setTagsData((prevTags) =>
-        prevTags.map((tag) =>
-          tag.id.toString() === tagId.toString()
-            ? { ...tag, solution: newSolution }
-            : tag
-        )
-      );
+        setSolution(newSolution);
+        setEditedText(newSolution ? newSolution.join("\n") : ""); // ✅ Handle null safely
 
-   
-      setSolution(newSolution);
-      setEditedText(newSolution.join("\n"));
-      toast.success(" Plan of Correction updated successfully!");
-      setIsModalOpen(false);
+        toast.success("✅ Plan of Correction updated successfully!");
+        setIsModalOpen(false);
     } catch (error) {
-      console.error("❌ Error saving data:", error);
-      toast.error(
-        "❌ Failed to save changes. Please check your connection and try again."
-      );
+        console.error("❌ Error saving data:", error);
+        toast.error("❌ Failed to save changes. Please check your connection and try again.");
     }
-  };
+};
+
 
   return (
     <div className="flex flex-col lg:flex-row">

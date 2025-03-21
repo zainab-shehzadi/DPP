@@ -44,7 +44,7 @@ const Sidebar: React.FC<SidebarProps> = ({ isSidebarOpen }) => {
 
     const resetTimer = () => {
       clearTimeout(timeout);
-      timeout = setTimeout(() => handleConfirmLogout(), 5 * 60 * 1000); 
+      timeout = setTimeout(() => handleConfirmLogout(), 30 * 60 * 1000); 
     };
 
     window.addEventListener("mousemove", resetTimer);
@@ -184,11 +184,11 @@ const Sidebar: React.FC<SidebarProps> = ({ isSidebarOpen }) => {
                     Task List
                   </button>
                 </li>
-                {/* <li>
+                <li>
                   <button
-                    onClick={() => handleNavigation("/HistoryPage")}
+                    onClick={() => handleNavigation("/state")}
                     className={`flex items-center w-full py-2 px-3 rounded-md font-semibold text-xs lg:text-sm transition ${
-                      pathname === "/HistoryPage"
+                      pathname === "/state"
                         ? "bg-white text-blue-900 shadow-md"
                         : "hover:bg-white hover:text-blue-900"
                     }`}
@@ -196,7 +196,7 @@ const Sidebar: React.FC<SidebarProps> = ({ isSidebarOpen }) => {
                     <FaClipboard className="mr-2" />
                     States
                   </button>
-                </li> */}
+                </li>
                 {/* Settings with Sub-menu */}
                 <li>
                   <button

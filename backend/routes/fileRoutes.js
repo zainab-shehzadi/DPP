@@ -79,36 +79,89 @@ router.post("/tags-with-descriptions", async (req, res) => {
   }
 });
 
+// router.put("/updateSolution", async (req, res) => {
+//   try {
+//     const { email, id, tagId, solution } = req.body;
+
+//     console.log("Received Data:", { email, id, tagId, solution });
+
+//     if (!email || !id || !tagId || !solution) {
+//       return res
+//         .status(400)
+//         .json({ error: "Email, ID, tagId, and solution are required" });
+//     }
+
+//     // 🔍 Find the document
+//     const document = await File.findOne({ email, "files._id": id });
+
+//     if (!document) {
+//       return res
+//         .status(404)
+//         .json({ error: "Document not found for the given email and ID" });
+//     }
+
+//     // 🔍 Find the specific file
+//     const file = document.files.find((f) => f._id.toString() === id);
+//     if (!file) {
+//       return res.status(404).json({ error: "File not found in the document" });
+//     }
+
+//     // 🔍 Find the tag to update
+//     const tagToUpdate = file.tags.find((tag) => tag._id.toString() === tagId);
+
+//     if (!tagToUpdate) {
+//       return res.status(404).json({ error: "Tag not found in this file" });
+//     }
+
+//     if (!tagToUpdate.response) {
+//       tagToUpdate.response = {};
+//     }
+    
+//     // ✅ Update solution
+//     tagToUpdate.response.solution = Array.isArray(solution) ? solution : [solution];
+
+//     // ✅ Save updated document
+//     await document.save();
+
+//     // ✅ Return updated data
+//     res.status(200).json({
+//       message: "Solution updated successfully",
+//       updatedSolution: tagToUpdate.response.solution,
+//       updatedTag: tagToUpdate,
+//     });
+//   } catch (error) {
+//     console.error("❌ Error updating solution:", error);
+//     res.status(500).json({ error: "Internal server error" });
+//   }
+// });
+
+
 router.put("/updateSolution", async (req, res) => {
   try {
     const { email, id, tagId, solution } = req.body;
 
-    console.log("Received Data:", { email, id, tagId, solution });
+    console.log("📥 Received Data:", { email, id, tagId, solution });
 
-    if (!email || !id || !tagId || !solution) {
-      return res
-        .status(400)
-        .json({ error: "Email, ID, tagId, and solution are required" });
+    // ✅ Ensure required fields are provided, but allow null solutions
+    if (!email || !id || !tagId) {
+      return res.status(400).json({ error: "Email, ID, and tagId are required" });
     }
 
-    // 🔍 Find the document
+    // ✅ Find the document containing the file
     const document = await File.findOne({ email, "files._id": id });
 
     if (!document) {
-      return res
-        .status(404)
-        .json({ error: "Document not found for the given email and ID" });
+      return res.status(404).json({ error: "Document not found for the given email and ID" });
     }
 
-    // 🔍 Find the specific file
+    // ✅ Find the specific file inside `files` array
     const file = document.files.find((f) => f._id.toString() === id);
     if (!file) {
       return res.status(404).json({ error: "File not found in the document" });
     }
 
-    // 🔍 Find the tag to update
+    // ✅ Find the specific tag inside the file's `tags` array
     const tagToUpdate = file.tags.find((tag) => tag._id.toString() === tagId);
-
     if (!tagToUpdate) {
       return res.status(404).json({ error: "Tag not found in this file" });
     }
@@ -116,14 +169,13 @@ router.put("/updateSolution", async (req, res) => {
     if (!tagToUpdate.response) {
       tagToUpdate.response = {};
     }
-    
-    // ✅ Update solution
-    tagToUpdate.response.solution = Array.isArray(solution) ? solution : [solution];
 
-    // ✅ Save updated document
+    tagToUpdate.response.solution = solution && solution.length > 0 ? (Array.isArray(solution) ? solution : [solution]) : null;
+
     await document.save();
 
-    // ✅ Return updated data
+    console.log("Solution Updated Successfully:", tagToUpdate.response.solution);
+
     res.status(200).json({
       message: "Solution updated successfully",
       updatedSolution: tagToUpdate.response.solution,
