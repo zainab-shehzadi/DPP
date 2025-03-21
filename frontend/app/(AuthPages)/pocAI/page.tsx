@@ -575,12 +575,10 @@ function docUpload() {
       }
 
       const data = await response.json();
-      console.log("✅ Successfully updated:", data);
+      console.log("Successfully updated:", data);
 
-      // ✅ Extract updated solution from response
       let newSolution = data.updatedSolution || [];
 
-      // ✅ Update `tagsData` to show updated solution instantly
       setTagsData((prevTags) =>
         prevTags.map((tag) =>
           tag.id.toString() === tagId.toString()
@@ -592,7 +590,7 @@ function docUpload() {
    
       setSolution(newSolution);
       setEditedText(newSolution.join("\n"));
-      toast.success("✅ Plan of Correction updated successfully!");
+      toast.success(" Plan of Correction updated successfully!");
       setIsModalOpen(false);
     } catch (error) {
       console.error("❌ Error saving data:", error);
