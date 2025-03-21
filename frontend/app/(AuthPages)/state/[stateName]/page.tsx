@@ -1,4 +1,5 @@
 "use client";
+
 import { notFound } from "next/navigation";
 import { IoArrowBack } from "react-icons/io5"; // Import arrow icon
 import React, { useState, useEffect } from "react";
@@ -7,71 +8,74 @@ import { useRouter, useSearchParams } from "next/navigation";
 import Notification from "@/components/Notification";
 import UserDropdown from "@/components/profile-dropdown";
 import Cookies from "js-cookie";
+import { use } from "react"; // ✅ Unwrap async params
 
+// ✅ Define Props Correctly
 interface StatePageProps {
-  params: { stateName?: string }; // Make it optional to avoid undefined error
+  params: Promise<{ stateName?: string }>; // ✅ Ensure params is properly unwrapped
 }
 
 export default function StatePage({ params }: StatePageProps) {
   const router = useRouter();
   const searchParams = useSearchParams();
 
-  // ✅ Unwrap params safely
-  const stateName = params?.stateName ?? ""; 
+  // ✅ Unwrap `params` properly
+  const resolvedParams = use(params);
+  const stateName = resolvedParams?.stateName ?? "";
 
   if (!stateName) {
     return notFound();
   }
 
+  // ✅ State Variables
   const [isSidebarOpen, setIsSidebarOpen] = useState(false);
-  const [tags, setTags] = useState<{ [key: string]: number }>({}); // Store fetched tags
+  const [tags, setTags] = useState<{ [key: string]: number }>({});
   const [email, setEmail] = useState<string | null>(null);
+
+  // ✅ Fetch Tags Data
   useEffect(() => {
     if (!stateName) {
-        console.warn("⛔ `stateName` is missing, skipping API call.");
-        return;
+      console.warn("⛔ `stateName` is missing, skipping API call.");
+      return;
     }
 
     const fetchTags = async () => {
-        try {
-            // ✅ Check API Base URL
-            const baseUrl = process.env.NEXT_PUBLIC_API_BASE_URL;
-            if (!baseUrl) throw new Error("❌ `NEXT_PUBLIC_API_BASE_URL` is not defined in .env.local");
+      try {
+        // ✅ Check API Base URL
+        const baseUrl = process.env.NEXT_PUBLIC_API_BASE_URL;
+        if (!baseUrl) throw new Error("❌ `NEXT_PUBLIC_API_BASE_URL` is not defined in .env.local");
 
-            // ✅ Construct API URL
-            const apiUrl = `${baseUrl}/api/users/state/${stateName}`;
-            console.log(`🚀 Fetching data from: ${apiUrl}`);
+        // ✅ Construct API URL
+        const apiUrl = `${baseUrl}/api/users/state/${stateName}`;
+        console.log(`🚀 Fetching data from: ${apiUrl}`);
 
-            const response = await fetch(apiUrl);
-            
-            console.log("📝 Raw Response:", response);
+        const response = await fetch(apiUrl);
+        if (!response.ok) throw new Error(`❌ API request failed with status: ${response.status}`);
 
-            if (!response.ok) {
-                throw new Error(`❌ API request failed with status: ${response.status}`);
-            }
+        const data = await response.json();
+        console.log("✅ Parsed Data:", data);
 
-            const data = await response.json();
-            console.log("✅ Parsed Data:", data);
-
-            setTags(data.tags || {}); // Set tags from API response
-        } catch (error) {
-            console.error("❌ Error fetching tags:", error);
-        }
+        setTags(data.tags || {}); // ✅ Set tags from API response
+      } catch (error) {
+        console.error("❌ Error fetching tags:", error);
+      }
     };
 
     fetchTags();
-}, [stateName]); 
+  }, [stateName]);
 
+  // ✅ Manage Cookies
   useEffect(() => {
     const accessToken = searchParams.get("accessToken");
     if (accessToken) {
-      console.log("Access Token from Query Params:", accessToken);
+      console.log("🔑 Access Token from Query Params:", accessToken);
       Cookies.set("accessToken", accessToken, {
         expires: 1,
         secure: process.env.NODE_ENV === "production",
         sameSite: "Strict",
       });
 
+      // ✅ Remove Query Params from URL
       const cleanUrl = window.location.href.split("?")[0];
       window.history.replaceState({}, document.title, cleanUrl);
     }
@@ -82,6 +86,7 @@ export default function StatePage({ params }: StatePageProps) {
     }
   }, []);
 
+  // ✅ Fetch Name from Cookies
   const name = Cookies.get("name");
 
   return (
