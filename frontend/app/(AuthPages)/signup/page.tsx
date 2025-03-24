@@ -98,7 +98,7 @@ const roleCategories = {
           role,
           position,
           password,
-          confirmPassword: repeatPassword, // Include confirmPassword explicitly
+          confirmPassword: repeatPassword, 
         }),
       });
   
@@ -108,10 +108,11 @@ const roleCategories = {
      Cookies.set("email", email);
      Cookies.set("name", firstName);
       if (response.ok) {
-        toast.success("Signup successful!", { position: "top-right" }); // Success toast
+        toast.success("Registration done", { position: "top-right" });
+
         setTimeout(() => {
-          router.push(`/form-detail?email=${email}`); // Pass email in query params
-        }, 2000);  // 2000 ms = 2 seconds
+          router.push(`/form-detail?email=${email}`); 
+        }, 2000); 
       } else {
         toast.error(data.message || "Signup failed!");
       }
@@ -357,7 +358,7 @@ const roleCategories = {
       {/* Right Side: Image with Quote */}
       <Image2 />
       
-      {/* Show the success or error message */}
+     
       {message && (
         <div className="fixed bottom-4 left-4 p-4 bg-green-700 text-white rounded-lg">
           {message}

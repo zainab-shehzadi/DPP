@@ -1,14 +1,13 @@
 "use client";
 
-import Image from 'next/image';
-import { FaBell } from 'react-icons/fa';
 import React, { useState, useEffect ,useRef } from "react";
 import Notification from "@/components/Notification";
 import Cookies from "js-cookie";
 import { toast } from "react-toastify";
 import UserDropdown from "@/components/profile-dropdown";
 import Sidebar from "@/components/Sidebar";
-import DateDisplay from '@/components/date';
+import HeaderWithToggle from "@/components/HeaderWithToggle";
+
 interface Facility {
   tag?: string;
   solution?: string;
@@ -283,12 +282,13 @@ const handleTagClick = async (tagName, tagId) => {
     <div className="flex flex-col lg:flex-row h-screen">
 
 
-<div className="lg:hidden flex items-center justify-between px-4 py-2 bg-[#002F6C] text-white">
-  <img src="/assets/logo-dpp1.png" alt="Logo" className="h-8 w-auto" />
-</div>
+<HeaderWithToggle onToggleSidebar={() => setIsSidebarOpen(true)} />
 
-      {/* Sidebar Component */}
-      <Sidebar isSidebarOpen={isSidebarOpen}/>
+{/* Sidebar */}
+<Sidebar
+  isSidebarOpen={isSidebarOpen}
+  setIsSidebarOpen={setIsSidebarOpen}
+/>
 
       {/* Main Content */}
       <div className="lg:ml-64 p-4 sm:p-8 w-full">

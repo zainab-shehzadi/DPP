@@ -1,12 +1,12 @@
 "use client"; // Ensure this is a client component
 
 import Image from "next/image";
-import { FaBell } from "react-icons/fa";
 import React, { useState, useEffect } from "react";
 import Sidebar from "@/components/Sidebar";
 import authProtectedRoutes from "@/hoc/authProtectedRoutes";
-import { FaCloudUploadAlt } from "react-icons/fa"; 
+import { FaCloudUploadAlt } from "react-icons/fa";
 import Cookies from "js-cookie";
+import HeaderWithToggle from "@/components/HeaderWithToggle";
 import DateDisplay from "@/components/date";
 import UserDropdown from "@/components/profile-dropdown";
 import Notification from "@/components/Notification";
@@ -17,11 +17,11 @@ function facilitySetting() {
   const [facilityAddress, setFacilityAddress] = useState("");
   const [noOfBeds, setNoOfBeds] = useState("");
   const [loading, setLoading] = useState(false);
-  const [email, setEmail] = useState<string | null>(null); 
-  const [isRequestSent, setIsRequestSent] = useState(false); 
-  const [status, setStatus] = useState<string | null>(null); 
+  const [email, setEmail] = useState<string | null>(null);
+  const [isRequestSent, setIsRequestSent] = useState(false);
+  const [status, setStatus] = useState<string | null>(null);
   const toggleSidebar = () => setIsSidebarOpen(!isSidebarOpen);
-  const [message, setMessage] = useState(""); 
+  const [message, setMessage] = useState("");
 
   // Helper function to get cookies
   const getCookie = (name: string) => {
@@ -165,17 +165,11 @@ function facilitySetting() {
 
   return (
     <div className="flex flex-col lg:flex-row h-screen">
-      {/* Mobile Header */}
-      <div className="lg:hidden flex items-center justify-between px-4 py-2 bg-[#002F6C] text-white">
-        <div
-          className="h-12 w-12 bg-cover bg-center"
-          style={{ backgroundImage: "url('/assets/logo-dpp1.png')" }}
-        ></div>
-      </div>
-
-      {/* Sidebar */}
-      <Sidebar isSidebarOpen={isSidebarOpen} />
-
+      <HeaderWithToggle onToggleSidebar={() => setIsSidebarOpen(true)} />
+      <Sidebar
+        isSidebarOpen={isSidebarOpen}
+        setIsSidebarOpen={setIsSidebarOpen}
+      />
       {/* Main Content */}
       <div className="lg:ml-64 p-4 sm:p-8 w-full">
         {/* Header */}
@@ -329,7 +323,7 @@ function facilitySetting() {
                 Facilities Policies (Optional)
               </h4>
               <div className="mt-2 w-full h-40 rounded-3xl flex flex-col justify-center items-center text-gray-500 bg-[#F9F9F9] border border-[#E0E0E0]">
-                 <FaCloudUploadAlt size={50} className="text-gray-600" />
+                <FaCloudUploadAlt size={50} className="text-gray-600" />
                 <p className="mt-2">
                   Drag and drop file here or{" "}
                   <span className="text-[#002F6C] font-semibold">

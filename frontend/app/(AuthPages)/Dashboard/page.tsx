@@ -8,7 +8,7 @@ import { useRouter, useSearchParams } from "next/navigation";
 import Notification from "@/components/Notification";
 import UserDropdown from "@/components/profile-dropdown";
 import DateDisplay from "@/components/date";
-
+import HeaderWithToggle from "@/components/HeaderWithToggle";
 import Cookies from "js-cookie";
 
 interface Sidebar {
@@ -129,11 +129,13 @@ export default function Dashboard() {
 
   return (
     <div className="flex flex-col lg:flex-row">
-      <div className="lg:hidden flex items-center justify-between px-4 py-2 bg-[#002F6C] text-white">
-        <img src="/assets/logo-dpp1.png" alt="Logo" className="h-8 w-auto" />
-      </div>
-      <Sidebar isSidebarOpen={isSidebarOpen} />
+         <HeaderWithToggle onToggleSidebar={() => setIsSidebarOpen(true)} />
 
+{/* Sidebar */}
+<Sidebar
+  isSidebarOpen={isSidebarOpen}
+  setIsSidebarOpen={setIsSidebarOpen}
+/>
       {/* Main Content */}
       <div className="lg:ml-64 p-4 sm:p-8 md:px-12 lg:px-16 xl:px-20 w-full">
         <header className="flex items-center justify-between mb-6 w-full flex-wrap">
@@ -221,26 +223,33 @@ export default function Dashboard() {
                   </p>
                 )}
                 <div className="flex justify-end w-full space-x-4">
-                  <button
-                    onClick={toggleSidebar}
-                    className="font-semibold hover:bg-blue-100 border px-4 py-2 rounded-lg text-sm sm:text-base md:text-lg"
-                    disabled={loading} // Disable button when loading
-                  >
-                    Cancel
-                  </button>
-                  {loading ? (
-                    <div className="flex items-center justify-center">
-                      <div className="animate-spin rounded-full h-8 w-8 border-t-2 border-blue-900"></div>
-                    </div>
-                  ) : (
-                    <button
-                      className="font-semibold bg-blue-900 text-white px-4 py-2 rounded-lg text-sm sm:text-base md:text-lg"
-                      onClick={handleFileUpload}
-                    >
-                      Review Deficiencies
-                    </button>
-                  )}
-                </div>
+                {loading ? (
+  <div className="flex flex-col items-center justify-center w-full h-[300px]">
+    <div className="animate-spin rounded-full h-10 w-10 border-t-4 border-blue-900 mb-4"></div>
+    <p className="text-sm text-gray-600 font-medium">Please wait...</p>
+  </div>
+) : (
+  <div className="flex justify-end w-full space-x-4">
+    {/* Cancel Button */}
+    <button
+      onClick={toggleSidebar}
+      className="font-semibold hover:bg-blue-100 border px-4 py-2 rounded-lg text-sm sm:text-base md:text-lg"
+    >
+      Cancel
+    </button>
+
+    {/* Review Button */}
+    <button
+      className="font-semibold bg-blue-900 text-white px-4 py-2 rounded-lg text-sm sm:text-base md:text-lg"
+      onClick={handleFileUpload}
+    >
+      Review Deficiencies
+    </button>
+  </div>
+)}
+
+</div>
+
               </div>
               <div
                 className="fixed inset-0 bg-black opacity-50 z-40"

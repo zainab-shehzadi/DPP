@@ -8,18 +8,17 @@ import { useRouter, useSearchParams } from "next/navigation";
 import Notification from "@/components/Notification";
 import UserDropdown from "@/components/profile-dropdown";
 import Cookies from "js-cookie";
-import { use } from "react"; // ✅ Unwrap async params
+import { use } from "react";
+import HeaderWithToggle from "@/components/HeaderWithToggle";
 
-// ✅ Define Props Correctly
 interface StatePageProps {
-  params: Promise<{ stateName?: string }>; // ✅ Ensure params is properly unwrapped
+  params: Promise<{ stateName?: string }>;
 }
 
 export default function StatePage({ params }: StatePageProps) {
   const router = useRouter();
   const searchParams = useSearchParams();
 
-  // ✅ Unwrap `params` properly
   const resolvedParams = use(params);
   const stateName = resolvedParams?.stateName ?? "";
 
@@ -27,67 +26,64 @@ export default function StatePage({ params }: StatePageProps) {
     return notFound();
   }
 
-  // ✅ State Variables
   const [isSidebarOpen, setIsSidebarOpen] = useState(false);
   const [tags, setTags] = useState<{ [key: string]: number }>({});
   const [email, setEmail] = useState<string | null>(null);
 
-// ✅ Fetch Tags Data Using POST
-useEffect(() => {
-  if (!stateName) {
-    console.warn("⛔ `stateName` is missing, skipping API call.");
-    return;
-  }
-
-  const fetchTags = async () => {
-    try {
-      // ✅ Check API Base URL
-      const baseUrl = process.env.NEXT_PUBLIC_API_BASE_URL;
-      if (!baseUrl) throw new Error("❌ `NEXT_PUBLIC_API_BASE_URL` is not defined in .env.local");
-
-      // ✅ Construct API URL
-      const apiUrl = `${baseUrl}/api/users/state/tags`; // New API Endpoint
-      console.log(`🚀 Sending POST request to: ${apiUrl}`);
-
-      // ✅ Send `POST` request with stateName in body
-      const response = await fetch(apiUrl, {
-        method: "POST",
-        headers: {
-          "Content-Type": "application/json",
-        },
-        body: JSON.stringify({ stateName }), // ✅ Send stateName in request body
-      });
-
-      console.log("📝 Raw Response:", response);
-
-      if (!response.ok) {
-        throw new Error(`❌ API request failed with status: ${response.status}`);
-      }
-
-      const data = await response.json();
-      console.log("✅ Parsed Data:", data);
-
-      setTags(data.tags || {}); // ✅ Set tags from API response
-    } catch (error) {
-      console.error("❌ Error fetching tags:", error);
+  useEffect(() => {
+    if (!stateName) {
+      console.warn("stateName is missing, skipping API call.");
+      return;
     }
-  };
+  
+    const fetchTags = async () => {
+      try {
+        const decodedStateName = decodeURIComponent(stateName); // 👈 fix
+  
+        const baseUrl = process.env.NEXT_PUBLIC_API_BASE_URL;
+        if (!baseUrl)
+          throw new Error("NEXT_PUBLIC_API_BASE_URL is not defined in .env.local");
+  
+        const apiUrl = `${baseUrl}/api/users/state/tags`;
+        console.log(`Sending POST request to: ${apiUrl}`);
+  
+        const response = await fetch(apiUrl, {
+          method: "POST",
+          headers: {
+            "Content-Type": "application/json",
+          },
+          body: JSON.stringify({ stateName: decodedStateName }), // 👈 use decoded name
+        });
+  
+        console.log("Raw Response:", response);
+  
+        if (!response.ok) {
+          throw new Error(`API request failed with status: ${response.status}`);
+        }
+  
+        const data = await response.json();
+        console.log("Parsed Data:", data);
+  
+        setTags(data.tag || {});
+      } catch (error) {
+        console.error("Error fetching tags:", error);
+      }
+    };
+  
+    fetchTags();
+  }, [stateName]);
+  
 
-  fetchTags();
-}, [stateName]);
-
-  // ✅ Manage Cookies
   useEffect(() => {
     const accessToken = searchParams.get("accessToken");
     if (accessToken) {
-      console.log("🔑 Access Token from Query Params:", accessToken);
+      console.log("Access Token from Query Params:", accessToken);
       Cookies.set("accessToken", accessToken, {
         expires: 1,
         secure: process.env.NODE_ENV === "production",
         sameSite: "Strict",
       });
 
-      // ✅ Remove Query Params from URL
       const cleanUrl = window.location.href.split("?")[0];
       window.history.replaceState({}, document.title, cleanUrl);
     }
@@ -98,19 +94,17 @@ useEffect(() => {
     }
   }, []);
 
-  // ✅ Fetch Name from Cookies
   const name = Cookies.get("name");
 
   return (
     <div className="flex flex-col lg:flex-row">
-      {/* ✅ Mobile Header */}
-      <div className="lg:hidden flex items-center justify-between px-4 py-2 bg-[#002F6C] text-white">
-        <img src="/assets/logo-dpp1.png" alt="Logo" className="h-8 w-auto" />
-      </div>
+      <HeaderWithToggle onToggleSidebar={() => setIsSidebarOpen(true)} />
 
-      {/* ✅ Sidebar */}
-      <Sidebar isSidebarOpen={isSidebarOpen} />
-
+{/* Sidebar */}
+<Sidebar
+  isSidebarOpen={isSidebarOpen}
+  setIsSidebarOpen={setIsSidebarOpen}
+/>
       {/* ✅ Main Content */}
       <div className="lg:ml-64 p-4 sm:p-8 md:px-12 lg:px-16 xl:px-20 w-full">
         {/* ✅ Page Header */}
@@ -130,7 +124,6 @@ useEffect(() => {
         <div className="flex flex-col md:flex-row gap-4 p-4 min-h-screen">
           <div className="flex w-full h-auto flex-col items-center rounded-lg border border-gray-300 p-4">
             <div className="flex flex-col items-center w-full min-h-screen p-6">
-              
               {/* ✅ Back Button & Page Title */}
               <div className="flex items-center gap-2 mb-4 self-start">
                 <button
@@ -140,7 +133,7 @@ useEffect(() => {
                   <IoArrowBack className="text-xl" />
                 </button>
                 <h1 className="text-2xl font-bold text-[#002f6c]">
-                  Tags in {stateName.replace(/-/g, " ")}
+                  Tags in {decodeURIComponent(stateName)}
                 </h1>
               </div>
 
@@ -151,11 +144,10 @@ useEffect(() => {
                     key={index}
                     className="bg-[#cce2ff] text-blue-900 px-4 py-2 rounded-lg font-sm"
                   >
-                   {tag} ({count} times)
+                    {tag} ({count} times)
                   </div>
                 ))}
               </div>
-              
             </div>
           </div>
         </div>

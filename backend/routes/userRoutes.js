@@ -112,48 +112,111 @@ router.post('/add', createUser);
 
 router.get('/User123', getAllUsers); 
 
+// router.post("/state", async (req, res) => {
+//     try {
+//         const data = req.body; // Receive JSON data
+
+//         if (!data || Object.keys(data).length === 0) {
+//             return res.status(400).json({ message: "State and tags are required" });
+//         }
+
+//         // Convert JSON object into an array of state documents
+//         const formattedData = Object.entries(data).map(([state, tags]) => ({
+//             state,
+//             tags
+//         }));
+
+//         // Insert multiple states into MongoDB
+//         await State.insertMany(formattedData);
+
+//         return res.status(201).json({ message: "States added successfully!" });
+//     } catch (error) {
+//         console.error("Error inserting states:", error);
+//         return res.status(500).json({ message: "Error inserting states", error });
+//     }
+// });
+
 router.post("/state", async (req, res) => {
-    try {
-        const data = req.body; // Receive JSON data
-
-        if (!data || Object.keys(data).length === 0) {
-            return res.status(400).json({ message: "State and tags are required" });
-        }
-
-        // Convert JSON object into an array of state documents
-        const formattedData = Object.entries(data).map(([state, tags]) => ({
-            state,
-            tags
-        }));
-
-        // Insert multiple states into MongoDB
-        await State.insertMany(formattedData);
-
-        return res.status(201).json({ message: "States added successfully!" });
-    } catch (error) {
-        console.error("Error inserting states:", error);
-        return res.status(500).json({ message: "Error inserting states", error });
-    }
-});
-
-
-router.post("/state/tags", async (req, res) => {
   try {
-    const { stateName } = req.body; 
-    if (!stateName) {
-      return res.status(400).json({ error: "State name is required" });
-    }
-    const stateData = await State.findOne({ state: stateName });
+    const data = req.body;
 
-    if (!stateData) {
-      return res.status(404).json({ error: "State not found" });
+    if (!data || Object.keys(data).length === 0) {
+      return res.status(400).json({ message: "No state data received." });
     }
-    res.status(200).json({ tags: stateData.tags });
+
+    const currentDate = new Date();
+
+    const stateData = {};
+    for (const [state, tags] of Object.entries(data)) {
+      if (
+        tags &&
+        typeof tags === "object" &&
+        Object.keys(tags).length > 0
+      ) {
+        stateData[state] = tags;
+      }
+    }
+
+    if (Object.keys(stateData).length === 0) {
+      return res.status(400).json({ message: "No valid state tag data found." });
+    }
+
+    const newStateDoc = new State({
+      stateData,
+      date: currentDate
+    });
+
+    await newStateDoc.save();
+
+    res.status(201).json({ message: "States added successfully!" });
   } catch (error) {
-    console.error("❌ Error fetching state tags:", error);
-    res.status(500).json({ error: "Internal server error", details: error.message });
+    console.error("❌ Error inserting states:", error); // LOG actual error
+    res.status(500).json({
+      message: "Error inserting states",
+      error: error.message || error
+    });
   }
 });
 
+router.post("/state/tags", async (req, res) => {
+  try {
+    const { stateName } = req.body;
+
+    if (!stateName) {
+      return res.status(400).json({ error: "State name is required" });
+    }
+
+    const now = new Date();
+    const startOfMonth = new Date(now.getFullYear(), now.getMonth(), 1);
+    const endOfMonth = new Date(now.getFullYear(), now.getMonth() + 1, 1);
+
+    const stateDoc = await State.findOne({
+      date: { $gte: startOfMonth, $lt: endOfMonth }
+    }).sort({ date: -1 });
+
+    if (!stateDoc) {
+      return res.status(404).json({ error: "No data found for current month" });
+    }
+
+    if (!stateDoc.stateData.has(stateName)) {
+      return res.status(404).json({ error: `No tag found for state: ${stateName}` });
+    }
+
+    const tagObject = stateDoc.stateData.get(stateName); // ✅ Corrected
+
+    res.status(200).json({
+      state: stateName,
+      tag: tagObject,
+      date: stateDoc.date
+    });
+
+  } catch (error) {
+    console.error("❌ Error fetching state tag:", error);
+    res.status(500).json({
+      error: "Internal server error",
+      details: error.message
+    });
+  }
+});
 
 module.exports = router;

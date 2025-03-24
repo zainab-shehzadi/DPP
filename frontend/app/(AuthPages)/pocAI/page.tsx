@@ -10,6 +10,7 @@ import Notification from "@/components/Notification";
 import Cookies from "js-cookie";
 import { toast } from "react-toastify";
 import authProtectedRoutes from "@/hoc/authProtectedRoutes";
+import HeaderWithToggle from "@/components/HeaderWithToggle";
 interface DocumentType {
   _id: string;
   originalName: string;
@@ -536,8 +537,8 @@ function docUpload() {
 
   const handleSaveChanges = async () => {
     if (!boxRef.current || !selectedDocumentId || !selectedID) {
-        toast.error("❌ Missing required data. Please try again.");
-        return;
+      toast.error("❌ Missing required data. Please try again.");
+      return;
     }
 
     const updatedSolution = editedText.trim() === "" ? null : editedText.trim(); // ✅ Convert empty text to null
@@ -547,65 +548,76 @@ function docUpload() {
 
     // ✅ Log request data before sending
     console.log("Sending API request with:", {
-        email: safeEmail,
-        id: documentId,
-        tagId: tagId,
-        solution: updatedSolution
+      email: safeEmail,
+      id: documentId,
+      tagId: tagId,
+      solution: updatedSolution,
     });
 
     try {
-        const response = await fetch(
-            `${process.env.NEXT_PUBLIC_API_BASE_URL}/api/files/updateSolution`,
-            {
-                method: "PUT",
-                headers: {
-                    "Content-Type": "application/json",
-                },
-                body: JSON.stringify({
-                    email: safeEmail,
-                    id: documentId,
-                    tagId: tagId,
-                    solution: updatedSolution, // ✅ Sends null if empty
-                }),
-            }
-        );
-
-        if (!response.ok) {
-            const errorText = await response.text(); // Get more error details
-            console.error(`❌ Failed to save changes: ${response.status} ${response.statusText}`, errorText);
-            toast.error(`❌ Failed to save changes: ${response.status} ${response.statusText}`);
-            return;
+      const response = await fetch(
+        `${process.env.NEXT_PUBLIC_API_BASE_URL}/api/files/updateSolution`,
+        {
+          method: "PUT",
+          headers: {
+            "Content-Type": "application/json",
+          },
+          body: JSON.stringify({
+            email: safeEmail,
+            id: documentId,
+            tagId: tagId,
+            solution: updatedSolution, // ✅ Sends null if empty
+          }),
         }
+      );
 
-        const data = await response.json();
-        console.log("✅ Successfully updated:", data);
-
-        let newSolution = data.updatedSolution || [];
-
-        setTagsData((prevTags) =>
-            prevTags.map((tag) =>
-                tag.id.toString() === tagId.toString()
-                    ? { ...tag, solution: newSolution }
-                    : tag
-            )
+      if (!response.ok) {
+        const errorText = await response.text(); // Get more error details
+        console.error(
+          `❌ Failed to save changes: ${response.status} ${response.statusText}`,
+          errorText
         );
+        toast.error(
+          `❌ Failed to save changes: ${response.status} ${response.statusText}`
+        );
+        return;
+      }
 
-        setSolution(newSolution);
-        setEditedText(newSolution ? newSolution.join("\n") : ""); // ✅ Handle null safely
+      const data = await response.json();
+      console.log("✅ Successfully updated:", data);
 
-        toast.success("✅ Plan of Correction updated successfully!");
-        setIsModalOpen(false);
+      let newSolution = data.updatedSolution || [];
+
+      setTagsData((prevTags) =>
+        prevTags.map((tag) =>
+          tag.id.toString() === tagId.toString()
+            ? { ...tag, solution: newSolution }
+            : tag
+        )
+      );
+
+      setSolution(newSolution);
+      setEditedText(newSolution ? newSolution.join("\n") : ""); // ✅ Handle null safely
+
+      toast.success("✅ Plan of Correction updated successfully!");
+      setIsModalOpen(false);
     } catch (error) {
-        console.error("❌ Error saving data:", error);
-        toast.error("❌ Failed to save changes. Please check your connection and try again.");
+      console.error("❌ Error saving data:", error);
+      toast.error(
+        "❌ Failed to save changes. Please check your connection and try again."
+      );
     }
-};
-
+  };
 
   return (
     <div className="flex flex-col lg:flex-row">
-      <Sidebar isSidebarOpen={isSidebarOpen} />
+      <HeaderWithToggle onToggleSidebar={() => setIsSidebarOpen(true)} />
 
+      {/* Sidebar */}
+      <Sidebar
+        isSidebarOpen={isSidebarOpen}
+        setIsSidebarOpen={setIsSidebarOpen}
+      />
       <div className="lg:ml-64 p-4 sm:p-8 w-full">
         {/* Main Content */}
         <header className="flex items-center justify-between mb-6 w-full flex-wrap">
@@ -879,7 +891,8 @@ function docUpload() {
                       {/* Copy Button */}
                       <button
                         onClick={handleCopy}
-                        className="p-2 rounded-lg hover:bg-gray-200 transition"
+                        className="relative group p-2 rounded-lg hover:bg-gray-200 transition"
+                        title="Copy"
                       >
                         <img
                           src="/assets/copy.png"
@@ -891,7 +904,8 @@ function docUpload() {
                       {/* Edit Button */}
                       <button
                         onClick={handleEdit}
-                        className="p-2 rounded-lg hover:bg-gray-200 transition"
+                        className="relative group p-2 rounded-lg hover:bg-gray-200 transition"
+                        title="Edit"
                       >
                         <img
                           src="/assets/edit.png"
@@ -928,7 +942,6 @@ function docUpload() {
                   </div>
                 ) : null}
 
-                {/* Sidebar - Always show when `loading` is true or `isSidebarOpen` */}
                 {(isSidebarOpen || loading) &&
                   (!solution || solution.length === 0) && (
                     <>
@@ -1121,7 +1134,6 @@ function docUpload() {
                       <span className="font-semibold text-gray-700">
                         {item.tag}
                       </span>
-                      <span className="text-gray-500">⋮</span>
                     </div>
                   ))}
                 </div>

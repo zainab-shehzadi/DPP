@@ -3,15 +3,16 @@
 import Link from "next/link";
 import React, { useState, useEffect } from "react";
 import { useRouter } from "next/navigation";
-import Image2 from "@/components/imageright"; 
+import Image2 from "@/components/imageright";
 import { toast } from "react-toastify";
 import Image from "next/image";
-import Cookies from "js-cookie"; 
+import Cookies from "js-cookie";
 
 const Login: React.FC = () => {
   const [email, setEmail] = useState("");
   const [password, setPassword] = useState("");
   const [message, setMessage] = useState<string>("");
+  const [isSubmitting, setIsSubmitting] = useState(false);
 
   const router = useRouter();
 
@@ -27,98 +28,102 @@ const Login: React.FC = () => {
   };
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
-  
-    try {
-      const response = await fetch(`${process.env.NEXT_PUBLIC_API_BASE_URL}/api/users/login`, {
-        method: "POST",
-        headers: {
-          "Content-Type": "application/json",
-        },
-        body: JSON.stringify({ email, password }),
-      });
-  
-      const data = await response.json();
-  
-      if (response.ok) {
-        toast.success("Login successful! Redirecting...", { position: "top-right" });
-  
 
-        setCookie("name", data.name); 
+    if (isSubmitting) return; // prevent double submission
+    setIsSubmitting(true);
+
+    try {
+      const response = await fetch(
+        `${process.env.NEXT_PUBLIC_API_BASE_URL}/api/users/login`,
+        {
+          method: "POST",
+          headers: {
+            "Content-Type": "application/json",
+          },
+          body: JSON.stringify({ email, password }),
+        }
+      );
+
+      const data = await response.json();
+
+      if (response.ok) {
+        toast.success("Login successful! Redirecting...", {
+          position: "top-right",
+        });
+
+        setCookie("name", data.name);
         setCookie("token", data.token);
         setCookie("email", data.email);
         setCookie("role", data.role);
         setCookie("DepartmentName", data.DepartmentName || "");
         setCookie("priceType", data.priceType || "");
         setCookie("priceCycle", data.priceCycle || "");
-  
+
         const storedRole = getCookie("role");
         const priceCycle = getCookie("priceCycle");
-  
+
         if (storedRole === "admin") {
-          setTimeout(() => {
-            router.push(`/UserSetting`);
-          }, 2000);
+          setTimeout(() => router.push(`/UserSetting`), 2000);
         } else if (priceCycle === "Annual" || priceCycle === "Bi-Annual") {
-          setTimeout(() => {
-            router.push(`/Dashboard`);
-          }, 2000);
-        } else if (!priceCycle || priceCycle === "null") {
-          setTimeout(() => {
-            router.push(`/Pricing`);
-          }, 3000);
+          setTimeout(() => router.push(`/Dashboard`), 2000);
+        } else {
+          setTimeout(() => router.push(`/Pricing`), 3000);
         }
       } else {
         toast.error(data.message || "Login failed!", { position: "top-right" });
+        setIsSubmitting(false); // Re-enable button
       }
     } catch (error) {
       console.error("Error:", error);
-      toast.error("An error occurred. Please try again.", { position: "top-right" });
+      toast.error("An error occurred. Please try again.", {
+        position: "top-right",
+      });
+      setIsSubmitting(false); // Re-enable button
     }
   };
-  
 
   const handleGoogleLogin = async () => {
     try {
-      const response = await fetch(`${process.env.NEXT_PUBLIC_API_BASE_URL}/api/calendar/auth-url`);
+      const response = await fetch(
+        `${process.env.NEXT_PUBLIC_API_BASE_URL}/api/calendar/auth-url`
+      );
       if (!response.ok) {
         throw new Error("Failed to fetch Google Auth URL.");
       }
-   
+
       const data = await response.json();
       if (data.authUrl) {
         window.location.href = data.authUrl;
       } else {
-        toast.error("Google Auth URL not provided in the response.", { position: "top-right" });
-       
+        toast.error("Google Auth URL not provided in the response.", {
+          position: "top-right",
+        });
       }
     } catch (error) {
       toast.error("Error during Google login.", { position: "top-right" });
-     
     }
   };
 
-
-
-  
   useEffect(() => {
     if (message) {
       const timer = setTimeout(() => {
-        setMessage(""); 
+        setMessage("");
       }, 2000);
-      return () => clearTimeout(timer); 
+      return () => clearTimeout(timer);
     }
   }, [message]);
 
-  const role=Cookies.get("role")
-console.log(role);
-
+  const role = Cookies.get("role");
+  console.log(role);
 
   return (
     <div className="flex h-screen font-work-sans bg-gray-50">
       {/* Left Side: Login Form */}
       <div className="flex flex-1 justify-center items-center bg-white ">
         <div className="w-full max-w-md px-6 py-6 text-left">
-          <h2 className="text-3xl font-bold text-gray-800 mb-4 text-left">Log In</h2>
+          <h2 className="text-3xl font-bold text-gray-800 mb-4 text-left">
+            Log In
+          </h2>
           <form onSubmit={handleSubmit} className="flex flex-col gap-4">
             {/* Email Input Field */}
             <div className="mb-4">
@@ -163,9 +168,14 @@ console.log(role);
             {/* Submit Button */}
             <button
               type="submit"
-              className="w-full py-3 bg-[#002f6c] text-white font-semibold rounded-lg transition-colors text-sm sm:text-base"
+              disabled={isSubmitting}
+              className={`w-full py-3 font-semibold rounded-lg transition-colors text-sm sm:text-base ${
+                isSubmitting
+                  ? "bg-gray-400 cursor-not-allowed"
+                  : "bg-[#002f6c] text-white"
+              }`}
             >
-              Sign in
+              {isSubmitting ? "Signing in..." : "Sign in"}
             </button>
           </form>
 
@@ -177,23 +187,20 @@ console.log(role);
 
           {/* Button */}
           <div className="flex gap-4">
-          
-<button
-  onClick={handleGoogleLogin}
-  className="flex items-center justify-center w-full py-2 px-4 border border-gray-300 rounded-lg text-gray-700 hover:bg-[#ffffff] hover:text-black transition-colors"
->
+            <button
+              onClick={handleGoogleLogin}
+              className="flex items-center justify-center w-full py-2 px-4 border border-gray-300 rounded-lg text-gray-700 hover:bg-[#ffffff] hover:text-black transition-colors"
+            >
+              <Image
+                src="/assets/google-icon.png"
+                alt="Google Logo"
+                width={24}
+                height={24}
+                className="mr-3"
+              />
 
-
-<Image
-  src="/assets/google-icon.png" 
-  alt="Google Logo"
-  width={24} 
-  height={24}
-  className="mr-3"
-/>
-
-  <span className="ml-2">Log In With Google</span>
-</button>
+              <span className="ml-2">Log In With Google</span>
+            </button>
           </div>
           <div className="mt-6 text-left">
             <p
@@ -201,10 +208,7 @@ console.log(role);
               style={{ fontFamily: "Poppins, sans-serif", color: "#969AB8" }}
             >
               Don't have an account?{" "}
-              <Link
-                href="/signup"
-                className="text-[#002f6c] font-bold "
-              >
+              <Link href="/signup" className="text-[#002f6c] font-bold ">
                 Sign Up
               </Link>
             </p>

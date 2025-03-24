@@ -7,6 +7,7 @@ import UserDropdown from "@/components/profile-dropdown";
 import Sidebar from "@/components/Sidebar";
 import DateDisplay from "@/components/date";
 import Notification from "@/components/Notification";
+import HeaderWithToggle from "@/components/HeaderWithToggle";
 
 import { toast } from "react-toastify";
 interface DocumentType {
@@ -335,21 +336,20 @@ export default function Dashboard() {
 
   return (
     <div className="flex flex-col lg:flex-row">
-      <Sidebar isSidebarOpen={isSidebarOpen} />
+    <HeaderWithToggle onToggleSidebar={() => setIsSidebarOpen(true)} />
+
+{/* Sidebar */}
+<Sidebar
+  isSidebarOpen={isSidebarOpen}
+  setIsSidebarOpen={setIsSidebarOpen}
+/>
       {loading ? (
-        // ✅ **Loader Section**
         <div className="flex items-center justify-center w-full h-screen ma-10">
           <div className="animate-spin rounded-full h-16 w-16 border-t-4 border-blue-600"></div>
         </div>
       ) : (
         <>
-          <div className="lg:hidden flex items-center justify-between px-4 py-2 bg-[#002F6C] text-white">
-            <img
-              src="/assets/logo-dpp1.png"
-              alt="Logo"
-              className="h-8 w-auto"
-            />
-          </div>
+         
 
           {/* Main Content */}
           <div className="lg:ml-64 p-4 sm:p-8 w-full">

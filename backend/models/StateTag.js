@@ -1,9 +1,15 @@
 const mongoose = require("mongoose");
 
 const StateTagSchema = new mongoose.Schema({
-    state: { type: String, required: true, unique: true },
-    tags: { type: Object, required: true }
+  stateData: {
+    type: Map,
+    of: Object, // accepts key-value object like { F001: 5, F002: 8 }
+    required: true
+  },
+  date: {
+    type: Date,
+    required: true
+  }
 });
-
 
 module.exports = mongoose.models.StateTag || mongoose.model("StateTag", StateTagSchema);
