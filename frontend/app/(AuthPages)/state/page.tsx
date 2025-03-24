@@ -10,13 +10,8 @@ import HeaderWithToggle from "@/components/HeaderWithToggle";
 
 import Cookies from "js-cookie";
 
-interface Sidebar {
-  userId: string | null;
-  email: string;
-  isSidebarOpen: boolean;
-  toggleSidebar: () => void;
-}
-export default function Dashboard({ onToggleSidebar }) {
+
+export default function Dashboard() {
   const [isSidebarOpen, setIsSidebarOpen] = useState(false);
 
   const [email, setEmail] = useState<string | null>(null);

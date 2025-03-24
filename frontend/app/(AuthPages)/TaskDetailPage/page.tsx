@@ -7,6 +7,7 @@ import Sidebar from "@/components/Sidebar";
 import { Editor, EditorState, RichUtils } from "draft-js";
 import "draft-js/dist/Draft.css";
 
+import HeaderWithToggle from "@/components/HeaderWithToggle";
 export default function Dashboard() {
   const [isSidebarOpen, setIsSidebarOpen] = useState(false);
   const [editorState, setEditorState] = useState(EditorState.createEmpty());
@@ -30,9 +31,13 @@ export default function Dashboard() {
 
   return (
     <div className="flex flex-col lg:flex-row">
-      {/* Sidebar Component */}
-      <Sidebar isSidebarOpen={isSidebarOpen} />
+     <HeaderWithToggle onToggleSidebar={() => setIsSidebarOpen(true)} />
 
+{/* Sidebar */}
+<Sidebar
+  isSidebarOpen={isSidebarOpen}
+  setIsSidebarOpen={setIsSidebarOpen}
+/>
       {/* Main Content */}
       <div className="lg:ml-64 p-4 sm:p-8 w-full">
         {/* Header */}

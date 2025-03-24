@@ -3,7 +3,7 @@
 import Image from 'next/image';
 import {  FaUpload,  FaFileAlt,  FaUser,  FaBell } from 'react-icons/fa';
 import React, { useState } from "react";
-
+import HeaderWithToggle from "@/components/HeaderWithToggle";
 import Sidebar from "@/components/Sidebar";
 
 export default function Dashboard() {
@@ -24,14 +24,13 @@ export default function Dashboard() {
   return (
     <div className="flex flex-col lg:flex-row">
       
-      <div className="lg:hidden flex items-center justify-between px-4 py-2 bg-[#002F6C] text-white">
-  <img src="/assets/logo-dpp1.png" alt="Logo" className="h-8 w-auto" />
-</div>
+      <HeaderWithToggle onToggleSidebar={() => setIsSidebarOpen(true)} />
 
-      <Sidebar
-        isSidebarOpen={isSidebarOpen}
-
-      />
+{/* Sidebar */}
+<Sidebar
+  isSidebarOpen={isSidebarOpen}
+  setIsSidebarOpen={setIsSidebarOpen}
+/>
       {/* Main Content */}
       <div className="lg:ml-64 p-4 sm:p-8 w-full">
       <header className="flex items-center justify-between mb-6 w-full flex-wrap">

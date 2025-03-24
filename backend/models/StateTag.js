@@ -3,7 +3,7 @@ const mongoose = require("mongoose");
 const StateTagSchema = new mongoose.Schema({
   stateData: {
     type: Map,
-    of: Object, // accepts key-value object like { F001: 5, F002: 8 }
+    of: Object, 
     required: true
   },
   date: {
