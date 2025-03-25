@@ -3,18 +3,65 @@ const jwt = require("jsonwebtoken");
 const nodemailer = require("nodemailer");
 const User = require("../models/User");
 const Admin = require("../models/adminModel");
+    
+const path = require("path"); 
 
+
+const updateProfileImage = async (req, res) => {
+  try {
+    const { email, profileImage } = req.body;
+
+    // Validate input
+    if (!email || !profileImage) {
+      return res.status(400).json({
+        status: "error",
+        message: "Email and image are required",
+      });
+    }
+
+
+    const isBase64 = /^data:image\/(png|jpeg|jpg);base64,/.test(profileImage);
+    if (!isBase64) {
+      return res.status(400).json({
+        status: "error",
+        message: "Invalid image format (must be base64)",
+      });
+    }
+
+
+    const user = await User.findOne({ email });
+    if (!user) {
+      return res.status(404).json({
+        status: "error",
+        message: "User not found",
+      });
+    }
+    user.profileImage = profileImage;
+    await user.save();
+
+    return res.status(200).json({
+      status: "success",
+      message: "Profile image updated successfully",
+      profileImage: user.profileImage
+    });
+  } catch (error) {
+    console.error("❌ Error updating image:", error);
+    return res.status(500).json({
+      status: "error",
+      message: "Server error",
+      error: error.message,
+    });
+  }
+};
 
 const generate6DigitToken = () => {
   return Math.floor(100000 + Math.random() * 900000); 
 };
-// Function to generate JWT token
 const generateToken = (id) => {
   return jwt.sign({ id }, process.env.JWT_SECRET, {
     expiresIn: "30d", 
   });
 };
-
 
 const registerUser = async (req, res) => {
   const {
@@ -116,7 +163,6 @@ const registerUser = async (req, res) => {
     res.status(500).json({ message: "Internal Server Error" });
   }
 };
-
 const loginUser = async (req, res) => {
   const { email, password } = req.body;
 
@@ -164,7 +210,6 @@ const loginUser = async (req, res) => {
     return res.status(500).json({ message: error.message });
   }
 };
-
 
 // const loginUser = async (req, res) => {
 //   const { email, password } = req.body;
@@ -476,9 +521,13 @@ const editUserByEmail = async (req, res) => {
   }
 };
 
+
+
+
 module.exports =
  { registerUser,
    loginUser,
+   updateProfileImage,
    forgotPassword,
    resetPassword,
    verifyToken,

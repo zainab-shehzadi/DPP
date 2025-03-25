@@ -29,24 +29,27 @@ export default function StatePage({ params }: StatePageProps) {
   const [isSidebarOpen, setIsSidebarOpen] = useState(false);
   const [tags, setTags] = useState<{ [key: string]: number }>({});
   const [email, setEmail] = useState<string | null>(null);
+  const [loading, setLoading] = useState(true);
 
   useEffect(() => {
     if (!stateName) {
       console.warn("stateName is missing, skipping API call.");
       return;
     }
-  
+
     const fetchTags = async () => {
       try {
         const decodedStateName = decodeURIComponent(stateName); // 👈 fix
-  
+
         const baseUrl = process.env.NEXT_PUBLIC_API_BASE_URL;
         if (!baseUrl)
-          throw new Error("NEXT_PUBLIC_API_BASE_URL is not defined in .env.local");
-  
+          throw new Error(
+            "NEXT_PUBLIC_API_BASE_URL is not defined in .env.local"
+          );
+
         const apiUrl = `${baseUrl}/api/users/state/tags`;
         console.log(`Sending POST request to: ${apiUrl}`);
-  
+
         const response = await fetch(apiUrl, {
           method: "POST",
           headers: {
@@ -54,25 +57,24 @@ export default function StatePage({ params }: StatePageProps) {
           },
           body: JSON.stringify({ stateName: decodedStateName }), // 👈 use decoded name
         });
-  
+
         console.log("Raw Response:", response);
-  
+
         if (!response.ok) {
           throw new Error(`API request failed with status: ${response.status}`);
         }
-  
+
         const data = await response.json();
         console.log("Parsed Data:", data);
-  
+
         setTags(data.tag || {});
       } catch (error) {
         console.error("Error fetching tags:", error);
       }
     };
-  
+
     fetchTags();
   }, [stateName]);
-  
 
   useEffect(() => {
     const accessToken = searchParams.get("accessToken");
@@ -93,20 +95,30 @@ export default function StatePage({ params }: StatePageProps) {
       setEmail(storedEmail);
     }
   }, []);
+  useEffect(() => {
+    const timer = setTimeout(() => {
+      setLoading(false);
+    }, 2000);
 
+    return () => clearTimeout(timer);
+  }, []);
   const name = Cookies.get("name");
 
   return (
     <div className="flex flex-col lg:flex-row">
       <HeaderWithToggle onToggleSidebar={() => setIsSidebarOpen(true)} />
-
-{/* Sidebar */}
-<Sidebar
-  isSidebarOpen={isSidebarOpen}
-  setIsSidebarOpen={setIsSidebarOpen}
-/>
-      {/* ✅ Main Content */}
-      <div className="lg:ml-64 p-4 sm:p-8 md:px-12 lg:px-16 xl:px-20 w-full">
+      <Sidebar
+        isSidebarOpen={isSidebarOpen}
+        setIsSidebarOpen={setIsSidebarOpen}
+      />
+   {loading ? (
+       
+       <div className="flex items-center justify-center w-full h-screen ma-10">
+         <div className="animate-spin rounded-full h-16 w-16 border-t-4 border-blue-600"></div>
+       </div>
+     ) : (
+       <>
+      <div className="lg:ml-64 p-4 sm:p-8 w-full">
         {/* ✅ Page Header */}
         <header className="flex items-center justify-between mb-6 w-full flex-wrap">
           <h2 className="text-lg sm:text-2xl lg:text-3xl font-bold">
@@ -120,9 +132,12 @@ export default function StatePage({ params }: StatePageProps) {
 
         <div className="w-full border-t border-gray-300 mt-20"></div>
 
-        {/* ✅ Content Section */}
-        <div className="flex flex-col md:flex-row gap-4 p-4 min-h-screen">
-          <div className="flex w-full h-auto flex-col items-center rounded-lg border border-gray-300 p-4">
+
+        <div
+          className="bg-white p-6 rounded-lg shadow-md mx-auto mt-8 sm:mt-10 w-full max-w-[1400px]"
+          style={{ borderRadius: "16px", border: "1px solid #E0E0E0" }}
+        >
+          
             <div className="flex flex-col items-center w-full min-h-screen p-6">
               {/* ✅ Back Button & Page Title */}
               <div className="flex items-center gap-2 mb-4 self-start">
@@ -149,9 +164,12 @@ export default function StatePage({ params }: StatePageProps) {
                 ))}
               </div>
             </div>
-          </div>
+          
         </div>
       </div>
+ </>
+)}
+
     </div>
   );
 }

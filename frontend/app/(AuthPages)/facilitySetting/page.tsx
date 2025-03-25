@@ -10,40 +10,43 @@ import HeaderWithToggle from "@/components/HeaderWithToggle";
 import DateDisplay from "@/components/date";
 import UserDropdown from "@/components/profile-dropdown";
 import Notification from "@/components/Notification";
+import { toast } from "react-toastify";
 function facilitySetting() {
   const [isEditing, setIsEditing] = useState(false);
   const [isSidebarOpen, setIsSidebarOpen] = useState(false);
   const [facilityName, setFacilityName] = useState("");
   const [facilityAddress, setFacilityAddress] = useState("");
   const [noOfBeds, setNoOfBeds] = useState("");
-  const [loading, setLoading] = useState(false);
+  const [loading, setLoading] = useState(true);
   const [email, setEmail] = useState<string | null>(null);
   const [isRequestSent, setIsRequestSent] = useState(false);
   const [status, setStatus] = useState<string | null>(null);
   const toggleSidebar = () => setIsSidebarOpen(!isSidebarOpen);
   const [message, setMessage] = useState("");
+  const [imageUrl, setImageUrl] = useState("");
 
-  // Helper function to get cookies
   const getCookie = (name: string) => {
     const value = `; ${document.cookie}`;
     const parts = value.split(`; ${name}=`);
     if (parts.length === 2) return parts.pop()?.split(";").shift();
     return null;
   };
-
   useEffect(() => {
-    // Retrieve email from cookies on component mount
     const storedEmail = getCookie("email");
     if (storedEmail) {
-      setEmail(storedEmail); // Set email state if found in cookies
+      setEmail(storedEmail);
     }
   }, []);
+  useEffect(() => {
+    const timer = setTimeout(() => {
+      setLoading(false);
+    }, 2000);
 
+    return () => clearTimeout(timer);
+  }, []);
   useEffect(() => {
     const fetchUserData = async () => {
       if (!email) return;
-
-      setLoading(true);
       try {
         const response = await fetch(
           `${process.env.NEXT_PUBLIC_API_BASE_URL}/api/facility/fetch`,
@@ -67,21 +70,47 @@ function facilitySetting() {
 
         setFacilityName(data.facilityName || "");
         setFacilityAddress(data.facilityAddress || "");
-        setNoOfBeds(data.noOfBeds ? data.noOfBeds.toString() : ""); // Convert noOfBeds to string if it's not null/undefined
+        setNoOfBeds(data.noOfBeds ? data.noOfBeds.toString() : ""); 
         setStatus(data?.status || "");
       } catch (error) {
-        console.error("Error fetching user data:"); // Log the error message
-      } finally {
-        setLoading(false); // Set loading state to false when the request is complete
-      }
+        console.error("Error fetching user data:"); 
+      } 
     };
 
     fetchUserData();
   }, [email]);
+  useEffect(() => {
+    const fetchProfileImage = async () => {
+      try {
+        const response = await fetch(
+          `${process.env.NEXT_PUBLIC_API_BASE_URL}/api/users/get-profile-image`,
+          {
+            method: "POST",
+            headers: {
+              "Content-Type": "application/json",
+            },
+            body: JSON.stringify({ email }),
+          }
+        );
 
+        if (!response.ok) throw new Error("Failed to fetch profile image");
+
+        const data = await response.json();
+        if (data?.profileImage) {
+          setImageUrl(data.profileImage);
+        }
+      } catch (error) {
+        console.error("Fetch profile image error:", error);
+      }
+    };
+
+    if (email) {
+      fetchProfileImage();
+    }
+  }, [email]);
   const requestAdminApproval = async () => {
     try {
-      setLoading(true);
+    
       const response = await fetch(
         `${process.env.NEXT_PUBLIC_API_BASE_URL}/api/facility/request-edit`,
         {
@@ -95,26 +124,24 @@ function facilitySetting() {
 
       if (!response.ok) throw new Error("Failed to send approval request");
 
-      console.log("Approval request sent");
+      toast.success("Approval request sent");
       setIsRequestSent(true);
-      setLoading(false);
+    
     } catch (error) {
       console.error("Error sending approval request:", error);
-      setLoading(false);
     }
   };
 
   const handleSaveChanges = async () => {
     try {
-      setLoading(true);
-      setMessage(""); // Clear any previous messages
 
-      // Prepare the data to send
+      setMessage(""); 
+
       const updatedData = {
         email,
         facilityName,
         facilityAddress,
-        noOfBeds: Number(noOfBeds), // Convert to number if necessary
+        noOfBeds: Number(noOfBeds), 
       };
       console.log(updatedData);
       // Make the API request
@@ -135,26 +162,18 @@ function facilitySetting() {
 
       const result = await response.json();
       console.log("Update successful:", result);
-
-      // Reset editing state
       setIsEditing(false);
-      setMessage("Data successfully updated."); // Set success message
+       toast.success("Data successfully updated."); 
 
-      // Clear the message after 3 seconds (3000 ms)
-      setTimeout(() => {
-        setMessage(""); // Clear the message
-      }, 3000);
+   
+  
     } catch (error) {
       console.error("Error saving changes:", error);
-      setMessage("Failed to save changes. Please try again."); // Set error message
-
-      // Clear the error message after 3 seconds
+      setMessage("Failed to save changes. Please try again."); 
       setTimeout(() => {
-        setMessage(""); // Clear the message
-      }, 2000);
-    } finally {
-      setLoading(false); // Hide loading state
-    }
+        setMessage(""); 
+      }, 3000);
+    } 
   };
 
   const handleEditClick = () => {
@@ -170,9 +189,16 @@ function facilitySetting() {
         isSidebarOpen={isSidebarOpen}
         setIsSidebarOpen={setIsSidebarOpen}
       />
-      {/* Main Content */}
+      {loading ? (
+       
+       <div className="flex items-center justify-center w-full h-screen ma-10">
+         <div className="animate-spin rounded-full h-16 w-16 border-t-4 border-blue-600"></div>
+       </div>
+     ) : (
+       <>
+  
       <div className="lg:ml-64 p-4 sm:p-8 w-full">
-        {/* Header */}
+     
         <header className="flex flex-col sm:flex-row justify-between items-center mb-6">
           <h2 className="text-2xl sm:text-3xl font-bold">
             Hello, <span className="text-blue-900 capitalize">{name}</span>
@@ -183,21 +209,18 @@ function facilitySetting() {
           </div>
         </header>
 
-        {/* Date Display */}
         <div className="flex justify-end pr-12 sm:pr-48 mb-4">
           <DateDisplay />
         </div>
-
-        {/* Progress Bar */}
         <div className="w-full sm:w-3/4 h-12 sm:h-20 bg-[#002F6C] mt-2 rounded-lg mx-auto"></div>
 
-        {/* User Information Section */}
+
         <div className="w-full sm:w-3/4 mx-auto mt-8">
           <section className="bg-white p-4 sm:p-6 rounded-lg shadow-md">
             {/* Profile Section */}
             <div className="flex flex-col sm:flex-row items-center mb-6">
               <Image
-                src="/assets/profile-pic.png"
+                 src={imageUrl || "/assets/profile-icon.png"}
                 width={80}
                 height={80}
                 className="rounded-full"
@@ -207,9 +230,9 @@ function facilitySetting() {
                 <h3 className="text-xl font-bold capitalize">{name}</h3>
                 <div>
                   {email ? (
-                    <p className="text-gray-500">{email}</p> // Display email if fetched successfully
+                    <p className="text-gray-500">{email}</p> 
                   ) : (
-                    <p>No email found.</p> // Fallback if no email is found
+                    <p>No email found.</p> 
                   )}
                 </div>
               </div>
@@ -405,6 +428,8 @@ function facilitySetting() {
           </section>
         </div>
       </div>
+      </>
+      )}
     </div>
   );
 }

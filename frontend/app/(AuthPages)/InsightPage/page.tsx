@@ -1,6 +1,6 @@
 "use client";
 
-import React, { useState, useEffect ,useRef } from "react";
+import React, { useState, useEffect, useRef } from "react";
 import Notification from "@/components/Notification";
 import Cookies from "js-cookie";
 import { toast } from "react-toastify";
@@ -15,52 +15,54 @@ interface Facility {
 interface DocumentType {
   _id: string;
   originalName: string;
-  fileUrl?: string; 
-  uploadedAt: Date; 
+  fileUrl?: string;
+  uploadedAt: Date;
 }
 
 export default function Dashboard() {
-
-  const [tagsData, setTagsData] = useState<{
-    id: number;
-    tag: string;
-    status:string;
-    shortDesc: string;
-    longDesc: string;
-    solution: string;
-    policies: string;
-    task: string;
-  }[]>([]);
-  const [documents, setDocuments] = useState<DocumentType[]>([]); 
-  const [dropdownOpen, setDropdownOpen] = useState(false); 
-    const [selectedDocs, setSelectedDocs] = useState<string[]>([]);
-    const [selectedDocument, setSelectedDocument] = useState("");
-  const [dropdownOpen1, setDropdownOpen1] = useState(false); 
+  const [tagsData, setTagsData] = useState<
+    {
+      id: number;
+      tag: string;
+      status: string;
+      shortDesc: string;
+      longDesc: string;
+      solution: string;
+      policies: string;
+      task: string;
+    }[]
+  >([]);
+  const [documents, setDocuments] = useState<DocumentType[]>([]);
+  const [dropdownOpen, setDropdownOpen] = useState(false);
+  const [selectedDocs, setSelectedDocs] = useState<string[]>([]);
+  const [selectedDocument, setSelectedDocument] = useState("");
+  const [dropdownOpen1, setDropdownOpen1] = useState(false);
 
   const [isSidebarOpen, setIsSidebarOpen] = useState(false);
   const [tag, setTags] = useState<string[]>([]);
   const [solution, setSolutions] = useState<string[]>([]);
   const [facilities, setFacilities] = useState<Facility[]>([]);
-  const [email, setEmail] = useState<string | null>(null); 
+  const [email, setEmail] = useState<string | null>(null);
   const [facilityName, setFacilityName] = useState("");
   const [facilityAddress, setFacilityAddress] = useState("");
   const [noOfBeds, setNoOfBeds] = useState("");
   const dropdownRef = useRef<HTMLDivElement>(null);
-const [selectedTag, setSelectedTag] = useState<string | null>(null); 
-
-useEffect(() => {
-  function handleClickOutside(event) {
-    if (dropdownRef.current && !dropdownRef.current.contains(event.target)) {
-      setDropdownOpen(false); // Close dropdown
-    }
-  }
-
-  document.addEventListener("mousedown", handleClickOutside);
-  return () => {
-    document.removeEventListener("mousedown", handleClickOutside);
-  };
-}, []);
+  const [selectedTag, setSelectedTag] = useState<string | null>(null);
+  const [loading, setLoading] = useState(true);
   const toggleSidebar = () => setIsSidebarOpen(!isSidebarOpen);
+
+  useEffect(() => {
+    function handleClickOutside(event) {
+      if (dropdownRef.current && !dropdownRef.current.contains(event.target)) {
+        setDropdownOpen(false); // Close dropdown
+      }
+    }
+
+    document.addEventListener("mousedown", handleClickOutside);
+    return () => {
+      document.removeEventListener("mousedown", handleClickOutside);
+    };
+  }, []);
 
   const toggleDropdown = () => {
     setDropdownOpen(!dropdownOpen);
@@ -72,34 +74,36 @@ useEffect(() => {
     }
     setDropdownOpen1(!dropdownOpen1);
   };
-useEffect(() => {
-  const fetchDocuments = async () => {
-    try {
-      const email = Cookies.get("email");
-      if (!email) {
-        console.error("Error: Email not found in cookies!");
-        return;
-      }
+  useEffect(() => {
+    const fetchDocuments = async () => {
+      try {
+        const email = Cookies.get("email");
+        if (!email) {
+          console.error("Error: Email not found in cookies!");
+          return;
+        }
 
-      
-      const res = await fetch(`${process.env.NEXT_PUBLIC_API_BASE_URL}/api/files/docs`, {
-        method: "POST", 
-        headers: {
-          "Content-Type": "application/json"
-        },
-        body: JSON.stringify({ email }) 
-      });
-      const data = await res.json();
-      if (Array.isArray(data)) {
-        setDocuments(data); 
+        const res = await fetch(
+          `${process.env.NEXT_PUBLIC_API_BASE_URL}/api/files/docs`,
+          {
+            method: "POST",
+            headers: {
+              "Content-Type": "application/json",
+            },
+            body: JSON.stringify({ email }),
+          }
+        );
+        const data = await res.json();
+        if (Array.isArray(data)) {
+          setDocuments(data);
+        }
+      } catch (error) {
+        toast.error("Error fetching documents:");
       }
-    } catch (error) {
-      toast.error("Error fetching documents:");
-    }
-  };
+    };
 
-  fetchDocuments();
-}, []);
+    fetchDocuments();
+  }, []);
   // Helper function to get cookies
   const getCookie = (name: string) => {
     const value = `; ${document.cookie}`;
@@ -109,188 +113,203 @@ useEffect(() => {
   };
 
   useEffect(() => {
-  
     const storedEmail = getCookie("email");
     if (storedEmail) {
-      setEmail(storedEmail); 
+      setEmail(storedEmail);
     }
   }, []);
-const handleTagClick = async (tagName, tagId) => {
+  const handleTagClick = async (tagName, tagId) => {
     try {
-      const response = await fetch(`${process.env.NEXT_PUBLIC_API_BASE_URL}/api/files/tag-details`, {
-        method: "POST",
-        headers: {
-          "Content-Type": "application/json"
-        },
-        body: JSON.stringify({ tagId, tagName }) 
-      });
-      
-  
-        if (!response.ok) {
-            throw new Error(`API Error - Status: ${response.status}`);
+      const response = await fetch(
+        `${process.env.NEXT_PUBLIC_API_BASE_URL}/api/files/tag-details`,
+        {
+          method: "POST",
+          headers: {
+            "Content-Type": "application/json",
+          },
+          body: JSON.stringify({ tagId, tagName }),
         }
+      );
 
-        const result = await response.json();
-        let newSolution = result.solution || [];
-        if (!Array.isArray(newSolution)) newSolution = [newSolution];
-        setSolutions(newSolution);
-    
+      if (!response.ok) {
+        throw new Error(`API Error - Status: ${response.status}`);
+      }
+
+      const result = await response.json();
+      let newSolution = result.solution || [];
+      if (!Array.isArray(newSolution)) newSolution = [newSolution];
+      setSolutions(newSolution);
     } catch (error) {
-        console.error("❌ Error fetching tag details:", error);
-        toast.error(`Error`);
+      console.error("❌ Error fetching tag details:", error);
+      toast.error(`Error`);
     }
-};
+  };
   const fetchDocumentDetails = async (id) => {
     try {
-
-        const safeEmail = email ?? "";
-        const response = await fetch(`${process.env.NEXT_PUBLIC_API_BASE_URL}/api/files/tags-with-descriptions`, {
-          method: "POST", 
+      const safeEmail = email ?? "";
+      const response = await fetch(
+        `${process.env.NEXT_PUBLIC_API_BASE_URL}/api/files/tags-with-descriptions`,
+        {
+          method: "POST",
           headers: {
-            "Content-Type": "application/json"
+            "Content-Type": "application/json",
           },
-          body: JSON.stringify({ email: safeEmail, id }) 
-        });
-      
-
-        if (!response.ok) {
-            setTagsData([]);
-            toast.error("Error: Failed to fetch document details.");
-            return;
+          body: JSON.stringify({ email: safeEmail, id }),
         }
+      );
 
-        const data = await response.json();
-        if (!data.tags || !Array.isArray(data.tags)) {
-          
-            console.error("❌ API Error: `data.tags` is undefined or not an array:", data);
-            return;
-        }
+      if (!response.ok) {
+        setTagsData([]);
+        toast.error("Error: Failed to fetch document details.");
+        return;
+      }
 
-        const formattedTags = data.tags.map((tag) => ({
-            id: tag.id || tag._id || "Missing ID",
-            tag: tag.tag,
-            shortDesc: tag.shortDescription || " No Short Description",
-            longDesc: tag.longDescription || " No Long Description",
-            solution: tag.solution && tag.solution.trim() !== "" ? tag.solution : " No Solution", 
-            policies: tag.policies || " No Policies",
-            task: tag.task || [],
-        }));
+      const data = await response.json();
+      if (!data.tags || !Array.isArray(data.tags)) {
+        console.error(
+          "❌ API Error: `data.tags` is undefined or not an array:",
+          data
+        );
+        return;
+      }
 
-        // ✅ Ensure ID is present in logs
-        formattedTags.forEach((tag, index) => {
-            console.log(`🔹 Tag ${index} - ID: ${tag.id}`);
-        });
+      const formattedTags = data.tags.map((tag) => ({
+        id: tag.id || tag._id || "Missing ID",
+        tag: tag.tag,
+        shortDesc: tag.shortDescription || " No Short Description",
+        longDesc: tag.longDescription || " No Long Description",
+        solution:
+          tag.solution && tag.solution.trim() !== ""
+            ? tag.solution
+            : " No Solution",
+        policies: tag.policies || " No Policies",
+        task: tag.task || [],
+      }));
 
-        setTagsData(formattedTags);
+      // ✅ Ensure ID is present in logs
+      formattedTags.forEach((tag, index) => {
+        console.log(`🔹 Tag ${index} - ID: ${tag.id}`);
+      });
+
+      setTagsData(formattedTags);
     } catch (error) {
-        toast.error("❌ Error fetching document details:\n" );
+      toast.error("❌ Error fetching document details:\n");
     } finally {
-        
-        console.log("⏳ Loading state set to false.");
+      console.log("⏳ Loading state set to false.");
     }
-};
+  };
 
   useEffect(() => {
     const fetchUserData = async () => {
-      if (!email) return; 
-
+      if (!email) return;
 
       try {
-        const response = await fetch(`${process.env.NEXT_PUBLIC_API_BASE_URL}/api/facility/fetch`, {
-          method: "POST", 
-          headers: {
-            "Content-Type": "application/json"
-          },
-          body: JSON.stringify({ email })
-        });
+        const response = await fetch(
+          `${process.env.NEXT_PUBLIC_API_BASE_URL}/api/facility/fetch`,
+          {
+            method: "POST",
+            headers: {
+              "Content-Type": "application/json",
+            },
+            body: JSON.stringify({ email }),
+          }
+        );
 
         if (!response.ok) {
-          throw new Error(`Failed to fetch user data. Status: ${response.status}`);
+          throw new Error(
+            `Failed to fetch user data. Status: ${response.status}`
+          );
         }
 
-        const data = await response.json(); 
-  
+        const data = await response.json();
+
         setFacilityName(data.facilityName || "");
         setFacilityAddress(data.facilityAddress || "");
         setNoOfBeds(data.noOfBeds ? data.noOfBeds.toString() : "");
       } catch (error) {
         console.error("Error fetching user data:", error);
       } finally {
-
       }
     };
 
     fetchUserData();
-  }, [email]); 
-      const handleCheckboxChange = (docId) => {
-        setSelectedDocs((prevSelected) =>
-          prevSelected.includes(docId)
-            ? prevSelected.filter((id) => id !== docId)
-            : [...prevSelected, docId]
-        );
-      };
-      const handleSelectDocument = (doc) => {
-        setSelectedDocument(doc.originalName || "Untitled Document");
-        fetchDocumentDetails(doc._id);
-        setSelectedTag("");
-        setDropdownOpen(false);
-    
-      };
-      const deleteDocuments = async (documentIds: string[]) => {
-        if (!documentIds || documentIds.length === 0 || !email) {
-          console.error("Missing required parameters: documentIds or email");
-          return;
-        }
-    
-        try {
-          const response = await fetch(
-            `${process.env.NEXT_PUBLIC_API_BASE_URL}/api/files/delete-documents`,
-            {
-              method: "POST",
-              headers: {
-                "Content-Type": "application/json",
-              },
-              body: JSON.stringify({ documentIds, email }),
-            }
-          );
-    
-          const data = await response.json();
-    
-          if (response.ok) {
-            toast.success("Documents deleted successfully:", data);
-            setDocuments(data);
-            setSelectedDocs([]);
-          } else {
-            toast.error("Failed to delete documents:", data.message);
-          }
-        } catch (error) {
-          console.error("Error deleting documents:", error);
-        }
-      };
-      const handleDeleteSelected = () => {
-        if (selectedDocs.length === 0) return;
-        setSelectedDocument("Select Document");
-        setSelectedTag("");
-        deleteDocuments(selectedDocs);
-        setSelectedDocs([]);
+  }, [email]);
+  const handleCheckboxChange = (docId) => {
+    setSelectedDocs((prevSelected) =>
+      prevSelected.includes(docId)
+        ? prevSelected.filter((id) => id !== docId)
+        : [...prevSelected, docId]
+    );
+  };
+  const handleSelectDocument = (doc) => {
+    setSelectedDocument(doc.originalName || "Untitled Document");
+    fetchDocumentDetails(doc._id);
+    setSelectedTag("");
+    setDropdownOpen(false);
+  };
+  const deleteDocuments = async (documentIds: string[]) => {
+    if (!documentIds || documentIds.length === 0 || !email) {
+      console.error("Missing required parameters: documentIds or email");
+      return;
+    }
 
-        setDropdownOpen(false);
-      };
-  const name = Cookies.get("name"); 
+    try {
+      const response = await fetch(
+        `${process.env.NEXT_PUBLIC_API_BASE_URL}/api/files/delete-documents`,
+        {
+          method: "POST",
+          headers: {
+            "Content-Type": "application/json",
+          },
+          body: JSON.stringify({ documentIds, email }),
+        }
+      );
+
+      const data = await response.json();
+
+      if (response.ok) {
+        toast.success("Documents deleted successfully:", data);
+        setDocuments(data);
+        setSelectedDocs([]);
+      } else {
+        toast.error("Failed to delete documents:", data.message);
+      }
+    } catch (error) {
+      console.error("Error deleting documents:", error);
+    }
+  };
+  const handleDeleteSelected = () => {
+    if (selectedDocs.length === 0) return;
+    setSelectedDocument("Select Document");
+    setSelectedTag("");
+    deleteDocuments(selectedDocs);
+    setSelectedDocs([]);
+
+    setDropdownOpen(false);
+  };
+    useEffect(() => {
+      const timer = setTimeout(() => {
+        setLoading(false);
+      }, 2000);
+  
+      return () => clearTimeout(timer);
+    }, []);
+  const name = Cookies.get("name");
 
   return (
     <div className="flex flex-col lg:flex-row h-screen">
-
-
-<HeaderWithToggle onToggleSidebar={() => setIsSidebarOpen(true)} />
-
-{/* Sidebar */}
-<Sidebar
-  isSidebarOpen={isSidebarOpen}
-  setIsSidebarOpen={setIsSidebarOpen}
-/>
-
-      {/* Main Content */}
+      <HeaderWithToggle onToggleSidebar={() => setIsSidebarOpen(true)} />
+      <Sidebar
+        isSidebarOpen={isSidebarOpen}
+        setIsSidebarOpen={setIsSidebarOpen}
+      />
+{loading ? (
+       
+       <div className="flex items-center justify-center w-full h-screen ma-10">
+         <div className="animate-spin rounded-full h-16 w-16 border-t-4 border-blue-600"></div>
+       </div>
+     ) : (
+       <>
       <div className="lg:ml-64 p-4 sm:p-8 w-full">
         <header className="flex items-center justify-between mb-6 w-full flex-wrap">
           {/* Left Side: "Hello, User" */}
@@ -300,7 +319,7 @@ const handleTagClick = async (tagName, tagId) => {
 
           {/* Right Side: Notification Icon and Profile */}
           <div className="flex items-center space-x-2 sm:space-x-4 mt-2 sm:mt-0">
-          <Notification/>
+            <Notification />
             <UserDropdown />
           </div>
         </header>
@@ -309,106 +328,118 @@ const handleTagClick = async (tagName, tagId) => {
         <div className="flex items-center space-x-4 mt-4 lg:mt-8 ml-4 lg:ml-10">
           <h3 className="text-xl font-bold text-blue-900">Facility</h3>
           <div className="relative ml-2 sm:ml-4 lg:ml-6 " ref={dropdownRef}>
-              <button
-                onClick={toggleDropdown}
-                className="flex items-center bg-[#244979] text-white font-semibold text-sm px-3 py-2 rounded-lg"
+            <button
+              onClick={toggleDropdown}
+              className="flex items-center bg-[#244979] text-white font-semibold text-sm px-3 py-2 rounded-lg"
+            >
+              <span className="font-[Plus Jakarta Sans]">
+                {selectedDocument || "Select Document"}
+              </span>
+              <svg
+                className="w-4 h-4 ml-2 transition-transform duration-200"
+                fill="currentColor"
+                viewBox="0 0 20 20"
+                style={{
+                  transform: dropdownOpen ? "rotate(180deg)" : "rotate(0deg)",
+                }}
               >
-                <span className="font-[Plus Jakarta Sans]">
-                  {selectedDocument || "Select Document"}
-                </span>
-                <svg
-                  className="w-4 h-4 ml-2 transition-transform duration-200"
-                  fill="currentColor"
-                  viewBox="0 0 20 20"
-                  style={{
-                    transform: dropdownOpen ? "rotate(180deg)" : "rotate(0deg)",
-                  }}
-                >
-                  <path
-                    fillRule="evenodd"
-                    d="M5.293 7.293a1 1 0 011.414 0L10 10.586l3.293-3.293a1 1 0 111.414 1.414l-4 4a1 1 0 01-1.414 0l-4-4a1 1 0 010-1.414z"
-                    clipRule="evenodd"
-                  ></path>
-                </svg>
-              </button>
+                <path
+                  fillRule="evenodd"
+                  d="M5.293 7.293a1 1 0 011.414 0L10 10.586l3.293-3.293a1 1 0 111.414 1.414l-4 4a1 1 0 01-1.414 0l-4-4a1 1 0 010-1.414z"
+                  clipRule="evenodd"
+                ></path>
+              </svg>
+            </button>
 
-              {/* Dropdown Menu */}
-              {dropdownOpen && (
-                <div className="absolute right-0 mt-2 w-52 bg-white shadow-lg rounded-lg z-50 border border-gray-200">
-                  {documents.length > 0 ? (
-                    <>
-                      {documents.map((doc, index) => (
-                        <div
-                          key={doc._id || index}
-                          className="flex items-center px-4 py-2 hover:bg-gray-200"
-                        >
-                          <input
-                            type="checkbox"
-                            className="mr-2"
-                            checked={selectedDocs.includes(doc._id)}
-                            onChange={() => handleCheckboxChange(doc._id)}
-                          />
-                          <button
-                            onClick={() => handleSelectDocument(doc)}
-                            className="w-full text-left text-gray-800 text-xs sm:text-sm"
-                          >
-                            {doc.originalName || "Untitled Document"}
-                          </button>
-                        </div>
-                      ))}
-                      <button
-                        onClick={handleDeleteSelected}
-                        disabled={selectedDocs.length === 0}
-                        className={`block w-full text-center px-4 py-2 mt-2 font-semibold ${
-                          selectedDocs.length > 0
-                            ? "bg-red-600 text-white"
-                            : "bg-gray-400 text-gray-300"
-                        } rounded-b-lg`}
+            {/* Dropdown Menu */}
+            {dropdownOpen && (
+              <div className="absolute right-0 mt-2 w-52 bg-white shadow-lg rounded-lg z-50 border border-gray-200">
+                {documents.length > 0 ? (
+                  <>
+                    {documents.map((doc, index) => (
+                      <div
+                        key={doc._id || index}
+                        className="flex items-center px-4 py-2 hover:bg-gray-200"
                       >
-                        Delete Selected
-                      </button>
-                    </>
-                  ) : (
-                    <p className="px-4 py-2 text-gray-500 text-xs sm:text-sm">
-                      No documents found.
-                    </p>
-                  )}
-                </div>
-              )}
-            
-            </div>
-              
+                        <input
+                          type="checkbox"
+                          className="mr-2"
+                          checked={selectedDocs.includes(doc._id)}
+                          onChange={() => handleCheckboxChange(doc._id)}
+                        />
+                        <button
+                          onClick={() => handleSelectDocument(doc)}
+                          className="w-full text-left text-gray-800 text-xs sm:text-sm"
+                        >
+                          {doc.originalName || "Untitled Document"}
+                        </button>
+                      </div>
+                    ))}
+                    <button
+                      onClick={handleDeleteSelected}
+                      disabled={selectedDocs.length === 0}
+                      className={`block w-full text-center px-4 py-2 mt-2 font-semibold ${
+                        selectedDocs.length > 0
+                          ? "bg-red-600 text-white"
+                          : "bg-gray-400 text-gray-300"
+                      } rounded-b-lg`}
+                    >
+                      Delete Selected
+                    </button>
+                  </>
+                ) : (
+                  <p className="px-4 py-2 text-gray-500 text-xs sm:text-sm">
+                    No documents found.
+                  </p>
+                )}
+              </div>
+            )}
+          </div>
         </div>
 
-
         {/* Facility Details Section */}
-        <div className="bg-white rounded-lg shadow-md p-8 mb-6 mx-auto mt-20" style={{ width: '100%', maxWidth: '1314px', height: 'auto', borderRadius: '16px', border: '1px solid #E0E0E0' }}>
+        <div
+          className="bg-white rounded-lg shadow-md p-8 mb-6 mx-auto mt-20"
+          style={{
+            width: "100%",
+            maxWidth: "1314px",
+            height: "auto",
+            borderRadius: "16px",
+            border: "1px solid #E0E0E0",
+          }}
+        >
           <div className="flex flex-col md:flex-row justify-between items-center mb-6 space-y-4 md:space-y-0 md:space-x-4">
             {/* Left Section */}
             <div className="flex-1 text-center md:text-left">
               <p className="font-normal text-sm md:text-base lg:text-lg leading-5 md:leading-6 lg:leading-7 text-gray-900">
-                Facility Name: <span className="text-gray-700">{facilityName}</span>
+                Facility Name:{" "}
+                <span className="text-gray-700">{facilityName}</span>
               </p>
               <p className="font-normal text-sm md:text-base lg:text-lg leading-5 md:leading-6 lg:leading-7 text-black">
-                Facility Address: <span className="text-gray-700">{facilityAddress}</span>
+                Facility Address:{" "}
+                <span className="text-gray-700">{facilityAddress}</span>
               </p>
               <p className="font-normal text-sm md:text-base lg:text-lg leading-5 md:leading-6 lg:leading-7 text-black">
-                Facility Number: <span className="text-gray-700">{noOfBeds}</span>
+                Facility Number:{" "}
+                <span className="text-gray-700">{noOfBeds}</span>
               </p>
             </div>
-
-
-
 
             <div className="relative ml-4 sm:ml-6 lg:ml-10">
               <button
                 onClick={toggleDropdown1}
                 className="flex items-center text-white font-semibold text-[11px] leading-[14px] px-4 py-2 rounded-lg "
               >
-                <span className={`font-[Plus Jakarta Sans] font-bold text-[40px] leading-[50.4px] text-[#494D55]`}>
+                <span
+                  className={`font-[Plus Jakarta Sans] font-bold text-[40px] leading-[50.4px] text-[#494D55]`}
+                >
                   {selectedTag || "Select Tag"}
                 </span>
-                <svg className="w-3 h-3 sm:w-4 sm:h-4 ml-2" fill="currentColor" viewBox="0 0 20 20">
+                <svg
+                  className="w-3 h-3 sm:w-4 sm:h-4 ml-2"
+                  fill="currentColor"
+                  viewBox="0 0 20 20"
+                >
                   <path
                     fillRule="evenodd"
                     d="M5.293 7.293a1 1 0 011.414 0L10 10.586l3.293-3.293a1 1 0 111.414 1.414l-4 4a 1 1 0 01-1.414 0l-4-4a1 1 0 010-1.414z"
@@ -418,70 +449,65 @@ const handleTagClick = async (tagName, tagId) => {
               </button>
 
               {/* Dropdown */}
-  {dropdownOpen1 && (
-    <div
-      className="absolute mt-2 w-full max-w-[190px] bg-white border border-gray-300 rounded-lg shadow-lg z-10"
-      style={{
-        maxHeight: "200px",
-        overflowY: "auto",
-      }}
-    >
-      <ul className="flex flex-col divide-y divide-gray-200">
-        {tagsData.map((item, index) => (
-          <li
-            key={item.id || index}
-            className="px-4 py-2 hover:bg-gray-100 cursor-pointer transition-all duration-300 hover:shadow-md"
-            onClick={() => {
-              setSelectedTag(item.tag); // Update the selected tag
-              handleTagClick(item.tag, item.id);
-              setDropdownOpen1(false);
-            }}
-          >
-            <div>
-              <strong>{item.tag}</strong>
+              {dropdownOpen1 && (
+                <div
+                  className="absolute mt-2 w-full max-w-[190px] bg-white border border-gray-300 rounded-lg shadow-lg z-10"
+                  style={{
+                    maxHeight: "200px",
+                    overflowY: "auto",
+                  }}
+                >
+                  <ul className="flex flex-col divide-y divide-gray-200">
+                    {tagsData.map((item, index) => (
+                      <li
+                        key={item.id || index}
+                        className="px-4 py-2 hover:bg-gray-100 cursor-pointer transition-all duration-300 hover:shadow-md"
+                        onClick={() => {
+                          setSelectedTag(item.tag); // Update the selected tag
+                          handleTagClick(item.tag, item.id);
+                          setDropdownOpen1(false);
+                        }}
+                      >
+                        <div>
+                          <strong>{item.tag}</strong>
+                        </div>
+                      </li>
+                    ))}
+                  </ul>
+                </div>
+              )}
             </div>
-          </li>
-        ))}
-      </ul>
-    </div>
-  )}
-            </div>
-
-
-
-
 
             {/* Right Section */}
             <div className="flex-1 text-center md:text-right">
-              <p className="text-gray-700 text-sm md:text-base lg:text-lg">30 November 2024</p>
+              <p className="text-gray-700 text-sm md:text-base lg:text-lg">
+                30 November 2024
+              </p>
             </div>
           </div>
 
-
           <div className="text-gray-600 space-y-4">
-  {selectedTag && (
-    <>
-      <h3 className="text-lg font-semibold text-gray-900 mb-10"></h3>
-      <p className="text-gray-600 mt-2">
-      {Array.isArray(solution) && solution.length > 0 ? (
-      solution.map((policy, index) => (
-        <li key={index}>
-          {policy}
-        </li>
-      ))
-    ) : (
-      <li>No Plan of Correction available.</li>
-    )}
-        
-      </p>
-    </>
-  )}
-</div>
-
+            {selectedTag && (
+              <>
+                <h3 className="text-lg font-semibold text-gray-900 mb-10"></h3>
+                <p className="text-gray-600 mt-2">
+                  {Array.isArray(solution) && solution.length > 0 ? (
+                    solution.map((policy, index) => (
+                      <li key={index}>{policy}</li>
+                    ))
+                  ) : (
+                    <li>No Plan of Correction available.</li>
+                  )}
+                </p>
+              </>
+            )}
+          </div>
         </div>
 
-        {/* More Content or Sections can go here */}
+    
       </div>
+      </>
+      )}
     </div>
   );
 }

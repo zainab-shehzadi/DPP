@@ -10,10 +10,9 @@ import HeaderWithToggle from "@/components/HeaderWithToggle";
 
 import Cookies from "js-cookie";
 
-
 export default function Dashboard() {
   const [isSidebarOpen, setIsSidebarOpen] = useState(false);
-
+  const [loading, setLoading] = useState(true);
   const [email, setEmail] = useState<string | null>(null);
   const searchParams = useSearchParams();
   const router = useRouter();
@@ -92,20 +91,30 @@ export default function Dashboard() {
     "Wisconsin",
     "Wyoming",
   ];
+  useEffect(() => {
+    const timer = setTimeout(() => {
+      setLoading(false);
+    }, 2000);
 
+    return () => clearTimeout(timer);
+  }, []);
   const name = Cookies.get("name");
 
   return (
     <div className="flex flex-col lg:flex-row">
       <HeaderWithToggle onToggleSidebar={() => setIsSidebarOpen(true)} />
-
-      {/* Sidebar */}
       <Sidebar
         isSidebarOpen={isSidebarOpen}
         setIsSidebarOpen={setIsSidebarOpen}
       />
-      {/* Main Content */}
-      <div className="lg:ml-64 p-4 sm:p-8 md:px-12 lg:px-16 xl:px-20 w-full">
+  {loading ? (
+       
+       <div className="flex items-center justify-center w-full h-screen ma-10">
+         <div className="animate-spin rounded-full h-16 w-16 border-t-4 border-blue-600"></div>
+       </div>
+     ) : (
+       <>
+      <div className="lg:ml-64 p-4 sm:p-8 w-full">
         <header className="flex items-center justify-between mb-6 w-full flex-wrap">
           <h2 className="text-lg sm:text-2xl lg:text-3xl font-bold">
             Hello, <span className="text-blue-900 capitalize">{name}</span>
@@ -118,30 +127,32 @@ export default function Dashboard() {
 
         <div className="w-full border-t border-gray-300 mt-20"></div>
 
-        {/* Main Container */}
-        <div className="flex flex-col md:flex-row gap-4 p-4 min-h-screen">
-          <div className="flex w-full flex-col items-center h-auto rounded-lg border border-gray-300 p-4">
-            <div className="grid grid-cols-4 gap-4 w-full max-w-6xl">
-              {states.map((state, index) => (
-                <div
-                  key={index}
-                  className="flex items-center gap-2 p-3 border rounded-lg shadow-sm bg-white hover:shadow-md transition cursor-pointer"
-                  onClick={() => router.push(`/state/${state}`)}
-                >
-                  <Image
-                    src={`/assets/state.png`}
-                    width={40}
-                    height={40}
-                    className="rounded-full object-cover"
-                    alt={state}
-                  />
-                  <span className="text-gray-800 font-medium">{state}</span>
-                </div>
-              ))}
-            </div>
+        <div
+          className="bg-white p-6 rounded-lg shadow-md mx-auto mt-8 sm:mt-10 w-full max-w-[1400px]"
+          style={{ borderRadius: "16px", border: "1px solid #E0E0E0" }}
+        >
+          <div className="grid grid-cols-4 gap-4 w-full max-w-6xl">
+            {states.map((state, index) => (
+              <div
+                key={index}
+                className="flex items-center gap-2 p-3 border rounded-lg shadow-sm bg-white hover:shadow-md transition cursor-pointer"
+                onClick={() => router.push(`/state/${state}`)}
+              >
+                <Image
+                  src={`/assets/state.png`}
+                  width={40}
+                  height={40}
+                  className="rounded-full object-cover"
+                  alt={state}
+                />
+                <span className="text-gray-800 font-medium">{state}</span>
+              </div>
+            ))}
           </div>
         </div>
       </div>
+      </>
+      )}
     </div>
   );
 }

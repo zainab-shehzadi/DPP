@@ -58,16 +58,18 @@ const userSchema = new mongoose.Schema(
 
     refreshToken: {
       type: String,
-      default: null, // Ensure it's not undefined
+      default: null,
     },
     tokenExpiry: {
       type: Date, 
     },
     status: { 
       type: String, 
-      enum: ["onboarding", "pending", "verified"], // Restrict status values
-      default: null, // Default is null
-    }
+      enum: ["onboarding", "pending", "verified"], 
+      default: null, 
+    },
+    profileImage: { type: String, default: null } 
+
   },
   { timestamps: true }
 );

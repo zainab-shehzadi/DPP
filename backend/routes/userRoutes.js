@@ -10,7 +10,8 @@ const {
   deleteUser,
   getUserRole,
   getUserByEmail,
-  editUserByEmail
+  editUserByEmail,
+  updateProfileImage,
 } = require("../controllers/userController");
 const { protect } = require("../middlewares/authMiddleware");
 const User = require("../models/User");
@@ -46,23 +47,14 @@ router.get("/get-access-token", async (req, res) => {
   }
 });
 router.post("/role", getUserRole);
-
 router.post("/email", getUserByEmail);
-
 router.post("/signup", registerUser);
-
 router.post("/login", loginUser);
-
 router.put("/email", editUserByEmail);
-
 router.delete("/delete", deleteUser);
-
 router.post("/forgot-password", forgotPassword);
-
 router.post("/verify-token", verifyToken);
-
 router.post("/reset-password", resetPassword);
-
 router.get("/profile", protect, (req, res) => {
   res.json({ message: `Welcome ${req.user.email}` });
 });
@@ -111,30 +103,6 @@ router.put("/update", async (req, res) => {
 router.post('/add', createUser); 
 
 router.get('/User123', getAllUsers); 
-
-// router.post("/state", async (req, res) => {
-//     try {
-//         const data = req.body; // Receive JSON data
-
-//         if (!data || Object.keys(data).length === 0) {
-//             return res.status(400).json({ message: "State and tags are required" });
-//         }
-
-//         // Convert JSON object into an array of state documents
-//         const formattedData = Object.entries(data).map(([state, tags]) => ({
-//             state,
-//             tags
-//         }));
-
-//         // Insert multiple states into MongoDB
-//         await State.insertMany(formattedData);
-
-//         return res.status(201).json({ message: "States added successfully!" });
-//     } catch (error) {
-//         console.error("Error inserting states:", error);
-//         return res.status(500).json({ message: "Error inserting states", error });
-//     }
-// });
 
 router.post("/state", async (req, res) => {
   try {
@@ -218,5 +186,33 @@ router.post("/state/tags", async (req, res) => {
     });
   }
 });
+
+router.post('/upload-profile-image', updateProfileImage);
+
+router.post('/get-profile-image', async (req, res) => {
+  const { email } = req.body;
+
+  if (!email) {
+    return res.status(400).json({ error: "Email is required" });
+  }
+
+  try {
+    const user = await User.findOne({ email });
+
+    if (!user || !user.profileImage) {
+      return res.status(404).json({ error: "Image not found" });
+    }
+
+    res.status(200).json({ profileImage: user.profileImage }); 
+  } catch (error) {
+    console.error("Error fetching profile image:", error);
+    res.status(500).json({ error: "Server error" });
+  }
+});
+
+
+
+
+
 
 module.exports = router;
