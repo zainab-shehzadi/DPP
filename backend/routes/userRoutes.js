@@ -16,7 +16,6 @@ const {
 const { protect } = require("../middlewares/authMiddleware");
 const User = require("../models/User");
 const State = require("../models/StateTag"); 
-
 const router = express.Router();
 
 router.get("/get-access-token", async (req, res) => {
@@ -209,10 +208,5 @@ router.post('/get-profile-image', async (req, res) => {
     res.status(500).json({ error: "Server error" });
   }
 });
-
-
-
-
-
 
 module.exports = router;

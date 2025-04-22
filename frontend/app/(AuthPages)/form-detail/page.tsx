@@ -1,5 +1,4 @@
-// 
-
+//
 
 "use client";
 
@@ -8,13 +7,14 @@ import React, { useState, useEffect } from "react";
 import Image2 from "@/components/imageright"; // Ensure the correct import path
 import { useRouter, useSearchParams } from "next/navigation";
 import { toast } from "react-toastify";
-import Cookies from "js-cookie"; 
+import Cookies from "js-cookie";
 import authPublicRoutes from "@/hoc/authPublicRoutes";
 const formDetail: React.FC = () => {
   const [facilityName, setFacilityName] = useState("");
   const [facilityAddress, setFacilityAddress] = useState("");
   const [noOfBeds, setNoOfBeds] = useState("1");
   const [email, setEmail] = useState<string | null>(null); // Email from URL
+  const [isLoading, setIsLoading] = useState(false);
 
   const router = useRouter();
   const searchParams = useSearchParams();
@@ -24,13 +24,57 @@ const formDetail: React.FC = () => {
     setEmail(emailFromParams);
   }, [searchParams]);
 
+  // const handleSubmit = async (e: React.FormEvent) => {
+  //   e.preventDefault();
+
+  //   if (!facilityName || !facilityAddress || !noOfBeds) {
+  //     toast.error("All fields are required!", { position: "top-right" });
+  //     return;
+  //   }
+  //   try {
+  //     const response = await fetch(
+  //       `${process.env.NEXT_PUBLIC_API_BASE_URL}/api/facility/info`,
+  //       {
+  //         method: "POST",
+  //         headers: { "Content-Type": "application/json" },
+  //         body: JSON.stringify({
+  //           email,
+  //           facilityName,
+  //           facilityAddress,
+  //           noOfBeds: parseInt(noOfBeds, 10),
+  //         }),
+  //       }
+  //     );
+
+  //     if (!response.ok) {
+  //       throw new Error("Failed to save facility.");
+  //     }
+
+  //     const data = await response.json();
+  //     const status = data.userStatusUpdated; // Correct key name from response
+  //     Cookies.set("VerifyStatus", status);
+
+  //     toast.success("Facility saved successfully!", { position: "top-right" });
+  //     router.push(`/verify-email`);
+  //   } catch (error) {
+
+  //     toast.error("Failed to save facility. Please try again.", {
+  //       position: "top-right",
+  //     });
+  //   }
+  // };
+
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
+    if (isLoading) return;
+    setIsLoading(true);
 
     if (!facilityName || !facilityAddress || !noOfBeds) {
       toast.error("All fields are required!", { position: "top-right" });
+      setIsLoading(false); // ✅ Re-enable on validation failure
       return;
     }
+
     try {
       const response = await fetch(
         `${process.env.NEXT_PUBLIC_API_BASE_URL}/api/facility/info`,
@@ -45,22 +89,23 @@ const formDetail: React.FC = () => {
           }),
         }
       );
-  
+
       if (!response.ok) {
         throw new Error("Failed to save facility.");
       }
 
       const data = await response.json();
-const status = data.userStatusUpdated; // Correct key name from response
-Cookies.set("VerifyStatus", status);
-
+      Cookies.set("VerifyStatus", data.userStatusUpdated);
       toast.success("Facility saved successfully!", { position: "top-right" });
-      router.push(`/verify-email`);
+
+      setTimeout(() => {
+        router.push(`/verify-email`);
+      }, 1500);
     } catch (error) {
-      console.error("Error saving facility:", error);
       toast.error("Failed to save facility. Please try again.", {
         position: "top-right",
       });
+      setIsLoading(false);
     }
   };
 
@@ -69,7 +114,9 @@ Cookies.set("VerifyStatus", status);
       {/* Left Side: Sign-Up Form */}
       <div className="flex flex-1 justify-center items-center bg-white">
         <div className="w-full max-w-md px-6 py-6 text-left">
-          <h2 className="text-3xl font-bold text-gray-800 mb-1">Facility Detail</h2>
+          <h2 className="text-3xl font-bold text-gray-800 mb-1">
+            Facility Detail
+          </h2>
 
           <p className="text-lg mb-4 text-gray-500">
             Please add your facility information.
@@ -95,24 +142,19 @@ Cookies.set("VerifyStatus", status);
                 <option value="facility4">Facility4</option>
               </select>
             </div>
-
             {/* Facility Address */}
             <div className="mb-4">
               <label className="block text-medium font-bold text-gray-700 mb-2">
                 Facility Address
               </label>
-              <select
+              <input
+                type="text"
                 value={facilityAddress}
                 onChange={(e) => setFacilityAddress(e.target.value)}
                 className="w-full px-3 py-2 border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-blue-500"
+                placeholder="Enter Facility Address"
                 required
-              >
-                <option value="">Select Facility Address</option>
-                <option value="address1">Address1</option>
-                <option value="address2">Address2</option>
-                <option value="address3">Address3</option>
-                <option value="address4">Address4</option>
-              </select>
+              />
             </div>
 
             {/* No of Beds */}
@@ -134,12 +176,16 @@ Cookies.set("VerifyStatus", status);
               </select>
             </div>
 
-            {/* Submit Button */}
             <button
               type="submit"
-              className="w-full py-3 bg-[#002f6c] text-white font-semibold rounded-lg hover:bg-[#00408c] transition-colors"
+              disabled={isLoading}
+              className={`w-full py-3 rounded-lg font-semibold transition-colors text-white ${
+                isLoading
+                  ? "bg-gray-400 cursor-not-allowed"
+                  : "bg-[#002f6c] hover:bg-[#00408c]"
+              }`}
             >
-              Save
+              {isLoading ? "Loading..." : "Save"}
             </button>
           </form>
         </div>

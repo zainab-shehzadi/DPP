@@ -3,7 +3,6 @@ const jwt = require("jsonwebtoken");
 const nodemailer = require("nodemailer");
 const User = require("../models/User");
 const Admin = require("../models/adminModel");
-    
 const path = require("path"); 
 
 

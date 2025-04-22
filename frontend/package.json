@@ -40,6 +40,7 @@
     "react-quill": "^2.0.0",
     "react-spinners": "^0.15.0",
     "react-toastify": "^11.0.3",
+    "recharts": "^2.15.3",
     "slate": "^0.110.2",
     "slate-history": "^0.110.3",
     "slate-react": "^0.111.0",

@@ -18,7 +18,6 @@ interface StatePageProps {
 export default function StatePage({ params }: StatePageProps) {
   const router = useRouter();
   const searchParams = useSearchParams();
-
   const resolvedParams = use(params);
   const stateName = resolvedParams?.stateName ?? "";
 
@@ -39,7 +38,7 @@ export default function StatePage({ params }: StatePageProps) {
 
     const fetchTags = async () => {
       try {
-        const decodedStateName = decodeURIComponent(stateName); // 👈 fix
+        const decodedStateName = decodeURIComponent(stateName); 
 
         const baseUrl = process.env.NEXT_PUBLIC_API_BASE_URL;
         if (!baseUrl)
@@ -55,7 +54,7 @@ export default function StatePage({ params }: StatePageProps) {
           headers: {
             "Content-Type": "application/json",
           },
-          body: JSON.stringify({ stateName: decodedStateName }), // 👈 use decoded name
+          body: JSON.stringify({ stateName: decodedStateName }), 
         });
 
         console.log("Raw Response:", response);

@@ -81,7 +81,7 @@ export default function Dashboard() {
     const formData = new FormData();
     formData.append("file", file);
     formData.append("email", email);
-    setLoading(true); 
+    setLoading(true);
     try {
       const response = await axios.post(
         `${process.env.NEXT_PUBLIC_API_BASE_URL}/api/files/upload`,
@@ -129,13 +129,13 @@ export default function Dashboard() {
 
   return (
     <div className="flex flex-col lg:flex-row">
-         <HeaderWithToggle onToggleSidebar={() => setIsSidebarOpen(true)} />
+      <HeaderWithToggle onToggleSidebar={() => setIsSidebarOpen(true)} />
 
-{/* Sidebar */}
-<Sidebar
-  isSidebarOpen={isSidebarOpen}
-  setIsSidebarOpen={setIsSidebarOpen}
-/>
+      {/* Sidebar */}
+      <Sidebar
+        isSidebarOpen={isSidebarOpen}
+        setIsSidebarOpen={setIsSidebarOpen}
+      />
       {/* Main Content */}
       <div className="lg:ml-64 p-4 sm:p-8 md:px-12 lg:px-16 xl:px-20 w-full">
         <header className="flex items-center justify-between mb-6 w-full flex-wrap">
@@ -156,7 +156,6 @@ export default function Dashboard() {
             </h3>
           </div>
 
-        
           {/* Date */}
           <div className="relative flex items-center space-x-2">
             <DateDisplay />
@@ -168,7 +167,7 @@ export default function Dashboard() {
         {/* Main Container */}
         <div className="flex flex-col md:flex-row gap-4 p-4 min-h-screen">
           {/* Container */}
-          <div className="shadow-lg p-4 sm:p-6 md:p-8 lg:p-10 flex flex-col items-center justify-center w-full lg:w-2/3 h-auto rounded-lg border border-gray-300">
+          <div className="shadow-lg p-4 sm:p-6 md:p-8 lg:p-10 flex flex-col items-center justify-center w-full  h-auto rounded-lg border border-gray-300">
             <h4 className="text-gray-500 text-sm sm:text-base md:text-lg lg:text-xl font-semibold mb-4 text-center">
               No <span className="text-blue-900">Plan Of Correction</span> Yet
             </h4>
@@ -223,33 +222,33 @@ export default function Dashboard() {
                   </p>
                 )}
                 <div className="flex justify-end w-full space-x-4">
-                {loading ? (
-  <div className="flex flex-col items-center justify-center w-full h-[300px]">
-    <div className="animate-spin rounded-full h-10 w-10 border-t-4 border-blue-900 mb-4"></div>
-    <p className="text-sm text-gray-600 font-medium">Please wait...</p>
-  </div>
-) : (
-  <div className="flex justify-end w-full space-x-4">
-    {/* Cancel Button */}
-    <button
-      onClick={toggleSidebar}
-      className="font-semibold hover:bg-blue-100 border px-4 py-2 rounded-lg text-sm sm:text-base md:text-lg"
-    >
-      Cancel
-    </button>
+                  {loading ? (
+                    <div className="flex flex-col items-center justify-center w-full h-[300px]">
+                      <div className="animate-spin rounded-full h-10 w-10 border-t-4 border-blue-900 mb-4"></div>
+                      <p className="text-sm text-gray-600 font-medium">
+                        Please wait...
+                      </p>
+                    </div>
+                  ) : (
+                    <div className="flex justify-end w-full space-x-4">
+                      {/* Cancel Button */}
+                      <button
+                        onClick={toggleSidebar}
+                        className="font-semibold hover:bg-blue-100 border px-4 py-2 rounded-lg text-sm sm:text-base md:text-lg"
+                      >
+                        Cancel
+                      </button>
 
-    {/* Review Button */}
-    <button
-      className="font-semibold bg-blue-900 text-white px-4 py-2 rounded-lg text-sm sm:text-base md:text-lg"
-      onClick={handleFileUpload}
-    >
-      Review Deficiencies
-    </button>
-  </div>
-)}
-
-</div>
-
+                      {/* Review Button */}
+                      <button
+                        className="font-semibold bg-blue-900 text-white px-4 py-2 rounded-lg text-sm sm:text-base md:text-lg"
+                        onClick={handleFileUpload}
+                      >
+                        Review Deficiencies
+                      </button>
+                    </div>
+                  )}
+                </div>
               </div>
               <div
                 className="fixed inset-0 bg-black opacity-50 z-40"
