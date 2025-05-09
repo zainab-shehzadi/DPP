@@ -11,6 +11,7 @@ import UserDropdown from "@/components/profile-dropdown";
 import DateDisplay from "@/components/date";
 import Notification from "@/components/Notification";
 import HeaderWithToggle from "@/components/HeaderWithToggle";
+import { departmentPositions, roles } from "@/constants/dpp";
 
 function profileSetting() {
   const [isSidebarOpen, setIsSidebarOpen] = useState(false);
@@ -26,55 +27,12 @@ function profileSetting() {
   const [imageUrl, setImageUrl] = useState("/assets/profile-icon.png");
   const [loading, setLoading] = useState(true);
 
-  const departmentPositions = {
-    "Business Office": [
-      "Office Manager",
-      "Biller",
-      "Payroll",
-      "Reception",
-      "Admissions",
-    ],
-    "Director of Admissions": ["Liaison"],
-    Activities: ["Director of Activities", "Activity Staff"],
-    Maintenance: ["Director of Maintenance", "Maintenance Staff"],
-    Dietary: ["Director of Dietary", "Dietitian", "Dietary Staff"],
-    Therapy: ["Director of Therapy", "Therapy Staff"],
-    Laundry: ["Laundry Supervisor"],
-    Housekeeping: ["Housekeeping Supervisor"],
-    "Case Management": ["Case Manager"],
-    MDS: ["Director of MDS", "MDS Staff"],
-    Nursing: [
-      "Director of Nursing",
-      "Assistant Director of Nursing",
-      "Unit Manager",
-    ],
-    Administration: ["Administrator", "Administrator in Training"],
-    "Social Services": ["Social Services Director", "Social Services Staff"],
-    "Staff Development Department": ["Staff Development Coordinator"],
-    "Nursing Department": ["Nursing Development Coordinator"],
-    "Quality Assurance Department": ["Nursing Development Coordinator"],
-  };
-
-  const roleCategories = {
-    leadership: ["Director", "Manager", "Supervisor"],
-    supporting: ["Staff", "Assistant", "Liaison"],
-  };
-  const leadershipRoles = roleCategories.leadership;
-  const supportingRoles = roleCategories.supporting;
-
-  const Positions = DepartmentName
+  const positions = DepartmentName
     ? departmentPositions[DepartmentName] || []
     : [];
 
-  const getCookie = (name: string) => {
-    const value = `; ${document.cookie}`;
-    const parts = value.split(`; ${name}=`);
-    if (parts.length === 2) return parts.pop()?.split(";").shift();
-    return null;
-  };
-
   useEffect(() => {
-    const storedEmail = getCookie("email");
+    const storedEmail = Cookies.get("email");
     if (storedEmail) {
       setEmail(storedEmail);
     }
@@ -187,7 +145,7 @@ function profileSetting() {
       if (!response.ok) throw new Error("Image upload failed");
       const data = await response.json();
       if (data?.profileImage) {
-        setImageUrl(data.profileImage); 
+        setImageUrl(data.profileImage);
       }
 
       toast.success("Profile image saved succesfully.");
@@ -353,16 +311,14 @@ function profileSetting() {
                     <label className="block text-gray-700">Department</label>
                     <select
                       value={DepartmentName}
-                      onChange={(e) => setDepartmentName(e.target.value)}
                       disabled={!isEditing}
-                      className="mt-2 w-full p-2 rounded-md bg-[#F9F9F9]"
+                      onChange={(e) => setDepartmentName(e.target.value)}
+                      className="pmt-2 w-full p-2 rounded-md bg-[#F9F9F9]"
                     >
-                      <option value="" disabled>
-                        Select a Department
-                      </option>
-                      {Object.keys(departmentPositions).map((dept) => (
-                        <option key={dept} value={dept}>
-                          {dept}
+                      <option value="">Select Department</option>
+                      {Object.keys(departmentPositions).map((key) => (
+                        <option key={key} value={key}>
+                          {key}
                         </option>
                       ))}
                     </select>
@@ -371,16 +327,16 @@ function profileSetting() {
                     <label className="block text-gray-700">Position</label>
                     <select
                       value={Position}
+                      disabled={!isEditing || !positions.length}
                       onChange={(e) => setPosition(e.target.value)}
-                      disabled={!isEditing || !Positions.length}
                       className="mt-2 w-full p-2 rounded-md bg-[#F9F9F9]"
                     >
-                      <option value="" disabled>
-                        {Positions.length
-                          ? "Select a Position"
-                          : "Select a Department First"}
+                      <option value="">
+                        {positions.length
+                          ? "Select Position"
+                          : "Select Department First"}
                       </option>
-                      {Positions.map((pos) => (
+                      {positions.map((pos) => (
                         <option key={pos} value={pos}>
                           {pos}
                         </option>
@@ -391,27 +347,16 @@ function profileSetting() {
                     <label className="block text-gray-700">Role</label>
                     <select
                       value={role}
-                      onChange={(e) => setRole(e.target.value)}
                       disabled={!isEditing}
+                      onChange={(e) => setRole(e.target.value)}
                       className="mt-2 w-full p-2 rounded-md bg-[#F9F9F9]"
                     >
-                      <option value="" disabled>
-                        Select a Role
-                      </option>
-                      <optgroup label="Leadership Roles">
-                        {leadershipRoles.map((roleOption) => (
-                          <option key={roleOption} value={roleOption}>
-                            {roleOption}
-                          </option>
-                        ))}
-                      </optgroup>
-                      <optgroup label="Supporting Roles">
-                        {supportingRoles.map((roleOption) => (
-                          <option key={roleOption} value={roleOption}>
-                            {roleOption}
-                          </option>
-                        ))}
-                      </optgroup>
+                      <option value="">Select Role</option>
+                      {roles.map((r) => (
+                        <option key={r} value={r}>
+                          {r}
+                        </option>
+                      ))}
                     </select>
                   </div>
                 </div>

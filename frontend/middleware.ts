@@ -29,7 +29,7 @@ export function middleware(req: NextRequest) {
   }
 if(!token){
   if (status === "onboarding") {
-    return NextResponse.redirect(new URL(`/form-detail?email=${email}`, req.url));
+    return NextResponse.redirect(new URL(`/form-detail`, req.url));
   } else if (status === "pending") {
     return NextResponse.redirect(new URL("/verify-email", req.url));
   }

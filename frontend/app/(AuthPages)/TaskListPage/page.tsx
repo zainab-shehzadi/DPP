@@ -1,4 +1,4 @@
-"use client"; // <-- Ensures this file is treated as a client component
+"use client"; 
 
 import { FaBell } from "react-icons/fa";
 import React, { useState, useEffect } from "react";
@@ -11,6 +11,7 @@ import authProtectedRoutes from "@/hoc/authProtectedRoutes";
 import DateDisplay from "@/components/date";
 
 import HeaderWithToggle from "@/components/HeaderWithToggle";
+import CreateTaskModal from "@/components/Modals/CreateTaskModal";
 
 interface Task {
   _id: string | number;
@@ -29,7 +30,7 @@ function taskList() {
   const [dropdownOpen, setDropdownOpen] = useState(false);
   const [department, setDepartment] = useState<string | null>(null);
   const [loading, setLoading] = useState(true);
-
+  const [showCreateTaskModal, setShowCreateTaskModal] = useState(false);
   const [dropdownOpen1, setDropdownOpen1] = useState<string | number | null>(
     null
   );
@@ -61,6 +62,7 @@ function taskList() {
       toast.success("Department is not set; skipping fetchTasks.");
     }
   }, [department]);
+
   useEffect(() => {
     const timer = setTimeout(() => {
       setLoading(false);
@@ -213,13 +215,11 @@ function taskList() {
   return (
     <div className="flex flex-col lg:flex-row">
       <HeaderWithToggle onToggleSidebar={() => setIsSidebarOpen(true)} />
-    
       <Sidebar
         isSidebarOpen={isSidebarOpen}
         setIsSidebarOpen={setIsSidebarOpen}
       />{" "}
       {loading ? (
-       
         <div className="flex items-center justify-center w-full h-screen ma-10">
           <div className="animate-spin rounded-full h-16 w-16 border-t-4 border-blue-600"></div>
         </div>
@@ -335,6 +335,13 @@ function taskList() {
                 <div className="bg-[#F6F6F6] p-6 rounded-[17px] shadow-md w-full h-auto">
                   <div className="flex justify-between items-center mb-6">
                     <h3 className="font-bold text-lg lg:text-xl">To Do</h3>
+                    <button
+                      onClick={() => setShowCreateTaskModal(true)}
+                      className="flex items-center justify-center w-6 h-6 bg-green-500 hover:bg-green-600 text-white text-lg font-bold rounded-full"
+                      aria-label="Add Task"
+                    >
+                      +
+                    </button>
                   </div>
                   {renderTasksForColumn("To Do")}
                 </div>
@@ -360,6 +367,16 @@ function taskList() {
             </div>
           </div>
         </>
+      )}
+      {showCreateTaskModal && (
+        <CreateTaskModal
+          isOpen={showCreateTaskModal}
+          onClose={() => setShowCreateTaskModal(false)}
+          onSubmit={(formData) => {
+            console.log("Task Created:", formData);
+            setShowCreateTaskModal(false);
+          }}
+        />
       )}
     </div>
   );

@@ -21,11 +21,11 @@ const facilitySignupSchema = new mongoose.Schema(
     },
     status: {
       type: String,
-      enum: ["pending", "approve", "reject"], // Only accept these values
-      default: "pending", // Default value is pending
+      enum: ["pending", "approve", "reject"], 
+      default: "pending", 
     },
   },
-  { timestamps: true } // Automatically adds createdAt and updatedAt fields
+  { timestamps: true } 
 );
 
 module.exports = mongoose.model("FacilitySignup", facilitySignupSchema);

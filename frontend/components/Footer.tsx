@@ -30,29 +30,33 @@ const Footer = () => {
           </span>
         </div>
 
-      
-<div className="flex flex-col gap-10">
-  <h2 className="text-lg font-semibold">Quick Links</h2>
-  <ul className="space-y-2">
-    <li>
-      <Link href="/" className="hover:text-blue-600 transition">
-        Home
-      </Link>
-    </li>
-    <li>
-  
-        Products
-      
-    </li>
-    <li>
-      <Link href="/AboutUs" className="hover:text-blue-600 transition">
-        About
-      </Link>
-    </li>
-    <li>Contact</li>
-  </ul>
-</div>
-
+        <div className="flex flex-col gap-10">
+          <h2 className="text-lg font-semibold">Quick Links</h2>
+          <ul className="space-y-2">
+            <li>
+              <Link href="/" className="hover:text-blue-600 transition">
+                Home
+              </Link>
+            </li>
+            <li>Products</li>
+            <li>
+              <Link href="/AboutUs" className="hover:text-blue-600 transition">
+                About
+              </Link>
+            </li>
+            <li>
+              <Link href="/privacypolicy" className="hover:text-blue-600 transition">
+                Privacy Policy
+              </Link>
+            </li>
+            <li>
+              <Link href="/termCondition" className="hover:text-blue-600 transition">
+                Term & Condition
+              </Link>
+            </li>
+            <li>Contact</li>
+          </ul>
+        </div>
 
         <div className="flex flex-col gap-5">
           <h2 className="text-lg font-semibold">

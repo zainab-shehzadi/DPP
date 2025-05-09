@@ -71,14 +71,14 @@ const Login: React.FC = () => {
         }
       } else {
         toast.error(data.message || "Login failed!", { position: "top-right" });
-        setIsSubmitting(false); // Re-enable button
+        setIsSubmitting(false); 
       }
     } catch (error) {
       console.error("Error:", error);
       toast.error("An error occurred. Please try again.", {
         position: "top-right",
       });
-      setIsSubmitting(false); // Re-enable button
+      setIsSubmitting(false); 
     }
   };
 

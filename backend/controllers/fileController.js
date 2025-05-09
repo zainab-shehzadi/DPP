@@ -8,7 +8,7 @@ dotenv.config();
 const uploadedAt = new Date();
 // AWS SDK
 const { S3Client } = require("@aws-sdk/client-s3");
-const { Upload } = require("@aws-sdk/lib-storage"); 
+const { Upload } = require("@aws-sdk/lib-storage");
 
 // AWS S3 Configuration
 const s3 = new S3Client({
@@ -52,28 +52,29 @@ const parsePdfContent = async (fileBuffer) => {
     throw error;
   }
 };
+
 const extractTagsFromContent = (fileContent) => {
   // Match all occurrences of tags in the format "Fxxx" or "F xxxx"
   const extractedTags = fileContent.match(/F\s?\d{3,4}/g) || [];
-  
+
   // Use a Map to store unique tags and their summaries
   let uniqueTags = new Map();
-   console.log(uniqueTags);
+  console.log(uniqueTags);
   let tagPositions = [];
-  
-  extractedTags.forEach(tag => {
-    let standardizedTag = tag.replace(/\s/g, ''); // Normalize tag format (e.g., "F 554" → "F554")
+
+  extractedTags.forEach((tag) => {
+    let standardizedTag = tag.replace(/\s/g, ""); // Normalize tag format (e.g., "F 554" → "F554")
     let tagKey = standardizedTag.substring(0, 4); // Consider first three digits for uniqueness
 
     let tagIndex = fileContent.indexOf(tag);
-    
+
     tagPositions.push({ tag: standardizedTag, index: tagIndex });
 
     if (!uniqueTags.has(tagKey)) {
       uniqueTags.set(tagKey, {
         tag: standardizedTag,
         shortDescription: "",
-        longDescription: ""
+        longDescription: "",
       });
     }
   });
@@ -85,7 +86,10 @@ const extractTagsFromContent = (fileContent) => {
   for (let i = 0; i < tagPositions.length; i++) {
     let currentTag = tagPositions[i].tag;
     let startIndex = tagPositions[i].index;
-    let endIndex = i + 1 < tagPositions.length ? tagPositions[i + 1].index : fileContent.length;
+    let endIndex =
+      i + 1 < tagPositions.length
+        ? tagPositions[i + 1].index
+        : fileContent.length;
 
     let summary = fileContent.substring(startIndex, endIndex).trim();
 
@@ -101,104 +105,240 @@ const extractTagsFromContent = (fileContent) => {
 
   // Assign short descriptions (first 92 characters of long description)
   uniqueTags.forEach((value, key) => {
-    value.shortDescription = value.longDescription.substring(0, 92).split(".")[0].trim();
+    value.shortDescription = value.longDescription
+      .substring(0, 92)
+      .split(".")[0]
+      .trim();
   });
 
   return [...uniqueTags.values()];
 };
+
+// const extractTagsFromContent = (fileContent) => {
+//   const tagRegex = /F\s?\d{3,5}/g; // Matches "F555", "F 555", "F000234" (filter after)
+//   const tagMatches = [...fileContent.matchAll(tagRegex)];
+
+//   let results = [];
+//   let seenTags = new Set();
+
+//   for (let i = 0; i < tagMatches.length; i++) {
+//     let rawTag = tagMatches[i][0].replace(/\s/g, ''); // e.g., "F 0658" → "F0658"
+//     let numericPart = rawTag.slice(1).replace(/^0+/, ''); // remove 'F', then leading zeros
+
+//     // Only keep tags with 3 or 4 digit numbers (like F658, F1234)
+//     if (numericPart.length < 3 || numericPart.length > 4) {
+//       console.log(`Skipping invalid tag: ${rawTag}`);
+//       continue;
+//     }
+
+//     const tag = `F${numericPart}`;
+
+//     const startIdx = tagMatches[i].index;
+//     const endIdx = i + 1 < tagMatches.length ? tagMatches[i + 1].index : fileContent.length;
+//     const section = fileContent.slice(startIdx, endIdx).trim();
+
+//     if (seenTags.has(tag)) continue;
+//     seenTags.add(tag);
+
+//     // Extract short description
+//     let shortDesc = "";
+//     const descMatch = section.match(/(?:Level of Harm.*?\n)?Residents Affected.*?\n(.*)/);
+//     if (descMatch) {
+//       shortDesc = descMatch[1].trim().substring(0, 120);
+//     } else {
+//       const firstSentence = section.split(/(?<=\.)\s+/)[0]?.replace(/\n/g, ' ').trim();
+//       shortDesc = firstSentence?.substring(0, 120) || "No short description available";
+//     }
+
+//     // Extract policy mentions
+//     const policyRegex = /Review of policy titled (.*?)[,\.]/g;
+//     const policies = [];
+//     let match;
+//     while ((match = policyRegex.exec(section)) !== null) {
+//       policies.push(match[1].trim());
+//     }
+
+//     const docPolicy = policies.length ? policies.join("; ") : "Not specified";
+
+//     results.push({
+//       tag,
+//       shortDescription: shortDesc,
+//       longDescription: section,
+//       docPolicy // ✅ fixed
+//     });
+//   }
+
+//   console.log("✅ Extracted Tags:", results);
+//   return results;
+// };
+
+// const uploadFile = async (req, res) => {
+//   try {
+//     if (!req.file) {
+//       return res.status(400).json({ error: "No file uploaded." });
+//     }
+
+//     const { email } = req.body;
+//     if (!email) {
+//       return res.status(400).json({ error: "Email is required." });
+//     }
+
+//     let existingFileEntry = await File.findOne({
+//       email,
+//       "files.originalName": req.file.originalname,
+//     });
+
+//     if (existingFileEntry) {
+//       return res.status(400).json({
+//         error: "File already exists.",
+//         message: `A file named "${req.file.originalname}" has already been uploaded.`,
+//         existingFile: existingFileEntry.files.find(
+//           (file) => file.originalName === req.file.originalname
+//         ),
+//       });
+//     }
+
+//     // Upload file to S3
+//     const fileUrl = await uploadToS3(req.file);
+
+//     // Extract and parse content from the PDF
+//     const fileContent = await parsePdfContent(req.file.buffer);
+
+//     // Extract tags using the new function
+//     const tagsWithDescriptions = extractTagsFromContent(fileContent);
+//     console.log(tagsWithDescriptions);
+
+//     let fileEntry = await File.findOne({ email });
+//     let documentId;
+//     const uploadedAt = new Date();
+
+//     if (fileEntry) {
+//       fileEntry.files.push({
+//         originalName: req.file.originalname,
+//         fileUrl,
+//         filePath: req.file.path || "",
+//         tags: tagsWithDescriptions,
+//         uploadedAt,
+//       });
+//       await fileEntry.save();
+//       documentId = fileEntry.files[fileEntry.files.length - 1]._id;
+//     } else {
+//       fileEntry = await File.create({
+//         email,
+//         files: [
+//           {
+//             originalName: req.file.originalname,
+//             fileUrl,
+//             filePath: req.file.path || "",
+//             tags: tagsWithDescriptions,
+//             uploadedAt,
+//           },
+//         ],
+//       });
+//       documentId = fileEntry.files[0]._id;
+//     }
+
+//     req.io.emit("documentUploaded", {
+//       message: `A new document "${req.file.originalname}" has been uploaded!`,
+//       documentName: req.file.originalname,
+//       documentId,
+//     });
+
+//     res.status(201).json({
+//       message: "File uploaded to AWS S3 and parsed successfully!",
+//       documentId,
+//       fileUrl,
+//       tags: tagsWithDescriptions,
+//       uploadedAt,
+//     });
+//   } catch (error) {
+//     console.error("Error in file upload:", error.message);
+//     res
+//       .status(500)
+//       .json({ error: "File upload failed.", details: error.message });
+//   }
+// };
+
 const uploadFile = async (req, res) => {
   try {
     if (!req.file) {
       return res.status(400).json({ error: "No file uploaded." });
     }
 
-    const { email } = req.body;
-    if (!email) {
-      return res.status(400).json({ error: "Email is required." });
+    const userId = req.user?.id;
+    if (!userId) {
+      return res.status(401).json({ error: "Unauthorized: user ID missing." });
     }
 
-    let existingFileEntry = await File.findOne({ email, "files.originalName": req.file.originalname });
+    const existingFile = await File.findOne({
+      userId,
+      originalName: req.file.originalname,
+    });
 
-    if (existingFileEntry) {
+    if (existingFile) {
       return res.status(400).json({
         error: "File already exists.",
         message: `A file named "${req.file.originalname}" has already been uploaded.`,
-        existingFile: existingFileEntry.files.find(file => file.originalName === req.file.originalname),
+        existingFile,
       });
     }
 
-    // Upload file to S3
     const fileUrl = await uploadToS3(req.file);
-
-    // Extract and parse content from the PDF
     const fileContent = await parsePdfContent(req.file.buffer);
-
-    // Extract tags using the new function
     const tagsWithDescriptions = extractTagsFromContent(fileContent);
-    console.log(tagsWithDescriptions);
 
-    let fileEntry = await File.findOne({ email });
-    let documentId;
-    const uploadedAt = new Date();
+    const fileEntry = await File.create({
+      userId,
+      originalName: req.file.originalname,
+      fileUrl,
+      filePath: req.file.path || "",
+      tags: tagsWithDescriptions,
+      uploadedAt: new Date(),
+    });
 
-    if (fileEntry) {
-      fileEntry.files.push({
-        originalName: req.file.originalname,
-        fileUrl,
-        filePath: req.file.path || "",
-        tags: tagsWithDescriptions,
-        uploadedAt
-      });
-      await fileEntry.save();
-      documentId = fileEntry.files[fileEntry.files.length - 1]._id;
-    } else {
-      fileEntry = await File.create({
-        email,
-        files: [{
-          originalName: req.file.originalname,
-          fileUrl,
-          filePath: req.file.path || "",
-          tags: tagsWithDescriptions,
-          uploadedAt
-        }],
-      });
-      documentId = fileEntry.files[0]._id;
-    }
-
-    req.io.emit("documentUploaded", {
+    req.io?.emit("documentUploaded", {
       message: `A new document "${req.file.originalname}" has been uploaded!`,
       documentName: req.file.originalname,
-      documentId,
+      documentId: fileEntry._id,
     });
 
     res.status(201).json({
-      message: "File uploaded to AWS S3 and parsed successfully!",
-      documentId,
+      message: "File uploaded and parsed successfully!",
+      documentId: fileEntry._id,
       fileUrl,
       tags: tagsWithDescriptions,
-      uploadedAt
+      uploadedAt: fileEntry.uploadedAt,
     });
   } catch (error) {
     console.error("Error in file upload:", error.message);
-    res.status(500).json({ error: "File upload failed.", details: error.message });
+    res
+      .status(500)
+      .json({ error: "File upload failed.", details: error.message });
   }
 };
+
 const fetchTagsByEmail = async (req, res) => {
-  const { email, id } = req.query; 
+  const { email, id } = req.query;
 
   if (!email) {
-    return res.status(400).json({ error: "Email is required in query parameters" });
+    return res
+      .status(400)
+      .json({ error: "Email is required in query parameters" });
   }
 
   if (!id) {
-    return res.status(400).json({ error: "ID is required in query parameters" });
+    return res
+      .status(400)
+      .json({ error: "ID is required in query parameters" });
   }
 
   try {
     const files = await File.find({ email }, "files");
 
     if (!files || files.length === 0) {
-      return res.status(404).json({ error: `No files found for email ${email}` });
+      return res
+        .status(404)
+        .json({ error: `No files found for email ${email}` });
     }
 
     const matchingFiles = files.flatMap((file) =>
@@ -216,15 +356,22 @@ const fetchTagsByEmail = async (req, res) => {
     const uniqueTags = [...new Set(tags)];
     res.status(200).json(uniqueTags);
   } catch (error) {
-    console.error(`Error fetching tags for Email (${email}) and ID (${id}):`, error.message);
-    res.status(500).json({ error: "Failed to fetch tags", details: error.message });
+    console.error(
+      `Error fetching tags for Email (${email}) and ID (${id}):`,
+      error.message
+    );
+    res
+      .status(500)
+      .json({ error: "Failed to fetch tags", details: error.message });
   }
 };
 const fetchTagsByEmail1 = async (req, res) => {
   const { email } = req.body;
 
   if (!email) {
-    return res.status(400).json({ error: "Email is required in query parameters" });
+    return res
+      .status(400)
+      .json({ error: "Email is required in query parameters" });
   }
 
   try {
@@ -233,7 +380,9 @@ const fetchTagsByEmail1 = async (req, res) => {
 
     if (!files || files.length === 0) {
       // If no files are found, return a 404 response
-      return res.status(404).json({ error: `No files found for email ${email}` });
+      return res
+        .status(404)
+        .json({ error: `No files found for email ${email}` });
     }
 
     const tags = files.flatMap((file) =>
@@ -244,14 +393,18 @@ const fetchTagsByEmail1 = async (req, res) => {
     res.status(200).json(tags);
   } catch (error) {
     console.error(`Error fetching tags for Email (${email}):`, error.message);
-    res.status(500).json({ error: "Failed to fetch tags", details: error.message });
+    res
+      .status(500)
+      .json({ error: "Failed to fetch tags", details: error.message });
   }
 };
 const fetchTagsAndSolutionByEmail = async (req, res) => {
-  const { email } = req.query; 
+  const { email } = req.query;
 
   if (!email) {
-    return res.status(400).json({ error: "Email is required in query parameters" });
+    return res
+      .status(400)
+      .json({ error: "Email is required in query parameters" });
   }
 
   try {
@@ -260,7 +413,9 @@ const fetchTagsAndSolutionByEmail = async (req, res) => {
 
     if (!files || files.length === 0) {
       // If no files are found, return a 404 response
-      return res.status(404).json({ error: `No files found for email ${email}` });
+      return res
+        .status(404)
+        .json({ error: `No files found for email ${email}` });
     }
 
     // Extract tags and corresponding solutions from each file entry
@@ -269,7 +424,7 @@ const fetchTagsAndSolutionByEmail = async (req, res) => {
         fileEntry.tags.map((tagObj) => {
           return {
             tag: tagObj.tag,
-            solution: tagObj.response ? tagObj.response.solution : null // Extract solution from the tag's response field
+            solution: tagObj.response ? tagObj.response.solution : null, // Extract solution from the tag's response field
           };
         })
       )
@@ -283,8 +438,14 @@ const fetchTagsAndSolutionByEmail = async (req, res) => {
 
     res.status(200).json(flattenedTagsWithSolution);
   } catch (error) {
-    console.error(`Error fetching tags and solutions for Email (${email}):`, error.message);
-    res.status(500).json({ error: "Failed to fetch tags and solutions", details: error.message });
+    console.error(
+      `Error fetching tags and solutions for Email (${email}):`,
+      error.message
+    );
+    res.status(500).json({
+      error: "Failed to fetch tags and solutions",
+      details: error.message,
+    });
   }
 };
 const getTagsWithDescriptions = async (req, res) => {
@@ -301,21 +462,24 @@ const getTagsWithDescriptions = async (req, res) => {
   }
 
   try {
-
     const files = await File.find({ email });
 
     if (!files || files.length === 0) {
       console.warn(`No files found for email ${email}`);
-      return res.status(404).json({ error: `No files found for email ${email}` });
+      return res
+        .status(404)
+        .json({ error: `No files found for email ${email}` });
     }
 
-      const matchingFiles = files.flatMap((file) =>
-      file.files.filter((fileEntry) => fileEntry.id === id) // Compare as strings
+    const matchingFiles = files.flatMap(
+      (file) => file.files.filter((fileEntry) => fileEntry.id === id) // Compare as strings
     );
 
     if (matchingFiles.length === 0) {
       console.warn(`No file entries found for ID: ${id}`);
-      return res.status(404).json({ error: `No file entries found for ID: ${id}` });
+      return res
+        .status(404)
+        .json({ error: `No file entries found for ID: ${id}` });
     }
 
     const tagDetails = matchingFiles.flatMap((fileEntry) =>
@@ -332,190 +496,297 @@ const getTagsWithDescriptions = async (req, res) => {
 
     if (!tagDetails || tagDetails.length === 0) {
       console.warn(`No tag details found for ID ${id}`);
-      return res.status(404).json({ error: `No tag details found for ID ${id}` });
+      return res
+        .status(404)
+        .json({ error: `No tag details found for ID ${id}` });
     }
     return res.status(200).json(tagDetails);
   } catch (error) {
     // Handle errors
     console.error("Error fetching tag details:", error.message);
-    res.status(500).json({ error: "Failed to fetch tag details", details: error.message });
+    res
+      .status(500)
+      .json({ error: "Failed to fetch tag details", details: error.message });
   }
 };
 const checkSolution = async (req, res) => {
   try {
-
-    const { id } = req.params; 
+    const { id } = req.params;
 
     if (!id) {
-      console.error('No Tag ID provided'); 
-      return res.status(400).json({ error: 'Tag ID is required.' });
+      console.error("No Tag ID provided");
+      return res.status(400).json({ error: "Tag ID is required." });
     }
 
-   const file = await File.findOne({ "files.tags._id": id });
+    const file = await File.findOne({ "files.tags._id": id });
 
     if (!file) {
-      console.error('File not found for Tag ID:', id); 
-      return res.status(404).json({ error: 'Tag not found.' });
+      console.error("File not found for Tag ID:", id);
+      return res.status(404).json({ error: "Tag not found." });
     }
     const tag = file.files[0].tags.id(id);
 
     if (!tag) {
-      console.error('Tag not found within the file:', id); // Log tag not found error
-      return res.status(404).json({ error: 'Tag not found within the file.' });
+      console.error("Tag not found within the file:", id); // Log tag not found error
+      return res.status(404).json({ error: "Tag not found within the file." });
     }
     if (!tag.response || !tag.response.solution) {
       return res.status(200).json({ solution: null });
     }
 
-    const solution = tag.response.solution; 
+    const solution = tag.response.solution;
     res.status(200).json({ solution });
-
   } catch (error) {
-    console.error('Error in checkSolution function:', error.message); 
-    console.error('Error details:', error); 
-    res.status(500).json({ error: 'Failed to check solution.', details: error.message });
+    console.error("Error in checkSolution function:", error.message);
+    console.error("Error details:", error);
+    res
+      .status(500)
+      .json({ error: "Failed to check solution.", details: error.message });
   }
 };
+// const generateSolution = async (req, res) => {
+//   try {
+//     const { query, id } = req.body; // Extract query and tag id
+
+//     console.log("Received Request - Query:", query);
+//     console.log("Received Request - ID:", id);
+//     // Validate required fields
+//     if (!query || !id) {
+//       console.error("Query or ID is missing.", req.body);
+//       return res.status(400).json({ error: "Query and ID are required." });
+//     }
+
+//     const apiEndpoint = `${process.env.NEXT_PUBLIC_AI_LINK}/get-answer/`;
+
+//     let externalResponse;
+//     try {
+//       externalResponse = await axios.post(apiEndpoint, { query });
+//     } catch (apiError) {
+//       console.error("Error calling external API:", apiError.message);
+//       return res.status(500).json({
+//         error: "External API call failed.",
+//         details: apiError.message,
+//       });
+//     }
+
+//     // Safely access data returned from the external API
+//     const {
+//       heading_sections,
+//       solution,
+//       supporting_references,
+//       Department,
+//       task,
+//       policies,
+//     } = externalResponse.data || {};
+
+//     if (!solution) {
+//       console.error("Solution is missing from the external API response.");
+//       return res.status(500).json({
+//         error:
+//           "Solution generation failed. No solution returned from external API.",
+//       });
+//     }
+
+//     req.io.emit("solutionGenerated", {
+//       message: "A solution has been successfully generated.",
+//       solution,
+//     });
+//     let file;
+//     try {
+//       file = await File.findOne({ "files.tags._id": id });
+//     } catch (dbError) {
+//       console.error("Database query failed:", dbError.message);
+//       return res
+//         .status(500)
+//         .json({ error: "Database query failed.", details: dbError.message });
+//     }
+
+//     if (!file) {
+//       console.error(`File not found for tag id: ${id}`);
+//       return res
+//         .status(404)
+//         .json({ error: "File with the given tag ID not found." });
+//     }
+
+//     let updatedTag = null;
+
+//     try {
+//       for (const fileEntry of file.files) {
+//         const tag = fileEntry.tags.id(id);
+//         if (tag) {
+//           tag.response = {
+//             heading_sections: heading_sections || [],
+//             solution: solution || "No solution provided.",
+//             supporting_references: supporting_references || [],
+//             Department: Department || [],
+//             task: task || [],
+//             policies: policies || [],
+//           };
+//           updatedTag = tag;
+//           break; // No need to continue if the tag is found
+//         }
+//       }
+//     } catch (tagError) {
+//       console.error("Error updating tag:", tagError.message);
+//       return res
+//         .status(500)
+//         .json({ error: "Failed to update tag.", details: tagError.message });
+//     }
+
+//     if (!updatedTag) {
+//       console.error(`Tag not found for ID: ${id}`);
+//       return res.status(404).json({ error: "Tag not found within the file." });
+//     }
+
+//     // Save the updated file document
+//     try {
+//       await file.save();
+//     } catch (saveError) {
+//       console.error("Error saving file:", saveError.message);
+//       return res.status(500).json({
+//         error: "Failed to save the updated file.",
+//         details: saveError.message,
+//       });
+//     }
+
+//     return res.status(200).json({
+//       message: "Solution generated and saved successfully!",
+//       tag: updatedTag,
+//     });
+//   } catch (error) {
+//     console.error("Error in generating solution:", error.message, error.stack);
+//     res.status(500).json({
+//       error: "Failed to generate solution.",
+//       details: error.message,
+//     });
+//   }
+// };
+
+
 const generateSolution = async (req, res) => {
   try {
-    const { query, id } = req.body; // Extract query and tag id
+    const userId = req.user?.id;
+    const { documentId, tagId } = req.body;
 
- console.log("Received Request - Query:", query);
- console.log("Received Request - ID:", id);
-    // Validate required fields
-    if (!query || !id) {
-      console.error("Query or ID is missing.", req.body);
-      return res.status(400).json({ error: "Query and ID are required." });
+    if (!userId || !documentId || !tagId) {
+      return res.status(400).json({ error: "Missing user, document, or tag ID." });
     }
 
-    const apiEndpoint = `${process.env.NEXT_PUBLIC_AI_LINK}/get-answer/`;
+    // ✅ Step 1: Find the document for this user
+    const document = await File.findOne({ _id: documentId, userId });
 
-    let externalResponse;
+    if (!document) {
+      return res.status(404).json({ error: "Document not found or unauthorized." });
+    }
+
+    // ✅ Step 2: Get the tag inside this document
+    const tag = document.tags.id(tagId);
+    if (!tag) {
+      return res.status(404).json({ error: "Tag not found in this document." });
+    }
+
+    // ✅ Step 3: Construct query using tag info
+    const query = `I belong to Tag ${tag.tag}, "${tag.longDescription}"`;
+
+    // ✅ Step 4: Call external AI API
+    const apiEndpoint = `${process.env.NEXT_PUBLIC_AI_LINK}/get-answer/`;
+    let aiResponse;
     try {
-      externalResponse = await axios.post(apiEndpoint, { query });
+      aiResponse = await axios.post(apiEndpoint, { query });
     } catch (apiError) {
-      console.error("Error calling external API:", apiError.message);
+      console.error("External API error:", apiError.message);
       return res.status(500).json({
-        error: "External API call failed.",
+        error: "Failed to call external API",
         details: apiError.message,
       });
     }
 
-    // Safely access data returned from the external API
-    const { heading_sections, solution, supporting_references, Department, task, policies } = externalResponse.data || {};
+    const {
+      heading_sections,
+      solution,
+      supporting_references,
+      Department,
+      task,
+      policies,
+    } = aiResponse.data || {};
 
     if (!solution) {
-      console.error("Solution is missing from the external API response.");
-      return res.status(500).json({
-        error: "Solution generation failed. No solution returned from external API.",
-      });
+      return res.status(500).json({ error: "No solution returned from AI API." });
     }
 
+    // ✅ Step 5: Update tag response
+    tag.response = {
+      heading_sections: heading_sections || [],
+      solution: Array.isArray(solution) ? solution : [solution],
+      supporting_references: supporting_references || [],
+      Department: Department || [],
+      task: task || [],
+      policies: policies || [],
+    };
 
-    req.io.emit("solutionGenerated", {
+    // ✅ Step 6: Save updated document
+    await document.save();
+
+    // ✅ Emit socket event (optional)
+    req.io?.emit("solutionGenerated", {
       message: "A solution has been successfully generated.",
       solution,
     });
-    let file;
-    try {
-      file = await File.findOne({ "files.tags._id": id });
-    } catch (dbError) {
-      console.error("Database query failed:", dbError.message);
-      return res.status(500).json({ error: "Database query failed.", details: dbError.message });
-    }
-
-    if (!file) {
-      console.error(`File not found for tag id: ${id}`);
-      return res.status(404).json({ error: "File with the given tag ID not found." });
-    }
-
-    
-    let updatedTag = null;
-
-    try {
-      for (const fileEntry of file.files) {
-        const tag = fileEntry.tags.id(id);
-        if (tag) {
-          tag.response = {
-            heading_sections: heading_sections || [],
-            solution: solution || "No solution provided.",
-            supporting_references: supporting_references || [],
-            Department: Department || [],
-            task: task || [],
-            policies: policies || [],
-          };
-          updatedTag = tag;
-          break; // No need to continue if the tag is found
-        }
-      }
-    } catch (tagError) {
-      console.error("Error updating tag:", tagError.message);
-      return res.status(500).json({ error: "Failed to update tag.", details: tagError.message });
-    }
-
-    if (!updatedTag) {
-      console.error(`Tag not found for ID: ${id}`);
-      return res.status(404).json({ error: "Tag not found within the file." });
-    }
-
-    // Save the updated file document
-    try {
-      await file.save();
-    } catch (saveError) {
-      console.error("Error saving file:", saveError.message);
-      return res.status(500).json({ error: "Failed to save the updated file.", details: saveError.message });
-    }
 
     return res.status(200).json({
       message: "Solution generated and saved successfully!",
-      tag: updatedTag,
+      document,
+      tagId,
     });
+    
   } catch (error) {
-    console.error("Error in generating solution:", error.message, error.stack);
+    console.error("Generate solution error:", error.message);
     res.status(500).json({
-      error: "Failed to generate solution.",
+      error: "Internal server error",
       details: error.message,
     });
   }
 };
+
 const checkResponse = async (req, res) => {
   try {
-
     const { id, tag } = req.body;
 
     if (!id || !tag) {
-      console.warn('Validation failed: Missing ID or tag'); 
-      return res.status(400).json({ error: 'ID and tag are required.' });
+      console.warn("Validation failed: Missing ID or tag");
+      return res.status(400).json({ error: "ID and tag are required." });
     }
     const file = await File.findOne({ "files.tags._id": id });
 
     if (!file) {
-      console.warn(`File not found for tag ID: ${id}`); 
-      return res.status(404).json({ error: 'File not found.' });
+      console.warn(`File not found for tag ID: ${id}`);
+      return res.status(404).json({ error: "File not found." });
     }
     const tagData = file.files[0].tags.id(id);
 
     if (!tagData) {
-      console.warn(`Tag not found within file for ID: ${id}`); 
-      return res.status(404).json({ error: 'Tag not found within the file.' });
+      console.warn(`Tag not found within file for ID: ${id}`);
+      return res.status(404).json({ error: "Tag not found within the file." });
     }
-
 
     if (tagData.response && tagData.response.solution) {
       return res.status(200).json({ exists: true, tag: tagData });
     }
     return res.status(200).json({ exists: false });
   } catch (error) {
-    console.error('Error checking response:', error);
-    res.status(500).json({ error: 'Failed to check response.', details: error.message });
+    console.error("Error checking response:", error);
+    res
+      .status(500)
+      .json({ error: "Failed to check response.", details: error.message });
   }
 };
-module.exports = { 
-  uploadFile, 
+module.exports = {
+  uploadFile,
   fetchTagsByEmail,
   getTagsWithDescriptions,
   generateSolution,
   checkSolution,
   fetchTagsByEmail1,
   fetchTagsAndSolutionByEmail,
-  checkResponse };
+  checkResponse,
+};

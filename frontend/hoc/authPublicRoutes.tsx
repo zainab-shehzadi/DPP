@@ -15,7 +15,7 @@ const authPublicRoutes = <P extends object>(WrappedComponent: ComponentType<P>) 
     
 
 useEffect(() => {
-  console.log(token,role,pathname,"pathname");
+
   
   if (token && role && role !== "admin" && publicRoutes.includes(pathname)) {
     router.replace("/Dashboard");

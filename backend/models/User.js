@@ -15,25 +15,39 @@ const userSchema = new mongoose.Schema(
       required: [true, "Email is required"],
       unique: true,
     },
+  
     DepartmentName: {
       type: String,
+      enum: [
+        "business_office",
+        "admissions",
+        "activities",
+        "maintenance",
+        "dietary",
+        "therapy",
+        "laundry",
+        "housekeeping",
+        "case_management",
+        "mds",
+        "nursing_department",
+        "administration",
+        "social_services",
+        "staff_development",
+      ],
     },
+    
     password: {
       type: String,
       required: [true, "Password is required"],
     },
+
     role: {
       type: String,
-      enum: [
-        "Director", 
-        "Manager", 
-        "Supervisor", 
-        "Staff", 
-        "Assistant", 
-        "Liaison"
-      ], 
+      enum: ["Facility Admin", "Facility Users", "Regional Admin"],
       required: true,
     },
+    
+    
     Position: {
       type: String,
     

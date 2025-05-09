@@ -1,9 +1,9 @@
 "use client";
 
-import React, { useState ,useEffect,} from "react";
+import React, { useState, useEffect } from "react";
 import { loadStripe } from "@stripe/stripe-js";
-import { useRouter } from "next/navigation"; 
-import Cookies from "js-cookie"; 
+import { useRouter } from "next/navigation";
+import Cookies from "js-cookie";
 import { toast } from "react-toastify";
 type SubscribeProps = {
   planType: string;
@@ -12,34 +12,40 @@ type SubscribeProps = {
   description: string;
 };
 
-const SubscribeComponent: React.FC<SubscribeProps> = ({ planType, planCycle, price, description }) => {
+const SubscribeComponent: React.FC<SubscribeProps> = ({
+  planType,
+  planCycle,
+  price,
+  description,
+}) => {
   const [email, setEmail] = useState<string | null>(null);
   const router = useRouter();
 
-  
-    useEffect(() => {
-      // Retrieve email from cookies on component mount
-      const storedEmail =  Cookies.get("email");
+  useEffect(() => {
+    // Retrieve email from cookies on component mount
+    const storedEmail = Cookies.get("email");
 
-      if (storedEmail) {
-        setEmail(storedEmail); // Set the email state if found in cookies
-      }
-    }, []);
+    if (storedEmail) {
+      setEmail(storedEmail); // Set the email state if found in cookies
+    }
+  }, []);
   const handleSubmit = async () => {
     try {
-      const token = Cookies.get("token"); 
+      const token = Cookies.get("token");
       if (!token) {
         toast.error("User is not authenticated. Redirecting to login...");
-        router.push("/login"); 
+        router.push("/login");
         return;
       }
-      const stripe = await loadStripe(process.env.NEXT_PUBLIC_STRIPE_PUBLIC_KEY as string);
-  
+      const stripe = await loadStripe(
+        process.env.NEXT_PUBLIC_STRIPE_PUBLIC_KEY as string
+      );
+
       if (!stripe) {
         console.error("Stripe failed to load.");
         return;
       }
-      // Make sure email is available before sending the request
+
       if (!email) {
         console.error("Email is not available.");
         return;
@@ -49,33 +55,38 @@ const SubscribeComponent: React.FC<SubscribeProps> = ({ planType, planCycle, pri
         planCycle,
         price,
         description,
-        email, // Send email to the backend
-
+        email,
       };
-  
+
       const headers = {
         "Content-Type": "application/json",
       };
-      const response = await fetch(`${process.env.NEXT_PUBLIC_API_BASE_URL}/api/stripe/checkout`, {
-        method: "POST",
-        headers: headers,
-        body: JSON.stringify(body),
-      });
- 
+      const response = await fetch(
+        `${process.env.NEXT_PUBLIC_API_BASE_URL}/api/stripe/checkout`,
+        {
+          method: "POST",
+          headers: headers,
+          body: JSON.stringify(body),
+        }
+      );
+
       if (!response.ok) {
-        console.error("Failed to create checkout session:", response.statusText);
+        console.error(
+          "Failed to create checkout session:",
+          response.statusText
+        );
         return;
       }
-  
+
       const session = await response.json();
-  
+
       if (!session || !session.id) {
         console.error("Invalid session data:", session);
         return;
       }
-  
+
       const result = await stripe.redirectToCheckout({ sessionId: session.id });
-  
+
       if (result.error) {
         console.error("Error during Stripe redirection:", result.error.message);
       }
@@ -84,22 +95,23 @@ const SubscribeComponent: React.FC<SubscribeProps> = ({ planType, planCycle, pri
     }
   };
   return (
-   <div className="mt-4 relative overflow-hidden">
-  <button
-    onClick={handleSubmit}
-    className="relative mt-4 w-full bg-white text-black py-3 font-bold rounded-md border-2 border-black overflow-hidden group"
-  >
-    Get Started
-    {/* Ripple Effect */}
-    <span className="absolute inset-0 bg-black opacity-0 group-hover:opacity-10 transition duration-300"></span>
-  </button>
-</div>
-
+    <div className="mt-4 relative overflow-hidden">
+      <button
+        onClick={handleSubmit}
+        className="relative mt-4 w-full bg-white text-black py-3 font-bold rounded-md border-2 border-black overflow-hidden group"
+      >
+        Get Started
+        {/* Ripple Effect */}
+        <span className="absolute inset-0 bg-black opacity-0 group-hover:opacity-10 transition duration-300"></span>
+      </button>
+    </div>
   );
 };
 
 const Pricing: React.FC = () => {
-  const [billingCycle, setBillingCycle] = useState<"Annual" | "Bi-Annual">("Annual");
+  const [billingCycle, setBillingCycle] = useState<"Annual" | "Bi-Annual">(
+    "Annual"
+  );
 
   const toggleBillingCycle = () => {
     setBillingCycle((prev) => (prev === "Annual" ? "Bi-Annual" : "Annual"));
@@ -142,9 +154,12 @@ const Pricing: React.FC = () => {
     <div className="bg-gray-20 min-h-screen flex flex-col items-center justify-center px-4 sm:px-6 lg:px-8">
       {/* Header Section */}
       <header className="text-center mb-12">
-        <h1 className="text-3xl sm:text-4xl font-extrabold text-gray-900">Pricing and Plans</h1>
+        <h1 className="text-3xl sm:text-4xl font-extrabold text-gray-900">
+          Pricing and Plans
+        </h1>
         <p className="text-gray-600 mt-4 max-w-2xl mx-auto text-base sm:text-lg">
-          Select a plan that best fits your needs. Flexible billing cycles for your convenience.
+          Select a plan that best fits your needs. Flexible billing cycles for
+          your convenience.
         </p>
         <div className="flex justify-center items-center gap-6 mt-6">
           <span className="text-gray-600 text-base sm:text-lg">Bi-Annual</span>
@@ -162,61 +177,65 @@ const Pricing: React.FC = () => {
         </div>
       </header>
 
-    
       {/* Pricing Cards Section */}
-<div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-8 max-w-7xl w-full">
-  {plans.map((plan) => (
-    <div
-      key={plan.type}
-      className={`p-6 sm:p-8 shadow-lg rounded-lg ${
-        plan.type === "Pro" ? "bg-[#002F6C] text-white relative" : "bg-white"
-      }`}
-    >
-      <h2 className="text-xl sm:text-2xl font-bold">{plan.type}</h2>
-
-      {/* Pricing Section */}
-      <p className="mt-4 flex items-center space-x-2">
-        <span className="text-3xl sm:text-4xl font-extrabold">${plan.price}</span>
-
-        {/* Show Discount Badge when Annual */}
-        {billingCycle === "Annual" && (
-          <span
-            className={`text-white text-sm font-bold px-2 py-1 rounded-md ${
-              plan.type === "Pro" ? "bg-[#629E1B]" : "bg-gray-300"
+      <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-8 max-w-7xl w-full">
+        {plans.map((plan) => (
+          <div
+            key={plan.type}
+            className={`p-6 sm:p-8 shadow-lg rounded-lg ${
+              plan.type === "Pro"
+                ? "bg-[#002F6C] text-white relative"
+                : "bg-white"
             }`}
           >
-            -15%
-          </span>
-        )}
-      </p>
+            <h2 className="text-xl sm:text-2xl font-bold">{plan.type}</h2>
 
-      <p>per user/month, billed {billingCycle === "Annual" ? "annually" : "bi-annually"}</p>
+            {/* Pricing Section */}
+            <p className="mt-4 flex items-center space-x-2">
+              <span className="text-3xl sm:text-4xl font-extrabold">
+                ${plan.price}
+              </span>
 
-      {/* Features List */}
-      <ul className="mt-6 space-y-4 text-base sm:text-lg">
-        {plan.description
-          .trim()
-          .split("\n")
-          .map((item, idx) => (
-            <li key={idx} className="flex items-center space-x-2">
-              {/* Conditional tick color */}
-             
-              <span>{item.trim()}</span>
-            </li>
-          ))}
-      </ul>
+              {/* Show Discount Badge when Annual */}
+              {billingCycle === "Annual" && (
+                <span
+                  className={`text-white text-sm font-bold px-2 py-1 rounded-md ${
+                    plan.type === "Pro" ? "bg-[#629E1B]" : "bg-gray-300"
+                  }`}
+                >
+                  -15%
+                </span>
+              )}
+            </p>
 
-      <SubscribeComponent
-  planType={plan.type}
-  planCycle={billingCycle}  // ✅ This correctly updates the cycle in the backend request
-  price={plan.price}
-  description={plan.description}
-/>
+            <p>
+              per user/month, billed{" "}
+              {billingCycle === "Annual" ? "annually" : "bi-annually"}
+            </p>
 
-    </div>
-  ))}
-</div>
+            {/* Features List */}
+            <ul className="mt-6 space-y-4 text-base sm:text-lg">
+              {plan.description
+                .trim()
+                .split("\n")
+                .map((item, idx) => (
+                  <li key={idx} className="flex items-center space-x-2">
+                    {/* Conditional tick color */}
 
+                    <span>{item.trim()}</span>
+                  </li>
+                ))}
+            </ul>
+
+            <SubscribeComponent
+              planType={plan.type}
+              planCycle={billingCycle} // ✅ This correctly updates the cycle in the backend request
+              price={plan.price}
+              description={plan.description}
+            />
+          </div>
+        ))}
+      </div>
     </div>
   );
 };

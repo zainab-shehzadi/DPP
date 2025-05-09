@@ -11,39 +11,63 @@ const {
 } = require("../controllers/fileController");
 const mongoose = require("mongoose");
 const File = require("../models/File");
+const { protect } = require("../middlewares/authMiddleware");
 
-router.post("/docs", async (req, res) => {
+// router.post("/docs", async (req, res) => {
+//   try {
+
+//     const { email } = req.body;
+
+//     if (!email) {
+//       return res.status(400).json({ error: "Email is required" });
+//     }
+
+//     const userFiles = await File.find({ email });
+
+//     if (!userFiles || userFiles.length === 0) {
+//       return res.status(404).json({ error: "No files found for this user" });
+//     }
+
+//     // ✅ Ensure proper structure in the response
+//     const fileData = userFiles.flatMap((user) =>
+//       user.files.map((file) => ({
+//         _id: file._id,
+//         originalName: file.originalName,
+//         fileUrl: file.fileUrl,
+//       }))
+//     );
+
+//     return res.status(200).json(fileData);
+//   } catch (error) {
+//     console.error("Error fetching files:", error);
+//     return res.status(500).json({ error: "Internal server error" });
+//   }
+// });
+
+router.get("/docs", protect, async (req, res) => {
   try {
-    // Extract email from request body (not query)
-    const { email } = req.body;
+    const userId = req.user?.id;
 
-    if (!email) {
-      return res.status(400).json({ error: "Email is required" });
+    if (!userId) {
+      return res.status(401).json({ error: "Unauthorized: User ID not found" });
     }
 
-    const userFiles = await File.find({ email });
+    const userFiles = await File.find({ userId });
 
     if (!userFiles || userFiles.length === 0) {
       return res.status(404).json({ error: "No files found for this user" });
     }
-
-    // ✅ Ensure proper structure in the response
-    const fileData = userFiles.flatMap((user) =>
-      user.files.map((file) => ({
-        _id: file._id,
-        originalName: file.originalName,
-        fileUrl: file.fileUrl,
-      }))
-    );
-
-    return res.status(200).json(fileData);
+console.log("User Files:", userFiles); 
+    return res.status(200).json(userFiles); 
+  
   } catch (error) {
     console.error("Error fetching files:", error);
     return res.status(500).json({ error: "Internal server error" });
   }
 });
 
-router.post("/upload", upload.single("file"), uploadFile);
+
+router.post("/upload", protect, upload.single("file"), uploadFile);
 router.get("/tags", fetchTagsByEmail);
 router.post("/tags1", fetchTagsByEmail1);
 
@@ -116,7 +140,7 @@ router.post("/tags-with-descriptions", async (req, res) => {
 //     if (!tagToUpdate.response) {
 //       tagToUpdate.response = {};
 //     }
-    
+
 //     // ✅ Update solution
 //     tagToUpdate.response.solution = Array.isArray(solution) ? solution : [solution];
 
@@ -134,7 +158,41 @@ router.post("/tags-with-descriptions", async (req, res) => {
 //     res.status(500).json({ error: "Internal server error" });
 //   }
 // });
+router.post("/update-status", async (req, res) => {
+  const { docId, tagId, status, email } = req.body;
 
+  if (!docId || !tagId || !status || !email) {
+    return res.status(400).json({ error: "Missing required fields" });
+  }
+
+  try {
+    const updated = await File.findOneAndUpdate(
+      {
+        email: email,
+        "files._id": docId,
+        "files.tags._id": tagId,
+      },
+      {
+        $set: {
+          "files.$[file].tags.$[tag].pocStatus": status,
+        },
+      },
+      {
+        arrayFilters: [{ "file._id": docId }, { "tag._id": tagId }],
+        new: true,
+      }
+    );
+
+    if (!updated) {
+      return res.status(404).json({ error: "Document not found" });
+    }
+
+    return res.json({ message: "Tag status updated", updated });
+  } catch (err) {
+    console.error("Update error:", err);
+    return res.status(500).json({ error: "Server error" });
+  }
+});
 
 router.put("/updateSolution", async (req, res) => {
   try {
@@ -144,14 +202,18 @@ router.put("/updateSolution", async (req, res) => {
 
     // ✅ Ensure required fields are provided, but allow null solutions
     if (!email || !id || !tagId) {
-      return res.status(400).json({ error: "Email, ID, and tagId are required" });
+      return res
+        .status(400)
+        .json({ error: "Email, ID, and tagId are required" });
     }
 
     // ✅ Find the document containing the file
     const document = await File.findOne({ email, "files._id": id });
 
     if (!document) {
-      return res.status(404).json({ error: "Document not found for the given email and ID" });
+      return res
+        .status(404)
+        .json({ error: "Document not found for the given email and ID" });
     }
 
     // ✅ Find the specific file inside `files` array
@@ -170,11 +232,19 @@ router.put("/updateSolution", async (req, res) => {
       tagToUpdate.response = {};
     }
 
-    tagToUpdate.response.solution = solution && solution.length > 0 ? (Array.isArray(solution) ? solution : [solution]) : null;
+    tagToUpdate.response.solution =
+      solution && solution.length > 0
+        ? Array.isArray(solution)
+          ? solution
+          : [solution]
+        : null;
 
     await document.save();
 
-    console.log("Solution Updated Successfully:", tagToUpdate.response.solution);
+    console.log(
+      "Solution Updated Successfully:",
+      tagToUpdate.response.solution
+    );
 
     res.status(200).json({
       message: "Solution updated successfully",
@@ -390,9 +460,8 @@ router.post("/tagDescriptions", async (req, res) => {
   }
 });
 
-
 router.get("/tags2", fetchTagsAndSolutionByEmail);
-router.post("/generatesol", generateSolution);
+router.post("/generatesol", protect, generateSolution);
 router.get("/check-response", checkResponse);
 
 module.exports = router;

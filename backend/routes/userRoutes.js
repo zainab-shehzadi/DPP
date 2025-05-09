@@ -77,7 +77,6 @@ router.post("/fetch", async (req, res) => {
     res.status(500).json({ message: "Error fetching user data", error });
   }
 });
-
 router.put("/update", async (req, res) => {
   try {
     const { id } = req.body;
@@ -100,9 +99,7 @@ router.put("/update", async (req, res) => {
   }
 });
 router.post('/add', createUser); 
-
 router.get('/User123', getAllUsers); 
-
 router.post("/state", async (req, res) => {
   try {
     const data = req.body;
@@ -145,36 +142,103 @@ router.post("/state", async (req, res) => {
   }
 });
 
+// router.post("/state/tags", async (req, res) => {
+//   try {
+//     const { stateName } = req.body;
+
+//     if (!stateName) {
+//       return res.status(400).json({ error: "State name is required" });
+//     }
+
+//     const now = new Date();
+//     const startOfMonth = new Date(now.getFullYear(), now.getMonth(), 1);
+//     const endOfMonth = new Date(now.getFullYear(), now.getMonth() + 1, 1);
+
+//     const stateDoc = await State.findOne({
+//       date: { $gte: startOfMonth, $lt: endOfMonth }
+//     }).sort({ date: -1 });
+
+//     if (!stateDoc) {
+//       return res.status(404).json({ error: "No data found for current month" });
+//     }
+
+//     if (!stateDoc.stateData.has(stateName)) {
+//       return res.status(404).json({ error: `No tag found for state: ${stateName}` });
+//     }
+
+//     const tagObject = stateDoc.stateData.get(stateName); // ✅ Corrected
+
+//     res.status(200).json({
+//       state: stateName,
+//       tag: tagObject,
+//       date: stateDoc.date
+//     });
+
+//   } catch (error) {
+//     console.error("❌ Error fetching state tag:", error);
+//     res.status(500).json({
+//       error: "Internal server error",
+//       details: error.message
+//     });
+//   }
+// });
+
 router.post("/state/tags", async (req, res) => {
   try {
-    const { stateName } = req.body;
+    const { stateName, days = 30 } = req.body;
 
     if (!stateName) {
       return res.status(400).json({ error: "State name is required" });
     }
 
     const now = new Date();
-    const startOfMonth = new Date(now.getFullYear(), now.getMonth(), 1);
-    const endOfMonth = new Date(now.getFullYear(), now.getMonth() + 1, 1);
+    let startDate;
+    let expectedMonths;
 
-    const stateDoc = await State.findOne({
-      date: { $gte: startOfMonth, $lt: endOfMonth }
+    if (days === 30) {
+      startDate = new Date(now.getFullYear(), now.getMonth(), 1);
+      expectedMonths = 1;
+    } else if (days === 60) {
+      startDate = new Date(now.getFullYear(), now.getMonth() - 1, 1);
+      expectedMonths = 2;
+    } else if (days === 90) {
+      startDate = new Date(now.getFullYear(), now.getMonth() - 2, 1);
+      expectedMonths = 3;
+    } else if (days === 180) {
+      startDate = new Date(now.getFullYear(), now.getMonth() - 5, 1);
+      expectedMonths = 6;
+    } else {
+      return res.status(400).json({ error: "Unsupported days value." });
+    }
+
+    // Fetch documents within date range
+    const docs = await State.find({
+      date: { $gte: startDate, $lte: now }
     }).sort({ date: -1 });
 
-    if (!stateDoc) {
-      return res.status(404).json({ error: "No data found for current month" });
+    const availableMonths = docs.length;
+    const mergedTags = {};
+
+    for (const doc of docs) {
+      const tagMap = doc.stateData?.get(stateName);
+      if (tagMap) {
+        for (const [tag, count] of Object.entries(tagMap)) {
+          mergedTags[tag] = (mergedTags[tag] || 0) + count;
+        }
+      }
     }
 
-    if (!stateDoc.stateData.has(stateName)) {
-      return res.status(404).json({ error: `No tag found for state: ${stateName}` });
+    if (Object.keys(mergedTags).length === 0) {
+      return res.status(404).json({ error: `No tags found for state: ${stateName}` });
     }
 
-    const tagObject = stateDoc.stateData.get(stateName); // ✅ Corrected
 
     res.status(200).json({
       state: stateName,
-      tag: tagObject,
-      date: stateDoc.date
+      tag: mergedTags,
+      periodStart: startDate,
+      periodEnd: now,
+    
     });
 
   } catch (error) {
@@ -185,6 +249,7 @@ router.post("/state/tags", async (req, res) => {
     });
   }
 });
+
 
 router.post('/upload-profile-image', updateProfileImage);
 

@@ -1,10 +1,8 @@
-//
-
 "use client";
 
 import "@fortawesome/fontawesome-free/css/all.min.css";
 import React, { useState, useEffect } from "react";
-import Image2 from "@/components/imageright"; // Ensure the correct import path
+import Image2 from "@/components/imageright";
 import { useRouter, useSearchParams } from "next/navigation";
 import { toast } from "react-toastify";
 import Cookies from "js-cookie";
@@ -13,56 +11,9 @@ const formDetail: React.FC = () => {
   const [facilityName, setFacilityName] = useState("");
   const [facilityAddress, setFacilityAddress] = useState("");
   const [noOfBeds, setNoOfBeds] = useState("1");
-  const [email, setEmail] = useState<string | null>(null); // Email from URL
   const [isLoading, setIsLoading] = useState(false);
 
   const router = useRouter();
-  const searchParams = useSearchParams();
-
-  useEffect(() => {
-    const emailFromParams = searchParams.get("email");
-    setEmail(emailFromParams);
-  }, [searchParams]);
-
-  // const handleSubmit = async (e: React.FormEvent) => {
-  //   e.preventDefault();
-
-  //   if (!facilityName || !facilityAddress || !noOfBeds) {
-  //     toast.error("All fields are required!", { position: "top-right" });
-  //     return;
-  //   }
-  //   try {
-  //     const response = await fetch(
-  //       `${process.env.NEXT_PUBLIC_API_BASE_URL}/api/facility/info`,
-  //       {
-  //         method: "POST",
-  //         headers: { "Content-Type": "application/json" },
-  //         body: JSON.stringify({
-  //           email,
-  //           facilityName,
-  //           facilityAddress,
-  //           noOfBeds: parseInt(noOfBeds, 10),
-  //         }),
-  //       }
-  //     );
-
-  //     if (!response.ok) {
-  //       throw new Error("Failed to save facility.");
-  //     }
-
-  //     const data = await response.json();
-  //     const status = data.userStatusUpdated; // Correct key name from response
-  //     Cookies.set("VerifyStatus", status);
-
-  //     toast.success("Facility saved successfully!", { position: "top-right" });
-  //     router.push(`/verify-email`);
-  //   } catch (error) {
-
-  //     toast.error("Failed to save facility. Please try again.", {
-  //       position: "top-right",
-  //     });
-  //   }
-  // };
 
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
@@ -71,10 +22,17 @@ const formDetail: React.FC = () => {
 
     if (!facilityName || !facilityAddress || !noOfBeds) {
       toast.error("All fields are required!", { position: "top-right" });
-      setIsLoading(false); // ✅ Re-enable on validation failure
+      setIsLoading(false);
       return;
     }
+    const email = Cookies.get("email");
 
+    console.log("Form Data:", {
+      email,
+      facilityName,
+      facilityAddress,
+      noOfBeds: parseInt(noOfBeds, 10),
+    })
     try {
       const response = await fetch(
         `${process.env.NEXT_PUBLIC_API_BASE_URL}/api/facility/info`,
@@ -108,7 +66,6 @@ const formDetail: React.FC = () => {
       setIsLoading(false);
     }
   };
-
   return (
     <div className="flex h-screen font-work-sans bg-gray-50">
       {/* Left Side: Sign-Up Form */}

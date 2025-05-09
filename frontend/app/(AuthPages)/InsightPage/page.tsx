@@ -58,7 +58,11 @@ export default function Dashboard() {
       setEmail(storedEmail);
     }
   }, []);
-
+  useEffect(() => {
+    if (selectedState) {
+      fetchTags(selectedState, selectedDays);
+    }
+  }, [selectedDays]);
   useEffect(() => {
     const fetchUserData = async () => {
       if (!email) return;
@@ -92,7 +96,7 @@ export default function Dashboard() {
           ) || "";
 
         setSelectedState(matchedState);
-        fetchTags(matchedState);
+        fetchTags(matchedState, selectedDays);
       } catch (error) {
         console.error("Error fetching user data:", error);
       } finally {
@@ -162,7 +166,7 @@ export default function Dashboard() {
     "Wisconsin",
     "Wyoming",
   ];
-  const fetchTags = async (stateName: string) => {
+  const fetchTags = async (stateName: string, days: number = 30) => {
     try {
       const decodedStateName = decodeURIComponent(stateName);
       const baseUrl = process.env.NEXT_PUBLIC_API_BASE_URL;
@@ -174,12 +178,15 @@ export default function Dashboard() {
       }
 
       const apiUrl = `${baseUrl}/api/users/state/tags`;
-      console.log(`📡 Fetching tags for state: ${decodedStateName}`);
+
+      console.log(
+        `📡 Fetching tags for state: ${decodedStateName}, days: ${days}`
+      );
 
       const response = await fetch(apiUrl, {
         method: "POST",
         headers: { "Content-Type": "application/json" },
-        body: JSON.stringify({ stateName: decodedStateName }),
+        body: JSON.stringify({ stateName: decodedStateName, days }),
       });
 
       if (!response.ok) {
@@ -187,15 +194,13 @@ export default function Dashboard() {
       }
 
       const data = await response.json();
-      console.log("🧪 Full API response:", data);
-
+      console.log("✅ Top Sorted Tags:", data);
       const tagObj: Record<string, number> = data.tag || {};
 
-      // Convert object to array and sort by count descending
       const sortedTags = Object.entries(tagObj)
         .map(([tag, count]) => ({ tag, count }))
         .sort((a, b) => b.count - a.count)
-        .slice(0, 10); // Top 10
+        .slice(0, 10);
 
       setTags(sortedTags);
       console.log("✅ Top Sorted Tags:", sortedTags);
@@ -203,6 +208,7 @@ export default function Dashboard() {
       console.error("❌ Error fetching tags:", error);
     }
   };
+
   const name = Cookies.get("name");
 
   return (
@@ -272,7 +278,7 @@ export default function Dashboard() {
                           onClick={() => {
                             setSelectedState(state);
                             setDropdownOpen(false);
-                            fetchTags(state);
+                            fetchTags(state, selectedDays);
                           }}
                         >
                           {state}
@@ -289,13 +295,7 @@ export default function Dashboard() {
                 </label>
                 <select
                   value={selectedDays}
-                  onChange={(e) => {
-                    const days = Number(e.target.value);
-                    setSelectedDays(days);
-                    if (selectedState) {
-                      fetchTags(selectedState); // ✅ pass days
-                    }
-                  }}
+                  onChange={(e) => setSelectedDays(Number(e.target.value))}
                   className="border border-gray-300 rounded-md px-3 py-1 text-sm w-full sm:w-auto focus:outline-none focus:ring-2 focus:ring-blue-900 focus:border-blue-900 transition"
                 >
                   <option value={30}>Last 30 days</option>
@@ -361,7 +361,7 @@ export default function Dashboard() {
                 {selectedTag && (
                   <>
                     <h3 className="text-lg font-semibold text-gray-900 mb-10"></h3>
-                    <p className="text-gray-600 mt-2">
+                    {/* <p className="text-gray-600 mt-2">
                       {Array.isArray(solution) && solution.length > 0 ? (
                         solution.map((policy, index) => (
                           <li key={index}>{policy}</li>
@@ -369,7 +369,7 @@ export default function Dashboard() {
                       ) : (
                         <li>No Plan of Correction available.</li>
                       )}
-                    </p>
+                    </p> */}
                   </>
                 )}
               </div>

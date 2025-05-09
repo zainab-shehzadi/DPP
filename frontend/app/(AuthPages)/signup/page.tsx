@@ -9,6 +9,7 @@ import Cookies from "js-cookie";
 
 import { useRouter } from "next/navigation";
 import authPublicRoutes from "@/hoc/authPublicRoutes";
+import { departmentPositions, departmentLabels, roles } from "@/constants/dpp";
 const Signup: React.FC = () => {
   const [DepartmentName, setDepartmentName] = useState("");
   const [position, setPosition] = useState("");
@@ -22,118 +23,11 @@ const Signup: React.FC = () => {
   const [showRepeatPassword, setShowRepeatPassword] = useState(false);
   const [message, setMessage] = useState<string>("");
   const [isLoading, setIsLoading] = useState(false);
-
-  // Department-to-Positions Mapping
-  const departmentPositions = {
-    "Business Office": [
-      "Office Manager",
-      "Biller",
-      "Payroll",
-      "Reception",
-      "Admissions",
-    ],
-    "Director of Admissions": ["Liaison"],
-    "IT Department ": ["Director of Activities"],
-    Activities: ["Director of Activities", "Activity Staff"],
-    Maintenance: ["Director of Maintenance", "Maintenance Staff"],
-    Dietary: ["Director of Dietary", "Dietitian", "Dietary Staff"],
-    Therapy: ["Director of Therapy", "Therapy Staff"],
-    Laundry: ["Laundry Supervisor"],
-    Housekeeping: ["Housekeeping Supervisor"],
-    "Case Management": ["Case Manager"],
-    MDS: ["Director of MDS", "MDS Staff"],
-    Nursing: [
-      "Director of Nursing",
-      "Assistant Director of Nursing",
-      "Unit Manager",
-    ],
-    Administration: ["Administrator", "Administrator in Training"],
-    "Social Services": ["Social Services Director", "Social Services Staff"],
-    "Staff Development Department": ["Staff Development Coordinator"],
-    "Nursing Department": ["Nursing Development Coordinator"],
-    "Quality Assurance Department": ["Nursing Development Coordinator"],
-  };
-
-  // Leadership and Supporting Roles
-  const roleCategories = {
-    leadership: ["Director", "Manager", "Supervisor"],
-    supporting: ["Staff", "Assistant", "Liaison"],
-  };
-
-  // List of all roles combining leadership and supporting roles
-  const leadershipRoles = roleCategories.leadership;
-  const supportingRoles = roleCategories.supporting;
   const positions = DepartmentName
     ? departmentPositions[DepartmentName] || []
     : [];
-
   const router = useRouter();
 
-  // const handleSubmit = async (e: React.FormEvent) => {
-  //   e.preventDefault();
-  //   // Trim input and validate names
-  //   if (!firstName.trim()) {
-  //     toast.error("First Name cannot be empty or just spaces");
-  //     return;
-  //   }
-  //   if (!lastName.trim()) {
-  //     toast.error("Last Name cannot be empty or just spaces");
-  //     return;
-  //   }
-  //   // Check password length
-  //   if (password.length < 8) {
-  //     toast.error("Password must be at least 8 characters long", {
-  //       position: "top-right",
-  //     });
-  //     return;
-  //   }
-
-  //   if (password !== repeatPassword) {
-  //     toast.error("Passwords do not match", { position: "top-right" });
-  //     return;
-  //   }
-
-  //   try {
-  //     // Send the form data to the backend
-  //     const response = await fetch(
-  //       `${process.env.NEXT_PUBLIC_API_BASE_URL}/api/users/signup`,
-  //       {
-  //         method: "POST",
-  //         headers: {
-  //           "Content-Type": "application/json",
-  //         },
-  //         body: JSON.stringify({
-  //           DepartmentName,
-  //           firstName,
-  //           lastName,
-  //           email,
-  //           role,
-  //           position,
-  //           password,
-  //           confirmPassword: repeatPassword,
-  //         }),
-  //       }
-  //     );
-
-  //     const data = await response.json();
-  //     const status = data.status;
-  //     Cookies.set("VerifyStatus", status);
-  //     Cookies.set("email", email);
-  //     Cookies.set("name", firstName);
-  //     if (response.ok) {
-  //       toast.success("Registration done", { position: "top-right" });
-
-  //       setTimeout(() => {
-  //         router.push(`/form-detail?email=${email}`);
-  //       }, 2000);
-  //     } else {
-  //       toast.error(data.message || "Signup failed!");
-  //     }
-  //   } catch (error) {
-  //     console.error("Error during signup:", error);
-  //     toast.error("An error occurred. Please try again.");
-  //   }
-  // };
 
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
@@ -157,17 +51,17 @@ const Signup: React.FC = () => {
         toast.error("Passwords do not match");
         return;
       }
-
+    
       const response = await fetch(
         `${process.env.NEXT_PUBLIC_API_BASE_URL}/api/users/signup`,
         {
           method: "POST",
           headers: { "Content-Type": "application/json" },
           body: JSON.stringify({
-            DepartmentName,
-            firstName,
-            lastName,
-            email,
+            DepartmentName: DepartmentName.trim(),
+            firstName: firstName.trim(),
+            lastName: lastName.trim(),
+            email: email.trim().toLowerCase(),
             role,
             position,
             password,
@@ -183,17 +77,16 @@ const Signup: React.FC = () => {
 
       if (response.ok) {
         toast.success("Registration done");
-        // ⏳ Don't re-enable — redirect is coming
         setTimeout(() => {
-          router.push(`/form-detail?email=${email}`);
+          router.push(`/form-detail`);
         }, 1500);
       } else {
         toast.error(data.message || "Signup failed!");
-        setIsLoading(false); // ✅ Re-enable on error
+        setIsLoading(false);
       }
     } catch (error) {
       toast.error("An error occurred. Please try again.");
-      setIsLoading(false); // ✅ Re-enable on catch
+      setIsLoading(false);
     }
   };
 
@@ -225,7 +118,7 @@ const Signup: React.FC = () => {
                   type="text"
                   placeholder="First Name"
                   value={firstName}
-                  onChange={(e) => setFirstName(e.target.value.trimStart())} // Prevent leading spaces
+                  onChange={(e) => setFirstName(e.target.value.trimStart())}
                   required
                   className="w-full px-2 py-2 border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-blue-500 text-sm"
                 />
@@ -244,6 +137,7 @@ const Signup: React.FC = () => {
                 />
               </div>
             </div>
+
             {/* Department Name */}
             <div>
               <label className="block text-sm font-medium text-gray-700 mb-0">
@@ -261,9 +155,9 @@ const Signup: React.FC = () => {
                 <option value="" disabled>
                   Select a department
                 </option>
-                {Object.keys(departmentPositions).map((dept, index) => (
-                  <option key={index} value={dept}>
-                    {dept}
+                {Object.keys(departmentPositions).map((deptKey) => (
+                  <option key={deptKey} value={deptKey}>
+                    {departmentLabels[deptKey]}
                   </option>
                 ))}
               </select>
@@ -294,7 +188,7 @@ const Signup: React.FC = () => {
                 onChange={(e) => setPosition(e.target.value)}
                 required
                 className="w-full px-2 py-2 border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-blue-500 text-sm"
-                disabled={!positions.length} // Disable if no department is selected
+                disabled={!positions.length} // ✅ Use positions, not departmentPositions
               >
                 <option value="" disabled>
                   {positions.length
@@ -319,31 +213,18 @@ const Signup: React.FC = () => {
                 onChange={(e) => setRole(e.target.value)}
                 required
                 className="w-full px-2 py-2 border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-blue-500 text-sm"
-                disabled={!DepartmentName} // Disable if no department is selected
+                disabled={!DepartmentName}
               >
                 <option value="" disabled>
                   {DepartmentName
                     ? "Select a role"
                     : "Select a department first"}
                 </option>
-
-                {/* Leadership Roles */}
-                <optgroup label="Leadership Roles">
-                  {leadershipRoles.map((role, index) => (
-                    <option key={index} value={role}>
-                      {role}
-                    </option>
-                  ))}
-                </optgroup>
-
-                {/* Supporting Roles */}
-                <optgroup label="Supporting Roles">
-                  {supportingRoles.map((role, index) => (
-                    <option key={index} value={role}>
-                      {role}
-                    </option>
-                  ))}
-                </optgroup>
+                {roles.map((r, index) => (
+                  <option key={index} value={r}>
+                    {r}
+                  </option>
+                ))}
               </select>
             </div>
 
