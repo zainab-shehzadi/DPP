@@ -29,7 +29,7 @@ export function middleware(req: NextRequest) {
   }
 if(!token){
   if (status === "onboarding") {
-    return NextResponse.redirect(new URL(`/form-detail?email=${email}`, req.url));
+    return NextResponse.redirect(new URL(`/form-detail`, req.url));
   } else if (status === "pending") {
     return NextResponse.redirect(new URL("/verify-email", req.url));
   }
@@ -49,17 +49,7 @@ if(!token){
     return NextResponse.redirect(new URL("/login", req.url));
   }
 
-  const restrictedRoutes = ["/UserSetting", "/AddNewUser", "/AddUser"];
-  if (restrictedRoutes.includes(url.pathname)) {
-   
-      if (role && role.toLowerCase() === "admin" && token  ) {
-        return NextResponse.next(); 
-      } else {
-        url.pathname = "/login";
-        return NextResponse.redirect(url); 
-      }
-  
-  }
+
 
   return NextResponse.next();
 }

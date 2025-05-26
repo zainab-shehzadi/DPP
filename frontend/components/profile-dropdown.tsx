@@ -5,19 +5,24 @@ import Image from "next/image";
 import { useRouter } from "next/navigation";
 import Logout from "./logoutConfirmation";
 import Cookies from "js-cookie";
+import { useProfileStore } from "@/stores/useUserStore";
 
 const UserDropdown = () => {
   const [isOpen, setIsOpen] = useState(false);
   const [isModalOpen, setIsModalOpen] = useState(false);
-  const [imageUrl, setImageUrl] = useState("");
   const [email, setEmail] = useState<string | null>(null);
+
+  const imageUrl = useProfileStore((state) => state.imageUrl);
+  const setImageUrl = useProfileStore((state) => state.setImageUrl);
 
   const router = useRouter();
   const dropdownRef = useRef<HTMLDivElement | null>(null);
-  const handleNavigation = (path) => {
+
+  const handleNavigation = (path: string) => {
     router.push(path);
     setIsOpen(false);
   };
+
   useEffect(() => {
     const handleClickOutside = (event: MouseEvent) => {
       if (
@@ -31,12 +36,14 @@ const UserDropdown = () => {
     document.addEventListener("mousedown", handleClickOutside);
     return () => document.removeEventListener("mousedown", handleClickOutside);
   }, []);
+
   useEffect(() => {
     const storedEmail = Cookies.get("email");
     if (storedEmail) {
       setEmail(storedEmail);
     }
   }, []);
+
   useEffect(() => {
     const fetchProfileImage = async () => {
       try {
@@ -51,8 +58,6 @@ const UserDropdown = () => {
           }
         );
 
-        if (!response.ok) throw new Error("Failed to fetch profile image");
-
         const data = await response.json();
         if (data?.profileImage) {
           setImageUrl(data.profileImage);
@@ -65,11 +70,13 @@ const UserDropdown = () => {
     if (email) {
       fetchProfileImage();
     }
-  }, [email]);
+  }, [email, setImageUrl]);
+
   const handleLogout = () => {
     setIsModalOpen(true);
     setIsOpen(false);
   };
+
   const handleConfirmLogout = () => {
     try {
       document.cookie =
@@ -81,6 +88,8 @@ const UserDropdown = () => {
       console.error("Logout error:", error);
     }
   };
+
+  const role = Cookies.get("role");
 
   return (
     <div className="relative" ref={dropdownRef}>
@@ -95,7 +104,7 @@ const UserDropdown = () => {
           className="rounded-full w-10 h-10"
           alt="User Profile"
         />
-        <span className="text-gray-800 text-xs sm:text-sm">User</span>
+        <span className="text-gray-800 text-xs sm:text-sm">{role}</span>
         <span className="text-gray-600 text-xs">▾</span>
       </div>
 
@@ -122,7 +131,6 @@ const UserDropdown = () => {
         </div>
       )}
 
-      {/* Logout Modal */}
       <Logout
         isModalOpen={isModalOpen}
         setIsModalOpen={setIsModalOpen}

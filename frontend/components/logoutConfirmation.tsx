@@ -4,26 +4,37 @@ import {
   DialogContent,
   DialogHeader,
   DialogTitle,
+  DialogDescription,
   DialogFooter,
 } from "@/components/ui/dialog";
-import { FaQuestionCircle } from "react-icons/fa";
 import { Button } from "./ui/button";
 
 const Logout = ({ isModalOpen, setIsModalOpen, handleConfirmLogout }) => {
   return (
     <Dialog open={isModalOpen} onOpenChange={setIsModalOpen}>
-      <DialogContent className="flex flex-col justify-center items-center max-w-sm text-center bg-white-100">
-        <DialogHeader>
-          <FaQuestionCircle className="text-4xl text-primary mx-auto" />
-          <DialogTitle>Are you sure you want to Sign Out?</DialogTitle>
+      <DialogContent className="max-w-md p-6 rounded-2xl bg-white shadow-lg">
+        <DialogHeader className="text-left space-y-2">
+          <DialogTitle className="text-lg font-bold">
+            Are you sure you want to log out?
+          </DialogTitle>
+          <DialogDescription className="text-sm text-gray-500">
+            You'll be signed out of your account. Make sure you've saved your work before continuing.
+          </DialogDescription>
         </DialogHeader>
-        <DialogFooter>
-          <Button variant="outline" onClick={() => setIsModalOpen(false)}>
-            No
+        <DialogFooter className="flex flex-row justify-between gap- 2mt-2">
+          <Button
+            variant="outline"
+            className="w-full"
+            onClick={() => setIsModalOpen(false)}
+          >
+            Cancel
           </Button>
-          <Button className="bg-[#002D62] text-white hover:bg-[#001F4D]" onClick={handleConfirmLogout}>
-  Yes
-</Button>
+          <Button
+            className="w-full bg-[#002D62] text-white hover:bg-[#001F4D]"
+            onClick={handleConfirmLogout}
+          >
+            Log out
+          </Button>
         </DialogFooter>
       </DialogContent>
     </Dialog>

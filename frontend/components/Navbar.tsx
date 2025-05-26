@@ -9,8 +9,8 @@ import { useRouter, usePathname } from "next/navigation"; // Import usePathname
 
 const Navbar = () => {
   const router = useRouter();
-  const pathname = usePathname(); // Get current route
-  const isDisabled = true; // Change this dynamically
+  const pathname = usePathname();
+  const isDisabled = true;
 
   const handleNavigate = (path: string) => {
     router.push(path);
@@ -22,27 +22,33 @@ const Navbar = () => {
 
       <ul className="flex flex-row gap-4">
         <li
-          className={`nav-item cursor-pointer ${pathname === "/" ? "font-bold text-blue-600" : ""}`}
+          className={`nav-item cursor-pointer ${
+            pathname === "/" ? "font-bold text-blue-600" : ""
+          }`}
           onClick={() => handleNavigate("/")}
         >
           Home
         </li>
         <li
-  className={`nav-item cursor-pointer 
+          className={`nav-item cursor-pointer 
     ${pathname === "/Product" ? "font-bold text-blue-600" : ""}
     ${isDisabled ? "pointer-events-none opacity-50 text-gray-400" : ""}`}
->
-  Product
-</li>
+        >
+          Product
+        </li>
 
         <li
-          className={`nav-item cursor-pointer hover:underline ${pathname === "/HomePage" ? "font-extrabold text-blue-600" : ""}`}
+          className={`nav-item cursor-pointer hover:underline ${
+            pathname === "/HomePage" ? "font-extrabold text-blue-600" : ""
+          }`}
           onClick={() => handleNavigate("/AboutUs")}
         >
           About Us
         </li>
         <li
-          className={`nav-item cursor-pointer hover:underline ${pathname === "/Pricing" ? "font-extrabold text-blue-600" : ""}`}
+          className={`nav-item cursor-pointer hover:underline ${
+            pathname === "/Pricing" ? "font-extrabold text-blue-600" : ""
+          }`}
           onClick={() => handleNavigate("/Pricing")}
         >
           Pricing Plan
@@ -51,7 +57,9 @@ const Navbar = () => {
 
       <div className="flex gap-3 items-center">
         <p
-          className={`font-semibold cursor-pointer ${pathname === "/Login" ? "font-bold text-blue-600" : ""}`}
+          className={`font-semibold cursor-pointer ${
+            pathname === "/Login" ? "font-bold text-blue-600" : ""
+          }`}
           onClick={() => handleNavigate("/login")}
         >
           Sign In

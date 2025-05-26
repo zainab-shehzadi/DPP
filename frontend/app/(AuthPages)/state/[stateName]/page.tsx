@@ -124,7 +124,7 @@ export default function StatePage({ params }: StatePageProps) {
             Hello, <span className="text-blue-900 capitalize">{name}</span>
           </h2>
           <div className="flex items-center space-x-2 sm:space-x-4 mt-2 sm:mt-0">
-            <Notification />
+            {/* <Notification /> */}
             <UserDropdown />
           </div>
         </header>

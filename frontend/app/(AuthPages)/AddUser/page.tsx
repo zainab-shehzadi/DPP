@@ -1,149 +1,121 @@
-"use client"; 
-import { useRouter } from 'next/navigation'; 
-import Image from "next/image";
-import { FaBell } from "react-icons/fa";
-import React, { useState } from "react";
-import { toast } from "react-toastify";
-import Sidebar from "@/components/Admin-sidebar";
-import DateDisplay from '@/components/date';
+"use client";
 
+import { useRouter } from "next/navigation";
+import Image from "next/image";
+import React, { use, useEffect, useState } from "react";
+import { toast } from "react-toastify";
+import Sidebar from "@/components/Sidebar";
+import { FaEye, FaEyeSlash } from "react-icons/fa";
+
+import { departmentLabels, departmentPositions, roles } from "@/constants/dpp";
+import Cookies from "js-cookie";
 export default function Dashboard() {
-  const router = useRouter(); 
- 
-  const [formData, setFormData] = useState({
-    firstName: "",
-    lastName: "",
-    password: "",
-    confirmPassword:"",
-    email: "",
-    role: "",
-    position: "",
-    DepartmentName: "",
-  });
-  const [isSidebarOpen, setIsSidebarOpen] = useState(false);
+  const router = useRouter();
+  const [firstName, setFirstName] = useState("");
+  const [lastName, setLastName] = useState("");
+  const [email, setEmail] = useState("");
+  const [password, setPassword] = useState("");
+  const [confirmPassword, setConfirmPassword] = useState("");
+  const [departmentName, setDepartmentName] = useState("");
+  const [position, setPosition] = useState("");
+  const [role, setRole] = useState("Facility Users");
+  const [loading, setLoading] = useState(true);
+  const [facilityAdmins, setFacilityAdmins] = useState([]);
   const [facilityName, setFacilityName] = useState("");
   const [facilityAddress, setFacilityAddress] = useState("");
   const [noOfBeds, setNoOfBeds] = useState("1");
-    const [email, setEmail] = useState<string | null>(null); 
+  const [isSidebarOpen, setIsSidebarOpen] = useState(false);
   const [isModalOpen, setIsModalOpen] = useState(false);
-  const departmentPositions = {
-    "Business Office": ["Office Manager", "Biller", "Payroll", "Reception", "Admissions"],
-    "Director of Admissions": ["Liaison"],
-    "IT Department": ["Director of Activities"],
-    Activities: ["Director of Activities", "Activity Staff"],
-    Maintenance: ["Director of Maintenance", "Maintenance Staff"],
-    Dietary: ["Director of Dietary", "Dietitian", "Dietary Staff"],
-    Therapy: ["Director of Therapy", "Therapy Staff"],
-    Laundry: ["Laundry Supervisor"],
-    Housekeeping: ["Housekeeping Supervisor"],
-    "Case Management": ["Case Manager"],
-    MDS: ["Director of MDS", "MDS Staff"],
-    Nursing: ["Director of Nursing", "Assistant Director of Nursing", "Unit Manager"],
-    Administration: ["Administrator", "Administrator in Training"],
-    "Social Services": ["Social Services Director", "Social Services Staff"],
-    "Staff Development Department": ["Staff Development Coordinator"],
-    "Nursing Department": ["Nursing Development Coordinator"],
-    "Quality Assurance Department": ["Nursing Development Coordinator"],
-  };
-  const roleCategories = {
-    leadership: ["Director", "Manager", "Supervisor"],
-    supporting: ["Staff", "Assistant", "Liaison"],
-  };
-  const leadershipRoles = roleCategories.leadership;
-  const supportingRoles = roleCategories.supporting;
-
-
-  const positions = formData.DepartmentName
-    ? departmentPositions[formData.DepartmentName] || []
+  const [showPassword, setShowPassword] = useState(false);
+  const [showConfirmPassword, setShowConfirmPassword] = useState(false);
+  const positions = departmentName
+    ? departmentPositions[departmentName] || []
     : [];
 
+  const toggleSidebar = () => setIsSidebarOpen(!isSidebarOpen);
+  const handleModalClose = () => setIsModalOpen(false);
+  useEffect(() => {
+    const timer = setTimeout(() => {
+      setLoading(false);
+    }, 3000);
 
-  const handleChange = (e) => {
-    const { name, value } = e.target;
-    setFormData((prev) => ({
-      ...prev,
-      [name]: value,
-    }));
-
-    if (name === "DepartmentName") {
-      setFormData((prev) => ({
-        ...prev,
-        position: "",
-      }));
+    return () => clearTimeout(timer);
+  }, []);
+  const handleSubmit = async () => {
+    if (
+      !firstName ||
+      !lastName ||
+      !email ||
+      !password ||
+      !role ||
+      !position ||
+      !departmentName ||
+      !facilityName
+    ) {
+      toast.error("Please fill in all required fields!");
+      return;
     }
-  };
-  const handleModalClose = () => {
-    setIsModalOpen(false);
-  };
-const handleSubmit = async () => {
- 
 
-  if (
-    !formData.firstName ||
-    !formData.lastName ||
-    !formData.email ||
-    !formData.password ||
-    !formData.confirmPassword ||
-    !formData.role ||
-    !formData.position ||
-    !formData.DepartmentName
-  ) {
-    toast.error("Please fill in all required fields!", { position: "top-right" });
-    return;
-  }
-  if (formData.password !== formData.confirmPassword) {
-    toast.error("Passwords do not match!", { position: "top-right" });
-    return; 
-  }
+    try {
+      const response = await fetch(
+        `${process.env.NEXT_PUBLIC_API_BASE_URL}/api/users/signup`,
+        {
+          method: "POST",
+          headers: { "Content-Type": "application/json" },
+          body: JSON.stringify({
+            firstName,
+            lastName,
+            email,
+            password,
+            confirmPassword,
+            role: "Facility Users",
+            position,
+            DepartmentName: departmentName,
+            facilityName,
+          }),
+        }
+      );
 
-  try {
-    const response = await fetch(
-      `${process.env.NEXT_PUBLIC_API_BASE_URL}/api/users/signup`,
-      {
-        method: "POST",
-        headers: {
-          "Content-Type": "application/json",
-        },
-        body: JSON.stringify(formData),
+      const data = await response.json();
+
+      if (response.ok) {
+        toast.success("User successfully added!");
+        router.push("/AddNewUser");
+      } else {
+        toast.error(`Error: ${data.message}`);
       }
-    );
-
-    const data = await response.json();
-
-    if (response.ok) {
-      toast.success("User successfully added!", { position: "top-right" });
-
-      setFormData({
-        firstName: "",
-        lastName: "",
-        password: "",
-        confirmPassword: "",
-        email: "",
-        role: "",
-        position: "",
-        DepartmentName: "",
-      });
-      const { email } = formData;
-       console.log("Checking Form Data Before Logging:", formData);
-       setEmail(email);
-      setIsModalOpen(true);
-    } else {
-      toast.error(`Error: ${data.message}`);
+    } catch (error) {
+      toast.error("Error adding user. Please try again.");
     }
-  } catch (error) {
-    
-    toast.error("Error adding user. Please try again.");
-  }
-};
+  };
+  useEffect(() => {
+    const fetchFacilityAdmins = async () => {
+      try {
+        const res = await fetch(
+          `${process.env.NEXT_PUBLIC_API_BASE_URL}/api/facility/facility-admins`
+        );
 
-
-  const handleSubmit1 = async (e: React.FormEvent) => {
+        const data = await res.json();
+        console.log(data);
+        if (res.ok) {
+          setFacilityAdmins(data?.facilities?.map((f) => f.facilityName));
+        } else {
+          toast.error("Failed to fetch facility admins:", data.message);
+        }
+      } catch (error: any) {
+        toast.error("Error fetching facility admins:", error);
+      }
+    };
+    fetchFacilityAdmins();
+  }, []);
+  const handleFacilitySubmit = async (e) => {
     e.preventDefault();
 
     if (!facilityName || !facilityAddress || !noOfBeds) {
-      toast.error("All fields are required!", { position: "top-right" });
+      toast.error("All fields are required!");
       return;
     }
+
     try {
       const response = await fetch(
         `${process.env.NEXT_PUBLIC_API_BASE_URL}/api/facility/info`,
@@ -158,307 +130,208 @@ const handleSubmit = async () => {
           }),
         }
       );
-  
-      if (!response.ok) {
-        throw new Error("Failed to save facility.");
-      }
 
-      const data = await response.json();
-      toast.success("Facility saved successfully!", { position: "top-right" });
+      if (!response.ok) throw new Error("Failed to save facility");
+
+      toast.success("Facility saved successfully!");
       setIsModalOpen(false);
-      router.push("/AddNewUser"); 
+      router.push("/AddNewUser");
     } catch (error) {
-      console.error("Error saving facility:", error);
-      toast.error("Failed to save facility. Please try again.", {
-        position: "top-right",
-      });
+      toast.error("Failed to save facility. Please try again.");
     }
   };
-  // Sidebar toggle
-  const toggleSidebar = () => setIsSidebarOpen(!isSidebarOpen);
-
+  const name = Cookies.get("name");
   return (
     <div className="flex flex-col lg:flex-row">
-      {/* Mobile Toggle Button */}
-      <div className="lg:hidden flex items-center justify-between px-4 py-2 bg-[#002F6C] text-white">
-        <div
-          className="h-12 w-12 bg-cover bg-center"
-          style={{ backgroundImage: "url('/assets/logo-dpp1.png')" }}
-        ></div>
-      </div>
+      <Sidebar
+        isSidebarOpen={isSidebarOpen}
+        setIsSidebarOpen={setIsSidebarOpen}
+      />
+      {loading ? (
+        <div className="flex items-center justify-center w-full h-screen ma-10">
+          <div className="animate-spin rounded-full h-16 w-16 border-t-4 border-blue-600"></div>
+        </div>
+      ) : (
+        <>
+          <div className="lg:ml-64 p-4 sm:p-8 w-full">
+            <header className="flex justify-between mb-6">
+              <h2 className="text-2xl font-bold">
+                Hello, <span className="text-blue-900">{name}</span>
+              </h2>
+              <div className="flex items-center border border-gray-300 p-2 rounded-md">
+                <Image
+                  src="/assets/image.png"
+                  width={40}
+                  height={40}
+                  alt="User Profile"
+                  className="rounded-full"
+                />
+                <span className="ml-2 text-gray-800">User </span>
+              </div>
+            </header>
 
-      {/* Sidebar Component */}
-      <Sidebar isSidebarOpen={isSidebarOpen} toggleSidebar={toggleSidebar} />
+            <div className="w-full h-[60px] bg-[#002F6C] h-10 rounded-lg mb-8"></div>
 
-      {/* Main Content */}
-      <div className="lg:ml-64 p-4 sm:p-8 w-full">
-        <header className="flex items-center justify-between mb-6 w-full flex-wrap">
-          <h2 className="text-lg sm:text-2xl lg:text-3xl font-bold">
-            Hello, <span className="text-blue-900">User</span>
-          </h2>
-          <div className="flex items-center space-x-2 sm:space-x-4 mt-2 sm:mt-0">
-            <div className="flex items-center border border-gray-300 p-1 sm:p-2 rounded-md space-x-2">
-              <Image
-                src="/assets/image.png"
-                width={28}
-                height={28}
-                className="rounded-full sm:w-10 sm:h-10 lg:w-12 lg:h-12"
-                alt="User Profile"
-              />
-              <span className="text-gray-800 text-sm sm:text-base lg:text-lg">
-                User
-              </span>
-            </div>
-          </div>
-        </header>
-        <div className="flex justify-end pr-4 sm:pr-12 lg:pr-48 mb-4"><DateDisplay/></div>
-
-<div className="w-full sm:w-3/4 h-6 sm:h-12 lg:h-10 bg-[#002F6C] mt-2 rounded-lg mx-auto mb-8"></div>
-{/* Add User Form */}
-        <div className="w-full sm:w-3/4 lg:w-3/3 mx-auto mt-6 sm:mt-8">
-        
-          <section className="bg-white p-4 sm:p-6 lg:p-8 ">
-            <div className="text-center mb-10">
-              <h3 className="font-bold text-2xl sm:text-2xl lg:text-3xl">
-                Add User
+            <section className="bg-white p-6 rounded-md shadow">
+              <h1 className="text-3xl font-bold mb-1 text-center">Add User</h1>
+              <h3 className="text-xl text-[#6f7174]  text-center mb-10">
+                Enter detail to add user
               </h3>
-              <p className="text-gray-900 text-sm sm:text-base lg:text-lg opacity-40 mb-4">
-                Enter details to add a user.
-              </p>
-            </div>
-
-            <div className="grid grid-cols-1 sm:grid-cols-2 gap-4 sm:gap-6 mb-10">
-              {/* First Name */}
-     
-<div>
-  <label className="block text-gray-700 font-medium">First Name</label>
-  <input
-    type="text"
-    name="firstName" 
-    value={formData.firstName}
-    onChange={handleChange}
-    placeholder="Your First Name"
-    className="mt-2 w-full p-2 rounded-md bg-[#F9F9F9] border"
-  />
-</div>
-
-{/* Last Name */}
-<div>
-  <label className="block text-gray-700 font-medium">Last Name</label>
-  <input
-    type="text"
-    name="lastName" 
-    value={formData.lastName}
-    onChange={handleChange}
-    placeholder="Your Last Name"
-    className="mt-2 w-full p-2 rounded-md bg-[#F9F9F9] border"
-  />
-</div>
-
-
-              <div>
-  <label className="block text-gray-700 font-medium">Password</label>
-  <input
-    type="password"
-    name="password"
-    value={formData.password}
-    onChange={handleChange}
-    placeholder="Your password"
-    className="mt-2 w-full p-2 rounded-md bg-[#F9F9F9] border"
-  />
-</div>
-
-{/* Confirm Password */}
-<div>
-  <label className="block text-gray-700 font-medium">Confirm Password</label>
-  <input
-    type="password"
-    name="confirmPassword"
-    value={formData.confirmPassword}
-    onChange={handleChange}
-    placeholder="Your confirm password"
-    className="mt-2 w-full p-2 rounded-md bg-[#F9F9F9] border"
-  />
-</div>
-
-              {/* Email */}
-              <div>
-                <label className="block text-gray-700 font-medium">Email</label>
+              <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
+                <input
+                  type="text"
+                  placeholder="First Name"
+                  value={firstName}
+                  onChange={(e) => setFirstName(e.target.value)}
+                  className="p-2 border rounded "
+                />
+                <input
+                  type="text"
+                  placeholder="Last Name"
+                  value={lastName}
+                  onChange={(e) => setLastName(e.target.value)}
+                  className="p-2 border rounded "
+                />
                 <input
                   type="email"
-                  name="email"
-                  value={formData.email}
-                  onChange={handleChange}
-                  placeholder="Your Email Address"
-                  className="mt-2 w-full p-2 rounded-md bg-[#F9F9F9] border"
+                  placeholder="Email"
+                  value={email}
+                  onChange={(e) => setEmail(e.target.value)}
+                  className="p-2 border rounded "
                 />
-              </div>
 
-              {/* Department */}
-              <div>
-                <label className="block text-gray-700 font-medium">Department</label>
+                <div className="relative w-full">
+                  <input
+                    type={showPassword ? "text" : "password"}
+                    placeholder="Password"
+                    value={password}
+                    onChange={(e) => setPassword(e.target.value)}
+                    className="p-2 border rounded w-full pr-10"
+                  />
+                  <span
+                    onClick={() => setShowPassword(!showPassword)}
+                    className="absolute right-3 top-1/2 transform -translate-y-1/2 cursor-pointer text-gray-500"
+                  >
+                    {showPassword ? (
+                      <FaEyeSlash size={18} />
+                    ) : (
+                      <FaEye size={18} />
+                    )}
+                  </span>
+                </div>
+
                 <select
-                  name="DepartmentName"
-                  value={formData.DepartmentName}
-                  onChange={handleChange}
-                  className="mt-2 w-full p-2 rounded-md bg-[#F9F9F9] border"
+                  value={departmentName}
+                  onChange={(e) => {
+                    setDepartmentName(e.target.value);
+                    setPosition("");
+                  }}
+                  className="p-2 border rounded "
                 >
-                  <option value="" disabled>
-                    Select a Department
-                  </option>
-                  {Object.keys(departmentPositions).map((dept, index) => (
-                    <option key={index} value={dept}>
-                      {dept}
+                  <option value="">Select Department</option>
+                  {Object.keys(departmentPositions).map((key) => (
+                    <option key={key} value={key}>
+                      {departmentLabels[key]}
                     </option>
                   ))}
                 </select>
-              </div>
 
-              {/* Position */}
-              <div>
-                <label className="block text-gray-700 font-medium">Position</label>
                 <select
-                  name="position"
-                  value={formData.position}
-                  onChange={handleChange}
-                  className="mt-2 w-full p-2 rounded-md bg-[#F9F9F9] border"
+                  value={position}
+                  onChange={(e) => setPosition(e.target.value)}
+                  className="p-2 border rounded "
                   disabled={!positions.length}
                 >
-                  <option value="" disabled>
-                    {positions.length ? "Select a Position" : "Select a Department First"}
+                  <option value="">
+                    {positions.length
+                      ? "Select Position"
+                      : "Select Department First"}
                   </option>
-                  {positions.map((pos, index) => (
-                    <option key={index} value={pos}>
+                  {positions.map((pos) => (
+                    <option key={pos} value={pos}>
                       {pos}
                     </option>
                   ))}
                 </select>
-              </div>
 
-              {/* Role */}
-              <div>
-                <label className="block text-gray-700 font-medium">Role</label>
                 <select
-                  name="role"
-                  value={formData.role}
-                  onChange={handleChange}
-                  className="mt-2 w-full p-2 rounded-md bg-[#F9F9F9] border"
+                  value={facilityName}
+                  onChange={(e) => setFacilityName(e.target.value)}
+                  className="w-full p-2 border rounded bg-[#F9F9F9]"
                 >
-                  <option value="" disabled>
-                    Select a Role
-                  </option>
-                  <optgroup label="Leadership Roles">
-                    {leadershipRoles.map((role, index) => (
-                      <option key={index} value={role}>
-                        {role}
-                      </option>
-                    ))}
-                  </optgroup>
-                  <optgroup label="Supporting Roles">
-                    {supportingRoles.map((role, index) => (
-                      <option key={index} value={role}>
-                        {role}
-                      </option>
-                    ))}
-                  </optgroup>
+                  <option value="">Select Facility Name</option>
+                  {facilityAdmins.map((name, index) => (
+                    <option key={index} value={name}>
+                      {name}
+                    </option>
+                  ))}
                 </select>
               </div>
 
+              <div className="text-center mt-6">
+                <button
+                  onClick={handleSubmit}
+                  className="bg-[#002F6C] text-white px-6 py-2 rounded-lg"
+                >
+                  Save User
+                </button>
+              </div>
+            </section>
 
-            </div>
-              
-            {/* Submit Button */}
-            <div className="text-center">
-              <button
-                onClick={handleSubmit}
-                className="bg-[#002F6C] text-white px-6 py-2 rounded-lg"
+            {/* {isModalOpen && (
+              <div
+                className="fixed inset-0 bg-gray-800 bg-opacity-50 flex justify-center items-center z-50"
+                onClick={handleModalClose}
               >
-                Send Invite
-              </button>
-            </div>
-          </section>
-        </div>
+                <div
+                  className="bg-white p-8 rounded-lg shadow-lg w-full max-w-lg"
+                  onClick={(e) => e.stopPropagation()}
+                >
+                  <h2 className="text-xl font-semibold text-center mb-6">
+                    Facility Detail
+                  </h2>
+                  <form onSubmit={handleFacilitySubmit} className="space-y-4">
+                    <select
+                      value={facilityName}
+                      onChange={(e) => setFacilityName(e.target.value)}
+                      className="w-full p-2 border rounded bg-[#F9F9F9]"
+                    >
+                      <option value="">Select Facility Name</option>
+                      <option value="facility1">Facility 1</option>
+                      <option value="facility2">Facility 2</option>
+                      <option value="facility3">Facility 3</option>
+                    </select>
+                    <input
+                      type="text"
+                      value={facilityAddress}
+                      onChange={(e) => setFacilityAddress(e.target.value)}
+                      placeholder="Enter Facility Address"
+                      className="w-full p-2 border rounded bg-[#F9F9F9]"
+                    />
 
-
-        {isModalOpen && (
-  <div
-    className="fixed inset-0 bg-gray-800 bg-opacity-50 flex justify-center items-center z-50"
-    onClick={handleModalClose}
-  >
-    <div
-      className="bg-white p-8 rounded-lg shadow-lg w-full max-w-lg space-y-6"
-      onClick={(e) => e.stopPropagation()}
-    >
-      <h2 className="text-2xl font-semibold text-gray-800 text-center">
-        Facility Detail
-      </h2>
-
-      <form onSubmit={handleSubmit1} className="space-y-4">
-        {/* Facility Name (Dropdown) */}
-        <div>
-          <label className="block text-gray-700 font-medium">Facility Name</label>
-          <select
-            value={facilityName}
-            onChange={(e) => setFacilityName(e.target.value)}
-            className="w-full px-3 py-2 border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-blue-500"
-            required
-          >
-            <option value="">Select Facility Name</option>
-            <option value="facility1">Facility1</option>
-            <option value="facility2">Facility2</option>
-            <option value="facility3">Facility3</option>
-            <option value="facility4">Facility4</option>
-          </select>
-        </div>
-
-        {/* Facility Address (Dropdown) */}
-        <div>
-          <label className="block text-gray-700 font-medium">Facility Address</label>
-          <select
-            value={facilityAddress}
-            onChange={(e) => setFacilityAddress(e.target.value)}
-            className="w-full px-3 py-2 border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-blue-500"
-            required
-          >
-            <option value="">Select Facility Address</option>
-            <option value="address1">Address1</option>
-            <option value="address2">Address2</option>
-            <option value="address3">Address3</option>
-            <option value="address4">Address4</option>
-          </select>
-        </div>
-
-        {/* No of Beds (Dropdown) */}
-        <div>
-          <label className="block text-gray-700 font-medium">No. of Beds</label>
-          <select
-            value={noOfBeds}
-            onChange={(e) => setNoOfBeds(e.target.value)}
-            className="w-full px-3 py-2 border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-blue-500"
-            required
-          >
-            <option value="">Select No of Beds</option>
-            <option value="1">1</option>
-            <option value="2">2</option>
-            <option value="3">3</option>
-            <option value="4">4</option>
-          </select>
-        </div>
-
-        <div className="flex justify-center">
-          <button
-            type="submit"
-            className="bg-blue-900 text-white w-full py-3 rounded-md "
-          >
-            Submit
-          </button>
-        </div>
-      </form>
-    </div>
-  </div>
-)}
-
-      </div>
+                    <select
+                      value={noOfBeds}
+                      onChange={(e) => setNoOfBeds(e.target.value)}
+                      className="w-full p-2 border rounded bg-[#F9F9F9]"
+                    >
+                      <option value="">Select No of Beds</option>
+                      <option value="1">1</option>
+                      <option value="2">2</option>
+                      <option value="3">3</option>
+                    </select>
+                    <button
+                      type="submit"
+                      className="w-full bg-blue-900 text-white py-3 rounded-md"
+                    >
+                      Submit
+                    </button>
+                  </form>
+                </div>
+              </div>
+            )} */}
+          </div>
+        </>
+      )}
     </div>
   );
 }

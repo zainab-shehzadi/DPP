@@ -39,10 +39,11 @@ const Sidebar: React.FC<SidebarProps> = ({ isSidebarOpen, toggleSidebar }) => {
   const handleLogout = () => {
     try {
       // Remove the token cookie by setting it with an expired date
-      document.cookie = "token=; path=/; expires=Thu, 01 Jan 1970 00:00:00 UTC;";
+      document.cookie =
+        "token=; path=/; expires=Thu, 01 Jan 1970 00:00:00 UTC;";
 
-      localStorage.clear(); 
-      sessionStorage.clear(); 
+      localStorage.clear();
+      sessionStorage.clear();
 
       // Redirect to Login page
       router.push("/login");
@@ -68,35 +69,36 @@ const Sidebar: React.FC<SidebarProps> = ({ isSidebarOpen, toggleSidebar }) => {
   const handleUserSettingsNavigation = async () => {
     if (!email) {
       console.error("Email is missing or not provided.");
-     
+
       return;
     }
-      try {
-        const response = await fetch(
-          `${process.env.NEXT_PUBLIC_API_BASE_URL}/api/users/role`,
-          {
-            method: "POST", 
-            headers: {
-              "Content-Type": "application/json",
-            },
-            body: JSON.stringify({ email }),
-          }
-        );
+    try {
+      const response = await fetch(
+        `${process.env.NEXT_PUBLIC_API_BASE_URL}/api/users/role`,
+        {
+          method: "POST",
+          headers: {
+            "Content-Type": "application/json",
+          },
+          body: JSON.stringify({ email }),
+        }
+      );
       if (!response.ok) {
         const errorData = await response.json(); // Attempt to read error details from the response
-        
-  
+
         // Handle case where user does not exist
         if (response.status === 404) {
-          toast.error("User does not exist. Please check the email and try again.");
+          toast.error(
+            "User does not exist. Please check the email and try again."
+          );
         } else {
           throw new Error(errorData.message || "Failed to fetch user role.");
         }
         return;
       }
-  
+
       const data = await response.json();
-  
+
       // Check if user role is "user"
       if (data.role === "Supervisor") {
         handleNavigation(`profileSettting`);
@@ -118,15 +120,14 @@ const Sidebar: React.FC<SidebarProps> = ({ isSidebarOpen, toggleSidebar }) => {
             isSidebarOpen ? "translate-x-0" : "-translate-x-full"
           } lg:translate-x-0`}
         >
-          
           {/* Scrollable Sidebar Content */}
           <div className="h-full flex flex-col overflow-y-auto max-h-screen scrollbar-thin scrollbar-thumb-gray-400 scrollbar-track-gray-100 px-4 py-4">
             {/* Logo */}
-           
+
             <div
-  className="mb-8 w-28 h-10 bg-cover bg-center hidden lg:block" // Adjusted width & height
-  style={{ backgroundImage: "url('/assets/logo-dpp1.png')" }}
-></div>
+              className="mb-8 w-28 h-10 bg-cover bg-center hidden lg:block" // Adjusted width & height
+              style={{ backgroundImage: "url('/assets/logo-dpp1.png')" }}
+            ></div>
 
             <ul className="space-y-2 w-full">
               {/* Dashboard */}
@@ -140,63 +141,75 @@ const Sidebar: React.FC<SidebarProps> = ({ isSidebarOpen, toggleSidebar }) => {
                   Dashboard
                 </a>
                 {dashboardOpen && (
-  <ul className="ml-4 space-y-2"> {/* Reduced spacing for compact layout */}
-    
-    {/* Upload New 2567 */}
-    <li>
-      <a
-        href="#"
-        onClick={() => handleNavigation("/Dashboard")}
-        className={`flex items-center py-2 px-3 rounded-md font-semibold text-xs lg:text-sm transition 
-          ${activeItem === "/Dashboard" ? "bg-white text-blue-900 shadow-md" : "hover:bg-white hover:text-blue-900"}`}
-      >
-        <FaUser className="mr-2" />
-        Upload New 2567
-      </a>
-    </li>
-
-    {/* History */}
-    <li>
-      <a
-        href="#"
-        onClick={() => handleNavigation("/HistoryPage")}
-        className={`flex items-center py-2 px-3 rounded-md font-semibold text-xs lg:text-sm transition 
-          ${activeItem === "/HistoryPage" ? "bg-white text-blue-900 shadow-md" : "hover:bg-white hover:text-blue-900"}`}
-      >
-        <FaBuilding className="mr-2" />
-        History
-      </a>
-    </li>
-
-    {/* Task Assigned */}
-    <li>
-      <a
-        href="#"
-        onClick={() => handleNavigation("/TaskListPage")}
-        className={`flex items-center py-2 px-3 rounded-md font-semibold text-xs lg:text-sm transition 
-          ${activeItem === "/TaskListPage" ? "bg-white text-blue-900 shadow-md" : "hover:bg-white hover:text-blue-900"}`}
-      >
-        <FaUser className="mr-2" />
-        Task Assigned
-      </a>
-    </li>
-
-    {/* Insights */}
-    <li>
-      <a
-        href="#"
-        onClick={() => handleNavigation("/InsightPage")}
-        className={`flex items-center py-2 px-3 rounded-md font-semibold text-xs lg:text-sm transition 
-          ${activeItem === "/InsightPage" ? "bg-white text-blue-900 shadow-md" : "hover:bg-white hover:text-blue-900"}`}
-      >
-        <FaCreditCard className="mr-2" />
-        Insights
-      </a>
-    </li>
-
-  </ul>
-)}
-
+                  <ul className="ml-4 space-y-2">
+                    {" "}
+                    {/* Reduced spacing for compact layout */}
+                    {/* Upload New 2567 */}
+                    <li>
+                      <a
+                        href="#"
+                        onClick={() => handleNavigation("/Dashboard")}
+                        className={`flex items-center py-2 px-3 rounded-md font-semibold text-xs lg:text-sm transition 
+          ${
+            activeItem === "/Dashboard"
+              ? "bg-white text-blue-900 shadow-md"
+              : "hover:bg-white hover:text-blue-900"
+          }`}
+                      >
+                        <FaUser className="mr-2" />
+                        Upload New 2567
+                      </a>
+                    </li>
+                    {/* History */}
+                    <li>
+                      <a
+                        href="#"
+                        onClick={() => handleNavigation("/HistoryPage")}
+                        className={`flex items-center py-2 px-3 rounded-md font-semibold text-xs lg:text-sm transition 
+          ${
+            activeItem === "/HistoryPage"
+              ? "bg-white text-blue-900 shadow-md"
+              : "hover:bg-white hover:text-blue-900"
+          }`}
+                      >
+                        <FaBuilding className="mr-2" />
+                        History
+                      </a>
+                    </li>
+                    {/* Task Assigned */}
+                    <li>
+                      <a
+                        href="#"
+                        onClick={() => handleNavigation("/TaskListPage")}
+                        className={`flex items-center py-2 px-3 rounded-md font-semibold text-xs lg:text-sm transition 
+          ${
+            activeItem === "/TaskListPage"
+              ? "bg-white text-blue-900 shadow-md"
+              : "hover:bg-white hover:text-blue-900"
+          }`}
+                      >
+                        <FaUser className="mr-2" />
+                        Task Assigned
+                      </a>
+                    </li>
+                    {/* Insights */}
+                    <li>
+                      <a
+                        href="#"
+                        onClick={() => handleNavigation("/InsightPage")}
+                        className={`flex items-center py-2 px-3 rounded-md font-semibold text-xs lg:text-sm transition 
+          ${
+            activeItem === "/InsightPage"
+              ? "bg-white text-blue-900 shadow-md"
+              : "hover:bg-white hover:text-blue-900"
+          }`}
+                      >
+                        <FaCreditCard className="mr-2" />
+                        Insights
+                      </a>
+                    </li>
+                  </ul>
+                )}
               </li>
 
               {/* Homepage */}
@@ -270,59 +283,55 @@ const Sidebar: React.FC<SidebarProps> = ({ isSidebarOpen, toggleSidebar }) => {
                   Settings
                 </a>
                 {settingsOpen && (
-  <ul className="ml-4 space-y-2"> {/* Reduced spacing for better fit */}
-    
-    {/* Profile Settings */}
-    <li>
-      <a
-        href="#"
-        onClick={handleUserSettingsNavigation} // ✅ Corrected handler
-        className="flex items-center py-2 px-3 hover:bg-white hover:text-blue-900 rounded-md font-semibold text-xs lg:text-sm transition"
-      >
-        <FaUser className="mr-2" />
-        Profile Settings
-      </a>
-    </li>
-
-    {/* Facility Settings */}
-    <li>
-      <a
-        href="#"
-        onClick={() => handleNavigation("/facilitySetting")}
-        className="flex items-center py-2 px-3 hover:bg-white hover:text-blue-900 rounded-md font-semibold text-xs lg:text-sm transition"
-      >
-        <FaBuilding className="mr-2" />
-        Facility Settings
-      </a>
-    </li>
-
-    {/* User Settings */}
-    <li>
-      <a
-        href="#"
-        onClick={() => handleNavigation("/UserSetting")}
-        className="flex items-center py-2 px-3 hover:bg-white hover:text-blue-900 rounded-md font-semibold text-xs lg:text-sm transition"
-      >
-        <FaUser className="mr-2" />
-        User Settings
-      </a>
-    </li>
-
-    {/* Billing */}
-    <li>
-      <a
-        href="#"
-        onClick={() => handleNavigation("/Billing")} // ✅ Added correct navigation
-        className="flex items-center py-2 px-3 hover:bg-white hover:text-blue-900 rounded-md font-semibold text-xs lg:text-sm transition"
-      >
-        <FaCreditCard className="mr-2" />
-        Billing
-      </a>
-    </li>
-
-  </ul>
-)}
-
+                  <ul className="ml-4 space-y-2">
+                    {" "}
+                    {/* Reduced spacing for better fit */}
+                    {/* Profile Settings */}
+                    <li>
+                      <a
+                        href="#"
+                        onClick={handleUserSettingsNavigation} // ✅ Corrected handler
+                        className="flex items-center py-2 px-3 hover:bg-white hover:text-blue-900 rounded-md font-semibold text-xs lg:text-sm transition"
+                      >
+                        <FaUser className="mr-2" />
+                        Profile Settings
+                      </a>
+                    </li>
+                    {/* Facility Settings */}
+                    <li>
+                      <a
+                        href="#"
+                        onClick={() => handleNavigation("/facilitySetting")}
+                        className="flex items-center py-2 px-3 hover:bg-white hover:text-blue-900 rounded-md font-semibold text-xs lg:text-sm transition"
+                      >
+                        <FaBuilding className="mr-2" />
+                        Facility Settings
+                      </a>
+                    </li>
+                    {/* User Settings */}
+                    <li>
+                      <a
+                        href="#"
+                        onClick={() => handleNavigation("/UserSetting")}
+                        className="flex items-center py-2 px-3 hover:bg-white hover:text-blue-900 rounded-md font-semibold text-xs lg:text-sm transition"
+                      >
+                        <FaUser className="mr-2" />
+                        User Settings
+                      </a>
+                    </li>
+                    {/* Billing */}
+                    <li>
+                      <a
+                        href="#"
+                        onClick={() => handleNavigation("/Billing")} // ✅ Added correct navigation
+                        className="flex items-center py-2 px-3 hover:bg-white hover:text-blue-900 rounded-md font-semibold text-xs lg:text-sm transition"
+                      >
+                        <FaCreditCard className="mr-2" />
+                        Billing
+                      </a>
+                    </li>
+                  </ul>
+                )}
               </li>
 
               {/* Logout */}
@@ -356,26 +365,10 @@ const Sidebar: React.FC<SidebarProps> = ({ isSidebarOpen, toggleSidebar }) => {
 
 export default Sidebar;
 
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
 <div className="mb-8 flex justify-center items-center">
-  <img 
-    src="/logo-dpp1.png" 
-    alt="Logo" 
-    className="w-32 h-auto max-h-12 object-contain" 
+  <img
+    src="/logo-dpp1.png"
+    alt="Logo"
+    className="w-32 h-auto max-h-12 object-contain"
   />
-</div>
+</div>;

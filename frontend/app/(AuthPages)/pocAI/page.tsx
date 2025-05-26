@@ -1,5 +1,5 @@
 "use client";
-import React, { useState, useEffect, useRef } from "react";
+import React, { useState, useEffect, useRef, use } from "react";
 import DateDisplay from "@/components/date";
 import Sidebar from "@/components/Sidebar";
 import UserDropdown from "@/components/profile-dropdown";
@@ -12,118 +12,106 @@ import { toast } from "react-toastify";
 import authProtectedRoutes from "@/hoc/authProtectedRoutes";
 import HeaderWithToggle from "@/components/HeaderWithToggle";
 import { FaChevronUp, FaChevronDown } from "react-icons/fa";
+import TagDetailsView from "@/components/Modals/TagDetailView";
+import HeaderBar from "@/components/HeaderBar";
+import { set } from "mongoose";
+import POCAllySection from "@/components/Modals/POCAllSections";
+
+interface DeficiencyType {
+  _id: string;
+  Tag: string;
+  Description: string;
+  Deficiency: string;
+  Solution?: Record<string, string>;
+  status?: "pending" | "approved" | "assigned";
+}
+
 interface DocumentType {
   _id: string;
   originalName: string;
   fileUrl?: string;
   uploadedAt: Date;
+  deficiencies?: DeficiencyType[];
 }
 
 function docUpload() {
-  const [tagsData, setTagsData] = useState<
-    {
-      id: number;
-      tag: string;
-      status: string;
-      shortDesc: string;
-      longDesc: string;
-      solution: string;
-      policies: string;
-      task: string;
-    }[]
-  >([]);
-
-  const descRef = useRef<HTMLDivElement>(null);
-  const correctionRef = useRef<HTMLDivElement>(null);
-
+  const [token, setToken] = useState<string | null>(null);
+  const [selectedDocument, setSelectedDocument] = useState<DocumentType | null>(
+    null
+  );
+  const [policy, setPolicy] = useState<string[]>([]);
+  const [selectedPolicyID, setSelectedPolicyID] = useState<string | null>(null);
+  const [AIPolicy, setAIPolicy] = useState<string[]>([]);
+  const [data, setData] = useState<any>(null);
+  const [supportingData, setSupportingData] = useState<any>(null);
+  const [activeTab, setActiveTab] = useState<"Tags" | "POC AI Ally">(
+    "POC AI Ally"
+  );
   const [selectedDocs, setSelectedDocs] = useState<string[]>([]);
-  const [selectedDocument, setSelectedDocument] = useState("");
   const [selectedDocumentId, setSelectedDocumentId] = useState("");
+  const [isSidebarLoading, setIsSidebarLoading] = useState(false);
   const boxRef = useRef<HTMLDivElement | null>(null);
   const [isModalOpen, setIsModalOpen] = useState(false);
   const [editedText, setEditedText] = useState("");
-  const [status, setStatus] = useState<string | null>(null);
   const [selectedTag, setSelectedTag] = useState<string | null>(null);
-  const [selectedID, setSelectedID] = useState<number | null>(null);
+  const [selectedID, setSelectedID] = useState<number | string | null>(null);
   const [selectedLongDesc, setSelectedLongDesc] = useState<string | null>(null);
-  const [selectedPolicy, setSelectedPPolicy] = useState<string | null>(null);
-  const [selectedTask, setSelectedTask] = useState<string[]>([]);
   const [email, setEmail] = useState<string | null>(null);
   const [isSidebarOpen, setIsSidebarOpen] = useState<boolean>(false);
   const [dropdownOpen, setDropdownOpen] = useState(false);
-  const [activeTab, setActiveTab] = useState("POC AI Ally");
-  const [solution, setSolution] = useState("");
+  const [solution, setSolution] = useState<string[]>([]);
   const [dropdownOpen1, setDropdownOpen1] = useState(false);
-  const [accessToken123, setAccessToken] = useState<string | null>(null);
   const [documents, setDocuments] = useState<DocumentType[]>([]);
-  const [refreshToken, setrefreshToken] = useState<string | null>(null);
   const [dropdownOpen2, setDropdownOpen2] = useState(false);
-  const [selectedDescription, setSelectedDescription] = useState<string | null>(
-    null
-  );
   const dropdownRef = useRef<HTMLDivElement | null>(null);
   const [answer1, setAnswer1] = useState("");
   const [answer2, setAnswer2] = useState("");
   const [loading, setLoading] = useState(true);
-
   const router = useRouter();
 
-  const scrollToCorrection = () => {
-    correctionRef.current?.scrollIntoView({ behavior: "smooth" });
-  };
-
-  const scrollToTopOfDesc = () => {
-    descRef.current?.scrollIntoView({ behavior: "smooth" });
-  };
+  const matchingDeficiency = selectedDocument?.deficiencies?.find(
+    (def) => def.Tag === selectedTag
+  );
 
   useEffect(() => {
-    const storedAccessToken = Cookies.get("accessToken");
-    const storedRefreshToken = Cookies.get("refreshToken");
-    const storedEmail = Cookies.get("email");
-
-    if (storedAccessToken) {
-      setAccessToken(storedAccessToken);
-    }
-    if (storedRefreshToken) {
-      // ✅ Correct condition
-      setrefreshToken(storedRefreshToken);
-    }
-    if (storedEmail) {
-      setEmail(storedEmail);
-    } else {
-      console.error("Email not found in cookies.");
-    }
+    const token = Cookies.get("token");
+    setToken(token);
   }, []);
+
   useEffect(() => {
     const fetchDocuments = async () => {
       try {
-        const email = Cookies.get("email");
-        if (!email) {
-          console.error("Error: Email not found in cookies!");
+        const token = Cookies.get("token");
+        if (!token) {
+          console.error("Access token not found!");
           return;
         }
         const res = await fetch(
           `${process.env.NEXT_PUBLIC_API_BASE_URL}/api/files/docs`,
           {
-            method: "POST",
+            method: "GET",
             headers: {
-              "Content-Type": "application/json",
+              Authorization: `Bearer ${token}`,
             },
-            body: JSON.stringify({ email }),
           }
         );
+
         const data = await res.json();
+        console.log("data", data);
 
         if (Array.isArray(data)) {
           setDocuments(data);
+        } else {
         }
       } catch (error) {
+        console.error("Error fetching documents:", error);
         toast.error("Error fetching documents");
       }
     };
 
     fetchDocuments();
   }, []);
+
   useEffect(() => {
     const timer = setTimeout(() => {
       setLoading(false);
@@ -131,9 +119,11 @@ function docUpload() {
 
     return () => clearTimeout(timer);
   }, []);
+
   const toggleDropdown = () => {
     setDropdownOpen((prev) => !prev);
   };
+
   useEffect(() => {
     const handleClickOutside = (event: MouseEvent) => {
       if (
@@ -146,63 +136,9 @@ function docUpload() {
     document.addEventListener("mousedown", handleClickOutside);
     return () => document.removeEventListener("mousedown", handleClickOutside);
   }, []);
+
   const handleNavigateToTags = () => {
     router.push("/Tags");
-  };
-  const fetchDocumentDetails = async (id) => {
-    try {
-      const safeEmail = email ?? "";
-      const response = await fetch(
-        `${process.env.NEXT_PUBLIC_API_BASE_URL}/api/files/tags-with-descriptions`,
-        {
-          method: "POST",
-          headers: {
-            "Content-Type": "application/json",
-          },
-          body: JSON.stringify({ email: safeEmail, id }),
-        }
-      );
-
-      if (!response.ok) {
-        toast.error(
-          `❌ Failed to fetch document details: ${response.statusText}`
-        );
-        setTagsData([]);
-        return;
-      }
-      const data = await response.json();
-      if (!data.tags || !Array.isArray(data.tags)) {
-        console.error(
-          " API Error: `data.tags` is undefined or not an array:",
-          data
-        );
-        return;
-      }
-
-      const formattedTags = data.tags.map((tag) => ({
-        id: tag.id || tag._id || "Missing ID",
-        tag: tag.tag,
-        shortDesc: tag.shortDescription || "No Short Description",
-        longDesc: tag.longDescription || "No Long Description",
-        solution:
-          tag.solution && tag.solution.trim() !== ""
-            ? tag.solution
-            : " No Solution",
-        policies: tag.policies || " No Policies",
-        task: tag.task || [],
-      }));
-
-      // ✅ Ensure ID is present in logs
-      formattedTags.forEach((tag, index) => {
-        console.log(`🔹 Tag ${index} - ID: ${tag.id}`);
-      });
-
-      setTagsData(formattedTags);
-    } catch (error) {
-      toast.error("❌ Error fetching document details:\n");
-    } finally {
-      setLoading(false);
-    }
   };
 
   const isAuthenticated = async () => {
@@ -218,18 +154,7 @@ function docUpload() {
           credentials: "include",
         }
       );
-
-      // const response = await fetch(
-      //   `${process.env.NEXT_PUBLIC_API_BASE_URL}/api/users/get-access-token`,
-      //   {
-      //     method: "POST",
-      //     credentials: "include",
-      //     headers: {
-      //       "Content-Type": "application/json",
-      //     },
-      //     body: JSON.stringify({ email: safeEmail }),
-      //   }
-      // );
+      console.log("Response:", response);
 
       const data = await response.json();
       const accessToken = data.accessToken;
@@ -243,7 +168,7 @@ function docUpload() {
       }
       Cookies.set("accessToken", accessToken, { expires: 7 });
       Cookies.set("refreshToken", refreshToken, { expires: 30 });
-      handleAssignTask();
+
       return true;
     } catch (error) {
       toast.error("Please log in with Google for assigned tasks.");
@@ -251,177 +176,32 @@ function docUpload() {
       return false;
     }
   };
-  const handleAssignTask = async () => {
-    if (!selectedTask || selectedTask.length === 0) {
-      toast.error("Please select at least one task before assigning.");
 
-      return;
-    }
-    try {
-      const accessToken = accessToken123;
-      const tasks = selectedTask.map((taskSummary, index) => {
-        const startTime = new Date();
-        startTime.setHours(startTime.getHours() + index * 2);
-
-        const endTime = new Date(startTime);
-        endTime.setHours(startTime.getHours() + 48);
-
-        return {
-          summary: taskSummary,
-          status: "pending",
-          start: { dateTime: startTime.toISOString(), timeZone: "UTC" },
-          end: { dateTime: endTime.toISOString(), timeZone: "UTC" },
-        };
-      });
-      const saveResponse = await fetch(
-        `${process.env.NEXT_PUBLIC_API_BASE_URL}/api/calendar/save-tasks`,
-        {
-          method: "POST",
-          headers: {
-            "Content-Type": "application/json",
-          },
-          body: JSON.stringify({
-            tagId: selectedID,
-            tasks,
-            //docId: selectedDocumentId, // Ensure this is a valid variable, not a function
-          }),
-        }
-      );
-
-      if (!saveResponse.ok) {
-        const error = await saveResponse.json();
-        toast.error("Failed to save tasks:", error);
-        return;
-      }
-
-      const savedTasks = await saveResponse.json();
-      //toast.success("Tasks saved successfully:", savedTasks);
-
-      for (let task of tasks) {
-        const calendarResponse = await fetch(
-          `${process.env.NEXT_PUBLIC_API_BASE_URL}/api/calendar/create-event`,
-          {
-            method: "POST",
-            headers: {
-              "Content-Type": "application/json",
-              Authorization: `Bearer ${accessToken}`,
-            },
-            body: JSON.stringify(task),
-          }
-        );
-
-        if (!calendarResponse.ok) {
-          const error = await calendarResponse.json();
-          console.error("Failed to create event:", error);
-          continue;
-        }
-
-        const response = await fetch(
-          `${process.env.NEXT_PUBLIC_API_BASE_URL}/api/files/update-status`,
-          {
-            method: "POST",
-            headers: {
-              "Content-Type": "application/json",
-            },
-            body: JSON.stringify({
-              tagId: selectedID,
-              status: "assigned",
-            }),
-          }
-        );
-
-        const result = await response.json();
-
-        if (!response.ok) {
-          throw new Error(result.message || "Failed to update status");
-        }
-        setStatus(result.status);
-      }
-
-      toast.success("Events created successfully.");
-    } catch (error) {
-      toast.error(
-        "An error occurred while assigning tasks. Check the console for details."
-      );
-    }
-  };
-  const handleSubmit = async (e: any) => {
+  const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
     setIsSidebarOpen(true);
-    if (solution && Array.isArray(solution) && solution.length > 0) {
-      toast.info("Solution already exists.");
-      return;
-    }
+    setIsSidebarLoading(true);
 
-    setLoading(true);
-
-    if (![selectedTag, selectedLongDesc, selectedID].every(Boolean)) {
-      toast.error("Please fill in all required fields before submitting.");
-      setLoading(false);
-      return;
-    }
+    const payload = {
+      fileId: selectedDocumentId,
+      tags: selectedTag ? [selectedTag] : [],
+      deficiencies: matchingDeficiency?.Deficiency
+        ? [matchingDeficiency.Deficiency]
+        : [],
+      solution_policies: AIPolicy || [],
+      supporting_references: supportingData || [],
+    };
 
     try {
       const response = await fetch(
-        `${process.env.NEXT_PUBLIC_API_BASE_URL}/api/files/generatesol`,
-        {
-          method: "POST",
-          headers: { "Content-Type": "application/json" },
-          body: JSON.stringify({
-            query: `I belong to Tag ${selectedTag}, "${selectedLongDesc}", `,
-            id: selectedID,
-          }),
-        }
-      );
-
-      if (!response.ok)
-        throw new Error(`API Error - Status: ${response.status}`);
-      const result = await response.json();
-      let newSolution = result.tag?.response?.solution || [];
-      let newPolicies = result.tag?.response?.policies || [];
-      let newTasks = result.tag?.response?.task || [];
-
-      if (!Array.isArray(newSolution)) newSolution = [newSolution];
-      if (!Array.isArray(newPolicies)) newPolicies = [newPolicies];
-      if (!Array.isArray(newTasks)) newTasks = [newTasks];
-
-      setSolution(newSolution);
-      setSelectedTask(newTasks);
-      setSelectedPPolicy(newPolicies);
-
-      if (result.tags) {
-        const formattedTags = result.tags.map((tag) => ({
-          id: tag.id,
-          tag: tag.tag,
-          shortDesc: tag.shortDescription || "",
-          longDesc: tag.longDescription || "",
-          solution: tag.solution || "",
-          policies: tag.policies || "",
-          task: tag.task || [],
-        }));
-
-        setTagsData(formattedTags);
-      }
-      setAnswer1("");
-      setAnswer2("");
-      toast.success("Solution generated and tags updated successfully!");
-    } catch (error) {
-      toast.error(`Error`);
-    } finally {
-      setLoading(false);
-      setIsSidebarOpen(false);
-    }
-  };
-  const handleTagClick = async (tagName, tagId) => {
-    try {
-      const response = await fetch(
-        `${process.env.NEXT_PUBLIC_API_BASE_URL}/api/files/tag-details`,
+        `${process.env.NEXT_PUBLIC_API_BASE_URL}/api/files/get-poc-api`,
         {
           method: "POST",
           headers: {
             "Content-Type": "application/json",
+            Authorization: `Bearer ${token}`,
           },
-          body: JSON.stringify({ tagId, tagName }),
+          body: JSON.stringify(payload),
         }
       );
 
@@ -430,32 +210,39 @@ function docUpload() {
       }
 
       const result = await response.json();
-
-      let newSolution = result.solution || [];
-      let newPolicies = result.policies || [];
-      let newTasks = result.task || [];
-
-      if (!Array.isArray(newSolution)) newSolution = [newSolution];
-      if (!Array.isArray(newPolicies)) newPolicies = [newPolicies];
-      if (!Array.isArray(newTasks)) newTasks = [newTasks];
-
-      setStatus(result.status);
-      setSelectedTag(tagName);
-      setSelectedID(tagId);
-      setSelectedTask(newTasks);
-      setSelectedPPolicy(newPolicies);
-      setSelectedDescription(
-        result.shortDescription || "No short description available"
+      console.log("API Result:", result.data);
+      const normalize = (tag: string) => tag.replace(/\s+/g, "").trim();
+      const matched = result.data.find(
+        (item: any) => normalize(item.Tag) === normalize(selectedTag || "")
       );
-      setSelectedLongDesc(
-        result.longDescription || "No long description available"
-      );
-      setSolution(newSolution);
+
+      setData(result.data);
+      if (matched?.Solution?.length) {
+        setSolution(matched.Solution);
+        console.log("Solution:", matched.Solution);
+      } else {
+        setSolution([]);
+      }
+
+      setAnswer1("");
+      setAnswer2("");
+
+      toast.success("Solution generated and tags updated successfully!");
     } catch (error) {
-      console.error("❌ Error fetching tag details:", error);
-      toast.error(`Error`);
+      console.error("Generate error:", error);
+      toast.error("An error occurred while generating the solution.");
+    } finally {
+      setTimeout(() => {
+        setIsSidebarLoading(false);
+        setIsSidebarOpen(false);
+      }, 1500);
     }
   };
+  const handleTagClick = (tag: string, defId: string) => {
+    setSelectedTag(tag);
+    setSelectedID(defId);
+  };
+  console.log("selectedTagID:", selectedID);
   const handleCheckboxChange = (docId) => {
     setSelectedDocs((prevSelected) =>
       prevSelected.includes(docId)
@@ -463,20 +250,17 @@ function docUpload() {
         : [...prevSelected, docId]
     );
   };
-  const handleSelectDocument = (doc) => {
-    setSelectedDocument(doc.originalName || "Untitled Document");
+  const handleSelectDocument = (doc: DocumentType) => {
+    setSelectedDocument(doc);
     setSelectedDocumentId(doc._id);
-    fetchDocumentDetails(doc._id);
     setDropdownOpen(false);
-    setSelectedTag("");
-    setSelectedDescription("");
-    setSelectedLongDesc("");
-    setSolution("");
-    setSelectedPPolicy("");
   };
-  const deleteDocuments = async (documentIds: string[]) => {
-    if (!documentIds || documentIds.length === 0 || !email) {
-      console.error("Missing required parameters: documentIds or email");
+
+  const handleDeleteSelected = async () => {
+    const token = Cookies.get("token");
+
+    if (!selectedDocs || selectedDocs.length === 0 || !token) {
+      toast.error("Missing token or document IDs");
       return;
     }
 
@@ -487,39 +271,30 @@ function docUpload() {
           method: "POST",
           headers: {
             "Content-Type": "application/json",
+            Authorization: `Bearer ${token}`,
           },
-          body: JSON.stringify({ documentIds, email }),
+          body: JSON.stringify({ documentIds: selectedDocs }),
         }
       );
 
-      const data = await response.json();
+      const result = await response.json();
 
       if (response.ok) {
-        toast.success("Documents deleted successfully:", data);
-        setDocuments(data);
+        toast.success(" Documents deleted successfully");
+        setDocuments((prevDocs) =>
+          prevDocs.filter((doc) => !selectedDocs.includes(doc._id))
+        );
         setSelectedDocs([]);
+        setDropdownOpen(false);
       } else {
-        toast.error("Failed to delete documents:", data.message);
+        toast.error(" Failed to delete documents");
       }
     } catch (error) {
       console.error("Error deleting documents:", error);
+      toast.error(" Something went wrong.");
     }
   };
-  const handleDeleteSelected = () => {
-    if (selectedDocs.length === 0) return;
-    setSelectedDocument("Select Document");
-    setSelectedDescription("");
-    setSelectedLongDesc("");
-    setSolution("");
-    setSelectedPPolicy("");
 
-    deleteDocuments(selectedDocs);
-    setSelectedTag("Select Tag");
-
-    setSelectedDocs([]);
-    setDropdownOpen(false);
-  };
-  const role = Cookies.get("name");
   const toggleDropdown2 = () => {
     if (!selectedDocument) {
       toast.warning("Please select a document first!");
@@ -529,6 +304,7 @@ function docUpload() {
   };
   const toggleDropdown1 = () => setDropdownOpen1(!dropdownOpen1);
   const toggleSidebar = () => setIsSidebarOpen(!isSidebarOpen);
+
   const handleCopy = () => {
     if (boxRef.current) {
       const textToCopy = (boxRef.current as HTMLDivElement).innerText;
@@ -542,31 +318,270 @@ function docUpload() {
         });
     }
   };
-  const handleEdit = () => {
-    if (boxRef.current) {
-      setEditedText(boxRef.current.innerText);
-      setIsModalOpen(true);
-    }
-  };
 
-  const handleSaveChanges = async () => {
-    if (!boxRef.current || !selectedDocumentId || !selectedID) {
-      toast.error("❌ Missing required data. Please try again.");
+  // const handleEdit = () => {
+  //   if (!boxRef.current) return;
+
+  //   const fallbackDeficiency = data?.find((d: any) => d.Tag === selectedTag);
+
+  //   const solutionToRender =
+  //     matchingDeficiency?.Solution &&
+  //     typeof matchingDeficiency.Solution === "object"
+  //       ? matchingDeficiency.Solution
+  //       : fallbackDeficiency?.Solution &&
+  //         typeof fallbackDeficiency.Solution === "object"
+  //       ? fallbackDeficiency.Solution
+  //       : null;
+
+  //   if (!solutionToRender) {
+  //     toast.error(" No solution data to edit.");
+  //     return;
+  //   }
+
+  //   try {
+  //     const formattedText = Object.entries(solutionToRender)
+  //       .map(([key, value]) => `${key}: ${value}`)
+  //       .join("\n");
+
+  //     setEditedText(formattedText);
+  //     setIsModalOpen(true);
+  //   } catch (err) {
+  //     console.error("Error formatting solution:", err);
+  //     toast.error(" Failed to prepare data for editing.");
+  //   }
+  // };
+  // // const handleSaveChanges = async () => {
+  // //   console.log("Saving changes...");
+  // //   console.log("selectedTagID:", selectedID);
+  // //   console.log("Edited Text:", editedText, selectedDocumentId, selectedID);
+  // //   if (!boxRef.current || !selectedDocumentId || !selectedID) {
+  // //     toast.error(" Missing required data. Please try again.");
+  // //     return;
+  // //   }
+
+  // //   const token = Cookies.get("token");
+  // //   if (!token) {
+  // //     toast.error(" User not authenticated.");
+  // //     return;
+  // //   }
+
+  // //   // 🔄 Convert textarea back to object format
+  // //   const lines = editedText.trim().split("\n");
+  // //   const solutionObject = {};
+
+  // //   for (const line of lines) {
+  // //     const [key, ...rest] = line.split(":");
+  // //     if (key && rest.length > 0) {
+  // //       solutionObject[key.trim()] = rest.join(":").trim();
+  // //     }
+  // //   }
+
+  // //   const updatedSolution =
+  // //     Object.keys(solutionObject).length > 0 ? solutionObject : null;
+
+  // //   try {
+  // //     const response = await fetch(
+  // //       `${process.env.NEXT_PUBLIC_API_BASE_URL}/api/files/updateSolution`,
+  // //       {
+  // //         method: "PUT",
+  // //         headers: {
+  // //           "Content-Type": "application/json",
+  // //           Authorization: `Bearer ${token}`,
+  // //         },
+  // //         body: JSON.stringify({
+  // //           documentId: selectedDocumentId,
+  // //           tagId: selectedID,
+  // //           solution: updatedSolution,
+  // //         }),
+  // //       }
+  // //     );
+
+  // //     const data = await response.json();
+
+  // //     const newSolution = data.updatedSolution || {};
+
+  // //     setSolution(newSolution);
+
+  // //     // Patch into matchingDeficiency if needed
+  // //     if (matchingDeficiency) {
+  // //       matchingDeficiency.Solution = newSolution;
+  // //     }
+  // //     const formattedText = Object.entries(newSolution)
+  // //       .map(([key, value]) => `${key}: ${value}`)
+  // //       .join("\n");
+
+  // //     setEditedText(formattedText);
+  // //     toast.success(" Plan of Correction updated successfully!");
+  // //     setIsModalOpen(false);
+  // //   } catch (error) {
+  // //     console.error("❌ Error saving data:", error);
+  // //     toast.error(
+  // //       "❌ Failed to save changes. Please check your connection and try again."
+  // //     );
+  // //   }
+  // // };
+
+  // const handleSaveChanges = async () => {
+  //   console.log("Saving changes...");
+  //   console.log("selectedTagID:", selectedID);
+  //   console.log("Edited Text:", editedText, selectedDocumentId, selectedID);
+  //   if (!boxRef.current || !selectedDocumentId || !selectedID) {
+  //     toast.error(" Missing required data. Please try again.");
+  //     return;
+  //   }
+
+  //   const token = Cookies.get("token");
+  //   if (!token) {
+  //     toast.error(" User not authenticated.");
+  //     return;
+  //   }
+
+  //   // Convert textarea back to object format
+  //   const lines = editedText.trim().split("\n");
+  //   const solutionObject = {};
+
+  //   for (const line of lines) {
+  //     const [key, ...rest] = line.split(":");
+  //     if (key && rest.length > 0) {
+  //       solutionObject[key.trim()] = rest.join(":").trim();
+  //     }
+  //   }
+
+  //   // Validate mandatory questions
+  //   const mandatoryQuestions = [
+  //     "Question 1",
+  //     "Question 2",
+  //     "Question 3",
+  //     "Question 4",
+  //   ];
+  //   const normalize = (str) => str.trim().toLowerCase();
+
+  //   const normalizedSolutionObject = {};
+  //   for (const [key, val] of Object.entries(solutionObject)) {
+  //     normalizedSolutionObject[normalize(key)] = val;
+  //   }
+
+  //   const normalizedMandatory = mandatoryQuestions.map(normalize);
+  //   for (const question of mandatoryQuestions) {
+  //     if (
+  //       !solutionObject.hasOwnProperty(question) ||
+  //       !solutionObject[question] ||
+  //       solutionObject[question].trim() === ""
+  //     ) {
+  //       console.log(`Missing or empty: "${question}"`);
+  //       toast.error(
+  //         `Answer for mandatory question "${question}" is missing or empty.`
+  //       );
+  //       return; // Stop saving
+  //     }
+  //   }
+
+  //   console.log("Parsed solutionObject:", solutionObject);
+
+  //   const updatedSolution =
+  //     Object.keys(solutionObject).length > 0 ? solutionObject : null;
+
+  //   try {
+  //     const response = await fetch(
+  //       `${process.env.NEXT_PUBLIC_API_BASE_URL}/api/files/updateSolution`,
+  //       {
+  //         method: "PUT",
+  //         headers: {
+  //           "Content-Type": "application/json",
+  //           Authorization: `Bearer ${token}`,
+  //         },
+  //         body: JSON.stringify({
+  //           documentId: selectedDocumentId,
+  //           tagId: selectedID,
+  //           solution: updatedSolution,
+  //         }),
+  //       }
+  //     );
+
+  //     const data = await response.json();
+
+  //     const newSolution = data.updatedSolution || {};
+
+  //     setSolution(newSolution);
+
+  //     // Patch into matchingDeficiency if needed
+  //     if (matchingDeficiency) {
+  //       matchingDeficiency.Solution = newSolution;
+  //     }
+  //     const formattedText = Object.entries(newSolution)
+  //       .map(([key, value]) => `${key}: ${value}`)
+  //       .join("\n");
+
+  //     setEditedText(formattedText);
+  //     toast.success(" Plan of Correction updated successfully!");
+  //     setIsModalOpen(false);
+  //   } catch (error) {
+  //     console.error("❌ Error saving data:", error);
+  //     toast.error(
+  //       "❌ Failed to save changes. Please check your connection and try again."
+  //     );
+  //   }
+  // };
+
+  const handleEdit = () => {
+    if (!boxRef.current) return;
+
+    const fallbackDeficiency = data?.find((d: any) => d.Tag === selectedTag);
+
+    const solutionToRender =
+      matchingDeficiency?.Solution &&
+      typeof matchingDeficiency.Solution === "object"
+        ? matchingDeficiency.Solution
+        : fallbackDeficiency?.Solution &&
+          typeof fallbackDeficiency.Solution === "object"
+        ? fallbackDeficiency.Solution
+        : null;
+
+    if (!solutionToRender) {
+      toast.error(" No solution data to edit.");
       return;
     }
 
-    const updatedSolution = editedText.trim() === "" ? null : editedText.trim(); // ✅ Convert empty text to null
-    const safeEmail = email ?? ""; // Ensure email is not undefined
-    const documentId = selectedDocumentId;
-    const tagId = selectedID;
+    try {
+      const formattedText = Object.entries(solutionToRender)
+        .map(([key, value]) => `${key}: ${value}`)
+        .join("\n");
 
-    // ✅ Log request data before sending
-    console.log("Sending API request with:", {
-      email: safeEmail,
-      id: documentId,
-      tagId: tagId,
-      solution: updatedSolution,
-    });
+      setEditedText(formattedText);
+      setIsModalOpen(true);
+    } catch (err) {
+      console.error("Error formatting solution:", err);
+      toast.error(" Failed to prepare data for editing.");
+    }
+  };
+  const handleSaveChanges = async () => {
+    console.log("Saving changes...");
+    console.log("selectedTagID:", selectedID);
+    console.log("Edited Text:", editedText, selectedDocumentId, selectedID);
+    if (!boxRef.current || !selectedDocumentId || !selectedID) {
+      toast.error(" Missing required data. Please try again.");
+      return;
+    }
+
+    const token = Cookies.get("token");
+    if (!token) {
+      toast.error(" User not authenticated.");
+      return;
+    }
+
+    // 🔄 Convert textarea back to object format
+    const lines = editedText.trim().split("\n");
+    const solutionObject = {};
+
+    for (const line of lines) {
+      const [key, ...rest] = line.split(":");
+      if (key && rest.length > 0) {
+        solutionObject[key.trim()] = rest.join(":").trim();
+      }
+    }
+
+    const updatedSolution =
+      Object.keys(solutionObject).length > 0 ? solutionObject : null;
 
     try {
       const response = await fetch(
@@ -575,45 +590,32 @@ function docUpload() {
           method: "PUT",
           headers: {
             "Content-Type": "application/json",
+            Authorization: `Bearer ${token}`,
           },
           body: JSON.stringify({
-            email: safeEmail,
-            id: documentId,
-            tagId: tagId,
-            solution: updatedSolution, // ✅ Sends null if empty
+            documentId: selectedDocumentId,
+            tagId: selectedID,
+            solution: updatedSolution,
           }),
         }
       );
 
-      if (!response.ok) {
-        const errorText = await response.text(); // Get more error details
-        console.error(
-          `❌ Failed to save changes: ${response.status} ${response.statusText}`,
-          errorText
-        );
-        toast.error(
-          `❌ Failed to save changes: ${response.status} ${response.statusText}`
-        );
-        return;
-      }
-
       const data = await response.json();
-      console.log("✅ Successfully updated:", data);
 
-      let newSolution = data.updatedSolution || [];
-
-      setTagsData((prevTags) =>
-        prevTags.map((tag) =>
-          tag.id.toString() === tagId.toString()
-            ? { ...tag, solution: newSolution }
-            : tag
-        )
-      );
+      const newSolution = data.updatedSolution || {};
 
       setSolution(newSolution);
-      setEditedText(newSolution ? newSolution.join("\n") : ""); // ✅ Handle null safely
 
-      toast.success("✅ Plan of Correction updated successfully!");
+      // Patch into matchingDeficiency if needed
+      if (matchingDeficiency) {
+        matchingDeficiency.Solution = newSolution;
+      }
+      const formattedText = Object.entries(newSolution)
+        .map(([key, value]) => `${key}: ${value}`)
+        .join("\n");
+
+      setEditedText(formattedText);
+      toast.success(" Plan of Correction updated successfully!");
       setIsModalOpen(false);
     } catch (error) {
       console.error("❌ Error saving data:", error);
@@ -622,6 +624,85 @@ function docUpload() {
       );
     }
   };
+  const handleTabClick = (tabName: any) => {
+    if (tabName === "Tags" && !selectedDocument) {
+      toast.error("Please select a document first.");
+      return;
+    }
+    setActiveTab(tabName);
+  };
+
+  useEffect(() => {
+    const fetchPolicy = async () => {
+      if (!selectedTag || !matchingDeficiency?.Deficiency) return;
+
+      const token = Cookies.get("token");
+      try {
+        const res = await fetch(
+          `${process.env.NEXT_PUBLIC_API_BASE_URL}/api/files/fetch-policy-by-tag`,
+          {
+            method: "POST",
+            headers: {
+              "Content-Type": "application/json",
+              Authorization: `Bearer ${token}`,
+            },
+            body: JSON.stringify({
+              tag: selectedTag,
+              deficiency: matchingDeficiency.Deficiency,
+              fileID: selectedDocument?._id,
+            }),
+          }
+        );
+        if (!res.ok) {
+          throw new Error("Failed to fetch policy.");
+        }
+        const data = await res.json();
+
+        const firstPolicy = data.policy?.[0];
+
+        // ✅ Set policy ID properly
+        if (firstPolicy?._id) {
+          setSelectedPolicyID(firstPolicy._id);
+          console.log("Policy ID:", firstPolicy._id);
+        } else {
+          setSelectedPolicyID(null);
+        }
+        setAIPolicy(firstPolicy?.updatedPolicy?.solution_policies || []);
+        setSupportingData(
+          firstPolicy?.updatedPolicy?.supporting_references || []
+        );
+        setPolicy(firstPolicy?.policies || []);
+      } catch (error) {
+        console.error("Error fetching policy:", error);
+      }
+    };
+
+    fetchPolicy();
+  }, [selectedTag, matchingDeficiency]);
+
+  const navigateToPOCTab = (tag: string, def: string, fullData: any) => {
+    setSelectedTag(tag);
+    setSelectedDocument(fullData);
+    setActiveTab("POC AI Ally");
+  };
+
+  useEffect(() => {
+    const savedTag = localStorage.getItem("selectedTag");
+    const savedDocId = localStorage.getItem("selectedDocumentId");
+    const selectedTagID = localStorage.getItem("selectedTagID");
+
+    if (savedTag && savedDocId && documents.length > 0) {
+      const matchedDoc = documents.find((doc) => doc._id === savedDocId);
+      if (matchedDoc) {
+        setSelectedTag(savedTag);
+        setSelectedDocument(matchedDoc);
+        setSelectedDocumentId(matchedDoc._id);
+        setSelectedID(selectedTagID);
+      }
+      localStorage.removeItem("selectedTag");
+      localStorage.removeItem("selectedDocumentId");
+    }
+  }, [documents]);
 
   return (
     <div className="flex flex-col lg:flex-row">
@@ -637,18 +718,9 @@ function docUpload() {
       ) : (
         <>
           <div className="lg:ml-64 p-4 sm:p-8 w-full">
-            <header className="flex items-center justify-between mb-6 w-full flex-wrap">
-              <h2 className="text-lg sm:text-2xl lg:text-3xl font-bold">
-                Hello, <span className="text-blue-900 capitalize">{role}</span>
-              </h2>
-              <div className="flex items-center space-x-2 sm:space-x-4">
-                <Notification />
-                <UserDropdown />
-              </div>
-            </header>
+            <HeaderBar />
 
-            {/* Facility Dropdown and Tabs */}
-            <div className="flex items-center space-x-4 mt-4 lg:mt-8 ml-4 lg:ml-10 justify-between z-[-1]">
+            <div className="flex items-center space-x-4 mt-4 lg:mt-8  justify-between z-[-1]">
               <div className="flex items-center space-x-4">
                 <h3 className="text-base sm:text-lg md:text-xl lg:text-2xl font-bold text-blue-900">
                   Facility
@@ -662,7 +734,7 @@ function docUpload() {
                     className="flex items-center bg-[#244979] text-white font-semibold text-sm px-3 py-2 rounded-lg"
                   >
                     <span className="font-[Plus Jakarta Sans]">
-                      {selectedDocument || "Select Document"}
+                      {selectedDocument?.originalName || "Select Document"}
                     </span>
                     <svg
                       className="w-4 h-4 ml-2 transition-transform duration-200"
@@ -681,7 +753,6 @@ function docUpload() {
                       ></path>
                     </svg>
                   </button>
-
                   {/* Dropdown Menu */}
                   {dropdownOpen && (
                     <div className="absolute right-0 mt-2 w-52 bg-white shadow-lg rounded-lg z-50 border border-gray-200">
@@ -727,10 +798,8 @@ function docUpload() {
                   )}
                 </div>
               </div>
-
               {/* Facility Tabs */}
-              <div className="flex flex-col items-center w-50 lg:w-auto mx-auto">
-                {/* Tab Buttons */}
+              <div className="flex flex-col items-center w-full lg:w-auto mx-auto">
                 <div className="flex items-center justify-center space-x-4 sm:space-x-6 lg:space-x-8">
                   <button
                     onClick={() => setActiveTab("POC AI Ally")}
@@ -744,7 +813,7 @@ function docUpload() {
                   </button>
 
                   <button
-                    onClick={() => setActiveTab("Tags")}
+                    onClick={() => handleTabClick("Tags")}
                     className={`pb-2 ${
                       activeTab === "Tags"
                         ? "text-blue-900 font-semibold"
@@ -753,569 +822,80 @@ function docUpload() {
                   >
                     Tags
                   </button>
-
-                  <button
-                    onClick={() => setActiveTab("Policy")}
-                    className={`pb-2 ${
-                      activeTab === "Policy"
-                        ? "text-blue-900 font-semibold"
-                        : "text-gray-700 font-medium"
-                    } text-xs sm:text-sm md:text-base lg:text-lg`}
-                  >
-                    Policy
-                  </button>
                 </div>
 
                 {/* Progress Bar */}
                 <div className="relative w-full mt-2">
                   <div className="absolute h-[3px] w-full bg-gray-300 rounded-full"></div>
 
-                  {/* Active Blue Line */}
-                  {activeTab === "POC AI Ally" && (
-                    <div
-                      className="absolute h-[3px] bg-blue-900 rounded-full transition-all duration-300"
-                      style={{ width: "33.33%" }}
-                    ></div>
-                  )}
-                  {activeTab === "Tags" && (
-                    <div
-                      className="absolute h-[3px] bg-blue-900 rounded-full transition-all duration-300"
-                      style={{ width: "33.33%", left: "33.33%" }}
-                    ></div>
-                  )}
-                  {activeTab === "Policy" && (
-                    <div
-                      className="absolute h-[3px] bg-blue-900 rounded-full transition-all duration-300"
-                      style={{ width: "33.33%", left: "66.66%" }}
-                    ></div>
-                  )}
+                  <div
+                    className="absolute h-[3px] bg-blue-900 rounded-full transition-all duration-300"
+                    style={{
+                      width: "50%",
+                      left: activeTab === "POC AI Ally" ? "0%" : "50%",
+                    }}
+                  ></div>
                 </div>
               </div>
+
               <div className="relative flex items-center space-x-2">
                 <DateDisplay />
               </div>
             </div>
 
-            {activeTab === "POC AI Ally" && (
-              <>
-                <div
-                  className="w-full border-t border-gray-300 mt-4"
-                  style={{ borderColor: "#E0E0E0" }}
-                ></div>
-
-                <div className="flex flex-col lg:flex-row justify-center mt-4 lg:mt-8 space-y-4 lg:space-y-0 lg:space-x-4">
-                  {/* Left Container */}
-                  <div className="bg-white shadow-lg p-4 sm:p-6 flex flex-col justify-between w-full lg:w-[350px] h-auto rounded-lg border border-[#E0E0E0] mx-auto">
-                    <div>
-                      <h4 className="font-bold text-blue-900 text-lg mb-4">
-                        Tags
-                      </h4>
-                      <div>
-                        <div
-                          className="w-full bg-gray-50 border border-gray-200 rounded-lg shadow-md p-2"
-                          style={{ maxHeight: "300px", overflowY: "auto" }}
-                        >
-                          <ul className="flex flex-col gap-2">
-                            {!selectedDocument ||
-                            (selectedDocument &&
-                              tagsData[selectedDocument]?.length === 0) ? (
-                              <p className="text-xs text-gray-500 text-center p-2">
-                                All tags will be shown here after selecting
-                                specific document.
-                              </p>
-                            ) : null}
-
-                            {tagsData.map((item, index) => (
-                              <li
-                                key={item.id || index}
-                                className={`px-4 py-2 rounded-lg text-sm cursor-pointer transition-all duration-300 flex items-center gap-2
-          ${
-            selectedTag === item.tag
-              ? "bg-blue-900 text-white shadow-lg"
-              : "bg-white hover:bg-blue-100"
-          }`}
-                                onClick={() => {
-                                  setSelectedTag(item.tag);
-                                  handleTagClick(item.tag, item.id);
-                                }}
-                              >
-                                <span className="w-2 h-2 rounded-full bg-blue-900"></span>
-                                <strong>{item.tag}</strong>
-                              </li>
-                            ))}
-                          </ul>
-                        </div>
-
-                        {/* {selectedDescription && (
-                      <div
-                        className="mt-4 text-[14px] leading-[17.64px] font-light"
-                        style={{
-                          color: "#33343E",
-                          fontFamily: "Plus Jakarta Sans, sans-serif",
-                        }}
-                      >
-                        {selectedDescription}
-                      </div>
-                    )} */}
-                      </div>
-                    </div>
-                  </div>
-
-                  {/* Center Container */}
-                  <div className="bg-white border shadow-lg rounded-lg p-4 sm:p-6 w-full h-auto flex flex-col justify-between">
-                    <div ref={descRef}>
-                  
-                      <div className="flex justify-between items-center mb-4 lg:mb-6">
-                        <h4 className="font-bold text-lg sm:text-xl lg:text-2xl leading-tight text-[#494D55]">
-                          {selectedTag || "Select a Tag"}
-                        </h4>
-
-                        {selectedLongDesc && (
-                          <button
-                            onClick={scrollToCorrection}
-                            className="bg-gray-100 border p-2 rounded-full shadow"
-                            title="Scroll Down"
-                          >
-                            ⬇️
-                          </button>
-                        )}
-                      </div>
-
-                      {/* Long Description */}
-                      <div
-                        className="text-sm sm:text-base lg:text-md font-light leading-relaxed text-[#33343E] space-y-4"
-                        style={{
-                          fontFamily: "'Plus Jakarta Sans', sans-serif",
-                        }}
-                      >
-                        {selectedLongDesc ? (
-                          selectedLongDesc
-                            .split(/(?<=\.)\s+/)
-                            .map((sentence, index) => {
-                              const isBulletPoint = /^[A-Z]\.|^\d+\./.test(
-                                sentence.trim()
-                              );
-                              return isBulletPoint ? (
-                                <ul key={index} className="list-disc pl-6">
-                                  <li className="mb-2">{sentence.trim()}</li>
-                                </ul>
-                              ) : (
-                                <p key={index} className="mb-2">
-                                  {sentence.trim()}
-                                </p>
-                              );
-                            })
-                        ) : (
-                          <p>
-                            Long description will appear here once you select a
-                            tag.
-                          </p>
-                        )}
-                      </div>
-
-                      <div ref={correctionRef} className="mt-12">
-                        {selectedLongDesc && (
-                          <div className="flex justify-end">
-                            <button
-                              onClick={scrollToTopOfDesc}
-                              className="bg-gray-100 border p-2 rounded-full shadow"
-                              title="Scroll Up"
-                            >
-                              ⬆️
-                            </button>
-                          </div>
-                        )}
-                      </div>
-                    </div>
-                  </div>
-
-                  <div
-                    className="bg-white border shadow-lg rounded-lg p-4 sm:p-6 w-full h-auto flex flex-col justify-between"
-                    ref={boxRef}
-                  >
-                    <div>
-                      <div className="flex justify-between items-center">
-                        <h4 className="font-bold text-lg sm:text-xl lg:text-2xl leading-tight text-[#494D55]">
-                          Plan of Correction
-                        </h4>
-                        <div className="flex space-x-4">
-                          {/* Copy Button */}
-                          <button
-                            onClick={handleCopy}
-                            className="relative group p-2 rounded-lg hover:bg-gray-200 transition"
-                            title="Copy"
-                          >
-                            <img
-                              src="/assets/copy.png"
-                              alt="Copy"
-                              className="w-5 h-5"
-                            />
-                          </button>
-
-                          {/* Edit Button */}
-                          <button
-                            onClick={handleEdit}
-                            className="relative group p-2 rounded-lg hover:bg-gray-200 transition"
-                            title="Edit"
-                          >
-                            <img
-                              src="/assets/edit.png"
-                              alt="Edit"
-                              className="w-5 h-5"
-                            />
-                          </button>
-                        </div>
-                      </div>
-
-                      <ul
-                        className="list-disc list-inside text-sm sm:text-base lg:text-md font-light leading-relaxed text-[#33343E] mt-6"
-                        style={{
-                          fontFamily: "'Plus Jakarta Sans', sans-serif",
-                        }}
-                      >
-                        {Array.isArray(solution) && solution.length > 0 ? (
-                          solution.map((policy, index) => (
-                            <li key={index}>{policy}</li>
-                          ))
-                        ) : (
-                          <li>No solution available.</li>
-                        )}
-                      </ul>
-                    </div>
-
-                    {!solution || solution.length === 0 ? (
-                      <div className="flex items-center justify-center mt-10">
-                        <button
-                          onClick={() => toggleSidebar()}
-                          className="flex items-center justify-center bg-[#002F6C] text-white w-[160px] h-[40px] rounded-lg text-sm shadow-md transition-colors duration-300"
-                        >
-                          <FaFileAlt className="mr-2" />
-                          <span>Generate POC</span>
-                        </button>
-                      </div>
-                    ) : null}
-
-                    {(isSidebarOpen || loading) &&
-                      (!solution || solution.length === 0) && (
-                        <>
-                          <div className="fixed top-0 right-0 h-full bg-white shadow-lg p-6 sm:p-8 md:p-10 z-50 w-full max-w-lg overflow-y-auto">
-                            {loading ? (
-                              <div className="flex flex-col items-center justify-center h-full">
-                                <p className="text-[#002F6C] text-lg sm:text-xl md:text-2xl font-bold mb-4">
-                                  Generating Response...
-                                </p>
-                                <div className="w-12 h-12 border-4 border-blue-600 border-t-transparent rounded-full animate-spin"></div>
-                                <div className="mt-6 overflow-y-auto max-h-40 text-sm text-gray-600 p-4 border border-gray-200 rounded-lg">
-                                  <p>
-                                    We are processing your request. This may
-                                    take a few seconds. Please wait...
-                                  </p>
-                                </div>
-                              </div>
-                            ) : (
-                              <>
-                                {/* Title */}
-                                <h2 className="font-bold text-[#002F6C] mb-1 text-lg sm:text-xl md:text-2xl">
-                                  Additional Questions (Optional)
-                                </h2>
-                                <p className="text-gray-900 mb-6 sm:mb-8 text-sm sm:text-base md:text-lg">
-                                  Provide us with a little more details
-                                </p>
-
-                                {/* Question 1 */}
-                                <div className="mb-6">
-                                  <label className="block font-medium mb-2 whitespace-nowrap text-sm sm:text-base md:text-lg">
-                                    What has been done to address this?
-                                  </label>
-                                  <textarea
-                                    className="w-full h-[60px] sm:h-[70px] px-3 py-2 border border-gray-300 rounded-lg resize-none focus:outline-none focus:border-blue-900 text-xs sm:text-sm md:text-base"
-                                    placeholder="Enter your answer here..."
-                                    value={answer1}
-                                    onChange={(e) => setAnswer1(e.target.value)}
-                                  ></textarea>
-                                </div>
-
-                                {/* Question 2 */}
-                                <div className="mb-12">
-                                  <label className="block font-medium mb-2 whitespace-nowrap text-sm sm:text-base md:text-lg">
-                                    Anything else we should know?
-                                  </label>
-                                  <textarea
-                                    className="w-full h-[60px] sm:h-[70px] px-3 py-2 border border-gray-300 rounded-lg resize-none focus:outline-none focus:border-blue-900 text-xs sm:text-sm md:text-base"
-                                    placeholder="Enter additional details..."
-                                    value={answer2}
-                                    onChange={(e) => setAnswer2(e.target.value)}
-                                  ></textarea>
-                                </div>
-
-                                {/* Buttons */}
-                                <div className="flex justify-end space-x-4 mb-10">
-                                  <button
-                                    onClick={toggleSidebar}
-                                    className="flex items-center justify-center text-black w-full sm:w-[191px] h-[40px] sm:h-[56px] rounded-lg text-xs sm:text-sm md:text-base font-semibold shadow-md transition-colors duration-300 border border-gray-300 hover:bg-gray-200"
-                                    disabled={loading}
-                                  >
-                                    Back
-                                  </button>
-                                  <button
-                                    onClick={handleSubmit}
-                                    className="flex items-center justify-center bg-[#002F6C] text-white w-full sm:w-[191px] h-[40px] sm:h-[56px] rounded-lg text-xs sm:text-sm md:text-base font-semibold shadow-md transition-colors duration-300 hover:bg-blue-800"
-                                    disabled={loading}
-                                  >
-                                    {loading ? "Submitting..." : "Submit"}
-                                  </button>
-                                </div>
-                              </>
-                            )}
-                          </div>
-
-                          {/* Prevent clicking outside when sidebar is open (and not loading) */}
-                          {!loading && (
-                            <div
-                              className="fixed inset-0 bg-black opacity-50 z-40"
-                              onClick={toggleSidebar}
-                            ></div>
-                          )}
-                        </>
-                      )}
-                  </div>
-                  {isModalOpen && (
-                    <div
-                      className="fixed inset-0 bg-black bg-opacity-50 flex justify-center items-center z-50"
-                      onClick={() => setIsModalOpen(false)}
-                    >
-                      <div
-                        className="bg-white p-6 rounded-lg shadow-lg w-[600px] h-[400px] max-h-screen flex flex-col"
-                        onClick={(e) => e.stopPropagation()}
-                      >
-                        <h2 className="text-xl font-bold mb-4">
-                          Edit Plan of Correction
-                        </h2>
-
-                        <textarea
-                          className="w-full flex-grow border border-gray-300 rounded-lg p-2 focus:outline-none focus:border-blue-500 resize-none"
-                          value={editedText}
-                          onChange={(e) => setEditedText(e.target.value)}
-                        ></textarea>
-
-                        <div className="flex justify-end space-x-4 mt-4">
-                          <button
-                            onClick={() => setIsModalOpen(false)}
-                            className="px-5 py-2 bg-gray-300 rounded-lg"
-                          >
-                            Cancel
-                          </button>
-                          <button
-                            onClick={handleSaveChanges}
-                            className="px-5 py-2 bg-[#002f6c] text-white rounded-lg"
-                          >
-                            Save Changes
-                          </button>
-                        </div>
-                      </div>
-                    </div>
-                  )}
-                </div>
-              </>
-            )}
-
-            {activeTab === "Tags" && (
-              <>
-                {/* Divider */}
-                <div
-                  className="w-full border-t border-gray-300 mt-4"
-                  style={{ borderColor: "#E0E0E0" }}
-                ></div>
-
-                {/* Main Containers */}
-                <div className="flex flex-col lg:flex-row justify-center mt-4 lg:mt-8 space-y-4 lg:space-y-0 lg:space-x-4">
-                  {/* Center Container */}
-                  <div className="bg-white border shadow-lg rounded-lg p-4 sm:p-6 w-full h-auto flex flex-col justify-between">
-                    <div>
-                      <h4 className="font-bold text-lg sm:text-xl lg:text-2xl leading-tight text-[#494D55] mb-4 lg:mb-12">
-                        {selectedTag || "Select a Tag"}{" "}
-                      </h4>
-
-                      {/* Properly formatted long description with bullet points */}
-                      <div
-                        className="text-sm sm:text-base lg:text-md font-light leading-relaxed text-[#33343E] space-y-4 mb-8 md:mb-16 lg:mb-32"
-                        style={{
-                          fontFamily: "'Plus Jakarta Sans', sans-serif",
-                        }}
-                      >
-                        {selectedLongDesc ? (
-                          selectedLongDesc
-                            .split(/(?<=\.)\s+/)
-                            .map((sentence, index) => {
-                              // Check if sentence starts with a bullet-style character (A., B., 1., 2., etc.)
-                              const isBulletPoint = /^[A-Z]\.|^\d+\./.test(
-                                sentence.trim()
-                              );
-
-                              return isBulletPoint ? (
-                                <ul key={index} className="list-disc pl-6">
-                                  <li className="mb-2">{sentence.trim()}</li>
-                                </ul>
-                              ) : (
-                                <p key={index} className="mb-2">
-                                  {sentence.trim()}
-                                </p>
-                              );
-                            })
-                        ) : (
-                          <p>
-                            Long description will appear here once you select a
-                            tag.
-                          </p>
-                        )}
-                      </div>
-                    </div>
-                  </div>
-
-                  {/* Right Container */}
-                  <div className="bg-white border shadow-lg rounded-lg p-4 sm:p-6 w-full h-auto flex flex-col justify-between">
-                    {/* Tags List */}
-                    <div className="grid grid-cols-2 gap-4 mb-4 mt-20">
-                      {tagsData.map((item, index) => (
-                        <div
-                          key={item.id || index}
-                          className="flex items-center justify-between bg-[#CCE2FF]  rounded-lg px-4 py-2 shadow-sm cursor-pointer hover:bg-blue-300 transition "
-                          onClick={() => {
-                            handleTagClick(item.tag, item.id);
-                            setDropdownOpen2(false); // ✅ Close dropdown on click
-                          }} // Handle tag click
-                        >
-                          <span className="font-semibold text-gray-700">
-                            {item.tag}
-                          </span>
-                        </div>
-                      ))}
-                    </div>
-                  </div>
-                </div>
-              </>
-            )}
-
-            {activeTab === "Policy" && (
-              <>
-                <div
-                  className="w-full border-t border-gray-300 mt-4"
-                  style={{ borderColor: "#E0E0E0" }}
-                ></div>
-                <div className="flex flex-col lg:flex-row justify-center mt-4 lg:mt-8 space-y-4 lg:space-y-0 lg:space-x-4">
-                  <div className="bg-white border shadow-lg rounded-lg p-4 sm:p-6 w-full h-auto flex flex-col justify-between">
-                    <div>
-                      <h4 className="font-bold text-lg sm:text-xl lg:text-2xl leading-tight text-[#494D55] mb-4 lg:mb-12">
-                        {selectedTag || "Select a Tag"}
-                      </h4>
-                      <p
-                        className="text-sm sm:text-base lg:text-md font-light leading-relaxed text-[#33343E] mb-8 md:mb-16 lg:mb-32"
-                        style={{
-                          fontFamily: "'Plus Jakarta Sans', sans-serif",
-                        }}
-                      >
-                        {selectedLongDesc ||
-                          "Long description will appear here once you select a tag."}
-                      </p>
-                    </div>
-                  </div>
-                  {/* Right Container */}
-                  <div className="bg-white border shadow-lg rounded-lg p-4 sm:p-6 w-full h-auto flex flex-col">
-                    <h4 className="font-bold text-lg sm:text-xl lg:text-2xl leading-tight text-[#002F6C] mb-4">
-                      Policy
-                    </h4>
-
-                    <ul
-                      className="list-disc list-inside text-sm sm:text-base lg:text-md font-light leading-relaxed text-[#33343E] mt-6"
-                      style={{
-                        fontFamily: "'Plus Jakarta Sans', sans-serif",
-                      }}
-                    >
-                      {Array.isArray(selectedPolicy) &&
-                      selectedPolicy.length > 0 ? (
-                        selectedPolicy.map((policy, index) => (
-                          <li key={index}>{policy}</li>
-                        ))
-                      ) : (
-                        <li>No policies available.</li>
-                      )}
-                    </ul>
-                  </div>
-                </div>
-              </>
-            )}
-
-            {Array.isArray(solution) && solution.length > 0 && (
-              <div className="flex justify-end space-x-4 mt-4">
-                {status !== "assigned" && (
-                  <>
-                    <button
-                      onClick={isAuthenticated}
-                      className={`flex items-center justify-center border border-[#002F6C] text-[#002F6C] px-4 py-2 rounded-lg text-sm shadow-md transition-colors duration-300 ${
-                        loading
-                          ? "cursor-not-allowed opacity-50"
-                          : "hover:bg-gray-100"
-                      }`}
-                      disabled={loading}
-                    >
-                      <svg
-                        xmlns="http://www.w3.org/2000/svg"
-                        fill="none"
-                        viewBox="0 0 24 24"
-                        strokeWidth={1.5}
-                        stroke="currentColor"
-                        className="w-4 h-4 mr-2"
-                      >
-                        <path
-                          strokeLinecap="round"
-                          strokeLinejoin="round"
-                          d="M15 10l4.553 4.553-4.553 4.553m-6-9L4.447 14.553 9 19"
-                        />
-                      </svg>
-                      {loading ? "Assigning..." : "Assign Task"}
-                    </button>
-
-                    <button
-                      onClick={handleNavigateToTags}
-                      disabled={true} // Disable the button
-                      className="flex items-center justify-center bg-[#002F6C] text-white px-4 py-2 rounded-lg text-sm shadow-md transition-colors duration-300 
-    disabled:bg-gray-400 disabled:cursor-not-allowed"
-                    >
-                      Approve
-                    </button>
-                    <p> </p>
-                  </>
-                )}
-
-                {status === "assigned" && (
-                  <button
-                    onClick={handleNavigateToTags}
-                    className={`flex items-center justify-center border border-[#002F6C] text-[#002F6C] px-4 py-2 rounded-lg text-sm shadow-md transition-colors duration-300 ${
-                      loading
-                        ? "cursor-not-allowed opacity-50"
-                        : "hover:bg-gray-100"
-                    }`}
-                    disabled={loading}
-                  >
-                    <svg
-                      xmlns="http://www.w3.org/2000/svg"
-                      fill="none"
-                      viewBox="0 0 24 24"
-                      strokeWidth={1.5}
-                      stroke="currentColor"
-                      className="w-4 h-4 mr-2"
-                    >
-                      <path
-                        strokeLinecap="round"
-                        strokeLinejoin="round"
-                        d="M15 10l4.553 4.553-4.553 4.553m-6-9L4.447 14.553 9 19"
-                      />
-                    </svg>
-                    Assigned
-                  </button>
-                )}
-              </div>
-            )}
+            {activeTab === "POC AI Ally" &&
+              (() => {
+                return (
+                  <POCAllySection
+                    data={data}
+                    selectedID={selectedID}
+                    selectedPolicyID={selectedPolicyID}
+                    activeTab={activeTab}
+                    setActiveTab={setActiveTab}
+                    selectedDocument={selectedDocument}
+                    setSelectedDocument={setSelectedDocument}
+                    selectedTag={selectedTag}
+                    setSelectedTag={setSelectedTag}
+                    handleTagClick={handleTagClick}
+                    policy={policy}
+                    AIPolicy={AIPolicy}
+                    solution={solution}
+                    handleCopy={handleCopy}
+                    handleEdit={handleEdit}
+                    isSidebarOpen={isSidebarOpen}
+                    loading={loading}
+                    isSidebarLoading={isSidebarLoading}
+                    toggleSidebar={toggleSidebar}
+                    answer1={answer1}
+                    setAnswer1={setAnswer1}
+                    answer2={answer2}
+                    setAnswer2={setAnswer2}
+                    handleSubmit={handleSubmit}
+                    isModalOpen={isModalOpen}
+                    setIsModalOpen={setIsModalOpen}
+                    editedText={editedText}
+                    setEditedText={setEditedText}
+                    handleSaveChanges={handleSaveChanges}
+                    boxRef={boxRef}
+                    handleNavigateToTags={handleNavigateToTags}
+                    isAuthenticated={isAuthenticated}
+                  />
+                );
+              })()}
+            {activeTab === "Tags" &&
+              (() => {
+                return (
+                  <TagDetailsView
+                   
+                    navigateToPOCTab={navigateToPOCTab}
+                    selectedDocument={selectedDocument}
+                    selectedTag={selectedTag || ""}
+                    selectedLongDesc={selectedLongDesc || ""}
+                    handleTagClick={handleTagClick}
+                    setDropdownOpen2={setDropdownOpen2}
+                  />
+                );
+              })()}
           </div>
         </>
       )}
