@@ -5,11 +5,15 @@ const facilitySignupSchema = new mongoose.Schema(
     email: {
       type: String,
       required: [true, "Email is required"],
-      unique: true,
+
     },
     facilityName: {
       type: String,
       required: [true, "Facility Name is required"],
+    },
+    state: {
+      type: String,
+      required: [true, "State is required"],
     },
     facilityAddress: {
       type: String,
@@ -21,11 +25,11 @@ const facilitySignupSchema = new mongoose.Schema(
     },
     status: {
       type: String,
-      enum: ["pending", "approve", "reject"], // Only accept these values
-      default: "pending", // Default value is pending
+      enum: ["pending", "approve", "reject"], 
+      default: "pending", 
     },
   },
-  { timestamps: true } // Automatically adds createdAt and updatedAt fields
+  { timestamps: true } 
 );
 
 module.exports = mongoose.model("FacilitySignup", facilitySignupSchema);

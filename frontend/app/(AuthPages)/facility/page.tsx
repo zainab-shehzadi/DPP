@@ -50,30 +50,59 @@ const RegionalFacilities = () => {
     null
   );
   console.log("state", state);
+  // const fetchFacilities = async () => {
+  //   try {
+  //     const res = await fetch(
+  //       `${process.env.NEXT_PUBLIC_API_BASE_URL}/api/facility/facilities1`,
+  //       {
+  //         method: "GET",
+  //         headers: {
+  //           Authorization: `Bearer ${Cookies.get("token")}`,
+  //         },
+  //       }
+  //     );
+  //     const data = await res.json();
+  //     console.log("facilities", data);
+  //     if (res.ok) {
+  //       setFacilities(data?.facility || []);
+  //     } else {
+  //       toast.error(data.message || "Failed to load facilities");
+  //     }
+  //   } catch (error) {
+  //     toast.error("Something went wrong");
+  //   } finally {
+  //     setLoading(false);
+  //   }
+  // };
+
+
   const fetchFacilities = async () => {
-    try {
-      const res = await fetch(
-        `${process.env.NEXT_PUBLIC_API_BASE_URL}/api/facility/facilities1`,
-        {
-          method: "GET",
-          headers: {
-            Authorization: `Bearer ${Cookies.get("token")}`,
-          },
-        }
-      );
-      const data = await res.json();
-      console.log("facilities", data);
-      if (res.ok) {
-        setFacilities(data?.facility || []);
-      } else {
-        toast.error(data.message || "Failed to load facilities");
+  try {
+    const res = await fetch(
+      `${process.env.NEXT_PUBLIC_API_BASE_URL}/api/facility/facilities1`,
+      {
+        method: "POST",
+        headers: {
+          "Content-Type": "application/json",
+          Authorization: `Bearer ${Cookies.get("token")}`,
+        },
+        body: JSON.stringify({}) // empty body
       }
-    } catch (error) {
-      toast.error("Something went wrong");
-    } finally {
-      setLoading(false);
+    );
+    const data = await res.json();
+    console.log("facilities", data);
+    if (res.ok) {
+      setFacilities(data?.facility || []);
+    } else {
+      toast.error(data.message || "Failed to load facilities");
     }
-  };
+  } catch (error) {
+    toast.error("Something went wrong");
+    console.error(error);
+  } finally {
+    setLoading(false);
+  }
+};
 
   useEffect(() => {
     fetchFacilities();

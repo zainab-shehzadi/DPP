@@ -78,39 +78,76 @@ function docUpload() {
     setToken(token);
   }, []);
 
+  // useEffect(() => {
+  //   const fetchDocuments = async () => {
+  //     try {
+  //       const token = Cookies.get("token");
+  //       if (!token) {
+  //         console.error("Access token not found!");
+  //         return;
+  //       }
+  //       const res = await fetch(
+  //         `${process.env.NEXT_PUBLIC_API_BASE_URL}/api/files/docs`,
+  //         {
+  //           method: "GET",
+  //           headers: {
+  //             Authorization: `Bearer ${token}`,
+  //           },
+  //         }
+  //       );
+
+  //       const data = await res.json();
+  //       console.log("data", data);
+
+  //       if (Array.isArray(data)) {
+  //         setDocuments(data);
+  //       } else {
+  //       }
+  //     } catch (error) {
+  //       console.error("Error fetching documents:", error);
+  //       toast.error("Error fetching documents");
+  //     }
+  //   };
+
+  //   fetchDocuments();
+  // }, []);
+
+
   useEffect(() => {
-    const fetchDocuments = async () => {
-      try {
-        const token = Cookies.get("token");
-        if (!token) {
-          console.error("Access token not found!");
-          return;
-        }
-        const res = await fetch(
-          `${process.env.NEXT_PUBLIC_API_BASE_URL}/api/files/docs`,
-          {
-            method: "GET",
-            headers: {
-              Authorization: `Bearer ${token}`,
-            },
-          }
-        );
-
-        const data = await res.json();
-        console.log("data", data);
-
-        if (Array.isArray(data)) {
-          setDocuments(data);
-        } else {
-        }
-      } catch (error) {
-        console.error("Error fetching documents:", error);
-        toast.error("Error fetching documents");
+  const fetchDocuments = async () => {
+    try {
+      const token = Cookies.get("token");
+      if (!token) {
+        console.error("Access token not found!");
+        return;
       }
-    };
+      const res = await fetch(
+        `${process.env.NEXT_PUBLIC_API_BASE_URL}/api/files/docs`,
+        {
+          method: "POST",
+          headers: {
+            Authorization: `Bearer ${token}`,
+            Accept: "application/json",
+            "Content-Type": "application/json",
+          },
+          body: JSON.stringify({}), // empty body
+        }
+      );
 
-    fetchDocuments();
-  }, []);
+      const data = await res.json();
+      console.log("data", data);
+
+      if (Array.isArray(data)) {
+        setDocuments(data);
+      }
+    } catch (error) {
+      console.error("Error fetching documents:", error);
+      toast.error("Error fetching documents");
+    }
+  };
+
+  fetchDocuments();
+}, []);
 
   useEffect(() => {
     const timer = setTimeout(() => {

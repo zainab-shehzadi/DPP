@@ -1,10 +1,11 @@
 const express = require("express");
-const { 
-  registerUser, 
-  loginUser, 
-  forgotPassword, 
-  verifyToken, 
-  resetPassword ,
+const {
+  registerUser,
+  loginUser,
+  updatePassowrd,
+  forgotPassword,
+  verifyToken,
+  resetPassword,
   getAllUsers,
   createUser,
   deleteUser,
@@ -12,15 +13,17 @@ const {
   getUserByEmail,
   editUserByEmail,
   updateProfileImage,
+  getMe,
 } = require("../controllers/userController");
 const { protect } = require("../middlewares/authMiddleware");
 const User = require("../models/User");
-const State = require("../models/StateTag"); 
+const State = require("../models/StateTag");
+const StateTag = require("../models/StateTag");
 const router = express.Router();
 
 router.get("/get-access-token", async (req, res) => {
   try {
-    const { email } = req.query; 
+    const { email } = req.query;
     console.log("Fetching tokens for email:", email);
 
     if (!email) {
@@ -31,20 +34,22 @@ router.get("/get-access-token", async (req, res) => {
     const user = await User.findOne({ email });
 
     if (!user || !user.accessToken || !user.refreshToken) {
-      return res.status(404).json({ error: "Access token or Refresh token not found" });
+      return res
+        .status(404)
+        .json({ error: "Access token or Refresh token not found" });
     }
 
     // ✅ Return both tokens
-    res.status(200).json({ 
+    res.status(200).json({
       accessToken: user.accessToken,
-      refreshToken: user.refreshToken 
+      refreshToken: user.refreshToken,
     });
-
   } catch (error) {
     console.error("Error fetching tokens:", error);
     res.status(500).json({ error: "Internal server error" });
   }
 });
+router.get("/me", protect, getMe);
 router.post("/role", getUserRole);
 router.post("/email", getUserByEmail);
 router.post("/signup", registerUser);
@@ -57,6 +62,7 @@ router.post("/reset-password", resetPassword);
 router.get("/profile", protect, (req, res) => {
   res.json({ message: `Welcome ${req.user.email}` });
 });
+
 router.post("/fetch", async (req, res) => {
   try {
     const { id } = req.body;
@@ -78,16 +84,20 @@ router.post("/fetch", async (req, res) => {
   }
 });
 
+
+router.put("/change-password", protect, updatePassowrd);
 router.put("/update", async (req, res) => {
   try {
     const { id } = req.body;
     const updateData = req.body;
-
+    console.log("update ", updateData);
     if (!id) {
       return res.status(400).json({ error: "User ID is required" });
     }
 
-    const updatedUser = await User.findByIdAndUpdate(id, updateData, { new: true });
+    const updatedUser = await User.findByIdAndUpdate(id, updateData, {
+      new: true,
+    });
 
     if (!updatedUser) {
       return res.status(404).json({ error: "User not found" });
@@ -99,10 +109,8 @@ router.put("/update", async (req, res) => {
     res.status(500).json({ error: "Internal server error" });
   }
 });
-router.post('/add', createUser); 
-
-router.get('/User123', getAllUsers); 
-
+router.post("/add", createUser);
+router.get("/User123", getAllUsers);
 router.post("/state", async (req, res) => {
   try {
     const data = req.body;
@@ -115,22 +123,20 @@ router.post("/state", async (req, res) => {
 
     const stateData = {};
     for (const [state, tags] of Object.entries(data)) {
-      if (
-        tags &&
-        typeof tags === "object" &&
-        Object.keys(tags).length > 0
-      ) {
+      if (tags && typeof tags === "object" && Object.keys(tags).length > 0) {
         stateData[state] = tags;
       }
     }
 
     if (Object.keys(stateData).length === 0) {
-      return res.status(400).json({ message: "No valid state tag data found." });
+      return res
+        .status(400)
+        .json({ message: "No valid state tag data found." });
     }
 
     const newStateDoc = new State({
       stateData,
-      date: currentDate
+      date: currentDate,
     });
 
     await newStateDoc.save();
@@ -140,55 +146,109 @@ router.post("/state", async (req, res) => {
     console.error("❌ Error inserting states:", error); // LOG actual error
     res.status(500).json({
       message: "Error inserting states",
-      error: error.message || error
+      error: error.message || error,
     });
   }
 });
-
 router.post("/state/tags", async (req, res) => {
   try {
-    const { stateName } = req.body;
+    const { stateName, days = 30 } = req.body;
+    console.log("📥 Request Body:", req.body);
 
     if (!stateName) {
       return res.status(400).json({ error: "State name is required" });
     }
 
     const now = new Date();
-    const startOfMonth = new Date(now.getFullYear(), now.getMonth(), 1);
-    const endOfMonth = new Date(now.getFullYear(), now.getMonth() + 1, 1);
+    let startDate, expectedMonths;
 
-    const stateDoc = await State.findOne({
-      date: { $gte: startOfMonth, $lt: endOfMonth }
+    switch (days) {
+      case 30:
+        startDate = new Date(now.getFullYear(), now.getMonth(), 1);
+        expectedMonths = 1;
+        break;
+      case 60:
+        startDate = new Date(now.getFullYear(), now.getMonth() - 1, 1);
+        expectedMonths = 2;
+        break;
+      case 90:
+        startDate = new Date(now.getFullYear(), now.getMonth() - 2, 1);
+        expectedMonths = 3;
+        break;
+      case 180:
+        startDate = new Date(now.getFullYear(), now.getMonth() - 5, 1);
+        expectedMonths = 6;
+        break;
+      default:
+        return res.status(400).json({ error: "Unsupported days value." });
+    }
+
+    const docs = await StateTag.find({
+      date: { $gte: startDate, $lte: now },
     }).sort({ date: -1 });
 
-    if (!stateDoc) {
-      return res.status(404).json({ error: "No data found for current month" });
+    console.log("📄 Docs Found:", docs.length);
+
+    const mergedTags = {};
+
+    for (const doc of docs) {
+      const tagMap = doc.stateData?.get(stateName); // still fine
+
+      if (!tagMap) {
+        console.log(
+          `⚠️ No tagMap for state: ${stateName} in document ${doc._id}`
+        );
+        continue;
+      }
+      console.log(
+        "🧪 tagMap type:",
+        typeof tagMap,
+        Array.isArray(tagMap),
+        tagMap
+      );
+
+      const plainTagMap = JSON.parse(JSON.stringify(tagMap));
+
+      for (const [tagKey, tagObj] of Object.entries(plainTagMap)) {
+        if (!mergedTags[tagKey]) {
+          mergedTags[tagKey] = {
+            Tag: tagObj.Tag,
+            Count: tagObj.Count,
+            Description: tagObj.Description,
+          };
+        } else {
+          mergedTags[tagKey].Count += tagObj.Count;
+        }
+      }
     }
 
-    if (!stateDoc.stateData.has(stateName)) {
-      return res.status(404).json({ error: `No tag found for state: ${stateName}` });
+    console.log("✅ Final Merged Tags:", mergedTags);
+
+    if (Object.keys(mergedTags).length === 0) {
+      return res
+        .status(404)
+        .json({ error: `No tags found for state: ${stateName}` });
     }
 
-    const tagObject = stateDoc.stateData.get(stateName); // ✅ Corrected
-
-    res.status(200).json({
+    return res.status(200).json({
       state: stateName,
-      tag: tagObject,
-      date: stateDoc.date
+      tag: mergedTags,
+      periodStart: startDate,
+      periodEnd: now,
+      availableMonths: docs.length,
+      expectedMonths,
     });
-
   } catch (error) {
     console.error("❌ Error fetching state tag:", error);
-    res.status(500).json({
+    return res.status(500).json({
       error: "Internal server error",
-      details: error.message
+      details: error.message,
     });
   }
 });
+router.post("/upload-profile-image", protect, updateProfileImage);
 
-router.post('/upload-profile-image', updateProfileImage);
-
-router.post('/get-profile-image', async (req, res) => {
+router.post("/get-profile-image", async (req, res) => {
   const { email } = req.body;
 
   if (!email) {
@@ -202,7 +262,7 @@ router.post('/get-profile-image', async (req, res) => {
       return res.status(404).json({ error: "Image not found" });
     }
 
-    res.status(200).json({ profileImage: user.profileImage }); 
+    res.status(200).json({ profileImage: user.profileImage });
   } catch (error) {
     console.error("Error fetching profile image:", error);
     res.status(500).json({ error: "Server error" });

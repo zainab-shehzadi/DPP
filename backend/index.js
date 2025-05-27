@@ -12,6 +12,8 @@ const fileRoutes = require("./routes/fileRoutes");
 const stripeRoutes = require("./routes/stripeRoutes");
 const facilityRoutes = require("./routes/facilityRoutes");
 const calendarRoutes = require("./routes/calendarRoutes");
+const pdfRoutes = require('./routes/pdfRoutes')
+const taskRoutes = require('./routes/taskRoutes')
 const mongoose = require('mongoose');
 const cookieParser = require("cookie-parser");
 const cron = require("node-cron");
@@ -159,13 +161,15 @@ app.use((req, res, next) => {
   req.io = io;
   next();
 });
+app.use(express.json({ limit: "1mb" })); 
 
 app.use("/api/stripe", stripeRoutes);
 app.use("/api/users", userRoutes);
 app.use("/api/files", fileRoutes);
 app.use("/api/facility", facilityRoutes);
 app.use("/api/calendar", calendarRoutes);
-
+app.use("/api/tasks", taskRoutes)
+app.use("/api/pdf", pdfRoutes);
 app.get("/", (req, res) => {
   res.json({ message: "Server is running" });
 });

@@ -15,45 +15,61 @@ const userSchema = new mongoose.Schema(
       required: [true, "Email is required"],
       unique: true,
     },
+
     DepartmentName: {
       type: String,
+      enum: [
+        "business_office",
+        "admissions",
+        "activities",
+        "maintenance",
+        "dietary",
+        "therapy",
+        "laundry",
+        "housekeeping",
+        "case_management",
+        "mds",
+        "nursing_department",
+        "administration",
+        "social_services",
+        "staff_development",
+      ],
     },
+
     password: {
       type: String,
       required: [true, "Password is required"],
     },
+
     role: {
       type: String,
-      enum: [
-        "Director", 
-        "Manager", 
-        "Supervisor", 
-        "Staff", 
-        "Assistant", 
-        "Liaison"
-      ], 
+      enum: ["Facility Admin", "Facility Users", "Regional Admin"],
       required: true,
     },
+
     Position: {
       type: String,
-    
     },
-     priceType: {
+    facilityName: {
       type: String,
-      enum: ["Basic", "Pro", "Enterprise"], 
-      required: [false, "Price type is required"]
+      required: [false, "Facility name is required"],
+    },
+    priceType: {
+      type: String,
+      enum: ["Basic", "Pro", "Enterprise"],
+      required: [false, "Price type is required"],
     },
     priceCycle: {
       type: String,
       enum: ["Annual", "Bi-Annual"],
-      required: [false, "Price cycle is required"]
+      required: [false, "Price cycle is required"],
     },
     resetPasswordSlug: String,
     resetPasswordExpires: Date,
 
     accessToken: {
       type: String,
-      default: null, 
+      default: null,
     },
 
     refreshToken: {
@@ -61,15 +77,14 @@ const userSchema = new mongoose.Schema(
       default: null,
     },
     tokenExpiry: {
-      type: Date, 
+      type: Date,
     },
-    status: { 
-      type: String, 
-      enum: ["onboarding", "pending", "verified"], 
-      default: null, 
+    status: {
+      type: String,
+      enum: ["onboarding", "pending", "verified"],
+      default: null,
     },
-    profileImage: { type: String, default: null } 
-
+    profileImage: { type: String, default: null },
   },
   { timestamps: true }
 );

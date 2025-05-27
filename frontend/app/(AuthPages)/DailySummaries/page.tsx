@@ -81,34 +81,72 @@ function TaskList() {
     };
   }, []);
 
-  useEffect(() => {
-    const fetchDocuments = async () => {
-      try {
-        const email = Cookies.get("token");
-        if (!email) {
-          console.error("Error: Email not found in cookies!");
-          return;
-        }
-        const res = await fetch(
-          `${process.env.NEXT_PUBLIC_API_BASE_URL}/api/files/docs`,
-          {
-            method: "GET",
-            headers: {
-              "Content-Type": "multipart/form-data",
-              Authorization: `Bearer ${token}`,
-            },
-          }
-        );
-        const data = await res.json();
-        if (Array.isArray(data)) {
-          setDocuments(data);
-        }
-      } catch (error) {
-        toast.error("Error fetching documents");
+  // useEffect(() => {
+  //   const fetchDocuments = async () => {
+  //     try {
+  //       const email = Cookies.get("token");
+  //       if (!email) {
+  //         console.error("Error: Email not found in cookies!");
+  //         return;
+  //       }
+  //       const res = await fetch(
+  //         `${process.env.NEXT_PUBLIC_API_BASE_URL}/api/files/docs`,
+  //         {
+  //           method: "GET",
+  //           headers: {
+  //             "Content-Type": "multipart/form-data",
+  //             Authorization: `Bearer ${token}`,
+  //           },
+  //         }
+  //       );
+  //       const data = await res.json();
+  //       if (Array.isArray(data)) {
+  //         setDocuments(data);
+  //       }
+  //     } catch (error) {
+  //       toast.error("Error fetching documents");
+  //     }
+  //   };
+  //   fetchDocuments();
+  // }, [token]);
+
+useEffect(() => {
+  const fetchDocuments = async () => {
+    try {
+      const token = Cookies.get("token");
+      if (!token) {
+        console.error("Access token not found!");
+        return;
       }
-    };
-    fetchDocuments();
-  }, [token]);
+      const res = await fetch(
+        `${process.env.NEXT_PUBLIC_API_BASE_URL}/api/files/docs`,
+        {
+          method: "POST",
+          headers: {
+            Authorization: `Bearer ${token}`,
+            Accept: "application/json",
+            "Content-Type": "application/json",
+          },
+          body: JSON.stringify({}), // empty body
+        }
+      );
+
+      const data = await res.json();
+      console.log("data", data);
+
+      if (Array.isArray(data)) {
+        setDocuments(data);
+      }
+    } catch (error) {
+      console.error("Error fetching documents:", error);
+      toast.error("Error fetching documents");
+    }
+  };
+
+  fetchDocuments();
+}, []);
+
+
 
   useEffect(() => {
     const fetchUser = async () => {
@@ -340,47 +378,95 @@ function TaskList() {
   }, []);
   const columnOrder = ["In Progress", "Closed"];
 
-  const fetchTasks = async () => {
-    setLoading(true);
+  // const fetchTasks = async () => {
+  //   setLoading(true);
 
-    try {
-      const res = await fetch(
-        `${process.env.NEXT_PUBLIC_API_BASE_URL}/api/tasks/get-my-task`,
-        {
-          method: "GET",
-          headers: {
-            "Content-Type": "application/json",
-            Authorization: `Bearer ${Cookies.get("token")}`,
-          },
-        }
-      );
-      const data = await res.json();
-      console.log("data", data);
-      if (res.ok) {
-        const updated = data.tasks.map((task: any) => ({
-          ...task,
-          column:
-            task.status === "pending"
-              ? "To Do"
-              : task.status === "in-progress"
-              ? "In Progress"
-              : "Closed",
-          taskSummary: task.task,
-          assignedTo: [{ firstname: name || "You" }],
-          startDate: task.startDate || new Date().toISOString(),
-          endDate: task.endDate || new Date().toISOString(),
-        }));
-        setTasks(updated);
-      } else {
-        toast.error(data.message || "Failed to load tasks");
+  //   try {
+  //     const res = await fetch(
+  //       `${process.env.NEXT_PUBLIC_API_BASE_URL}/api/tasks/get-my-task`,
+  //       {
+  //         method: "GET",
+  //         headers: {
+  //           "Content-Type": "application/json",
+  //           Authorization: `Bearer ${Cookies.get("token")}`,
+  //         },
+  //       }
+  //     );
+  //     const data = await res.json();
+  //     console.log("data", data);
+  //     if (res.ok) {
+  //       const updated = data.tasks.map((task: any) => ({
+  //         ...task,
+  //         column:
+  //           task.status === "pending"
+  //             ? "To Do"
+  //             : task.status === "in-progress"
+  //             ? "In Progress"
+  //             : "Closed",
+  //         taskSummary: task.task,
+  //         assignedTo: [{ firstname: name || "You" }],
+  //         startDate: task.startDate || new Date().toISOString(),
+  //         endDate: task.endDate || new Date().toISOString(),
+  //       }));
+  //       setTasks(updated);
+  //     } else {
+  //       toast.error(data.message || "Failed to load tasks");
+  //     }
+  //   } catch (err) {
+  //     toast.error("Error loading tasks");
+  //     console.error(err);
+  //   } finally {
+  //     setLoading(false);
+  //   }
+  // };
+  const fetchTasks = async () => {
+  setLoading(true);
+
+  try {
+    const res = await fetch(
+      `${process.env.NEXT_PUBLIC_API_BASE_URL}/api/tasks/get-my-task`,
+      {
+        method: "POST",
+        headers: {
+          "Content-Type": "application/json",
+          Authorization: `Bearer ${Cookies.get("token")}`,
+        },
+        body: JSON.stringify({}), // sending empty JSON body
       }
-    } catch (err) {
-      toast.error("Error loading tasks");
-      console.error(err);
-    } finally {
-      setLoading(false);
+    );
+
+    const data = await res.json();
+    console.log("data", data);
+
+    if (res.ok) {
+      const updated = data.tasks.map((task) => ({
+        ...task,
+        column:
+          task.status === "pending"
+            ? "To Do"
+            : task.status === "in-progress"
+            ? "In Progress"
+            : "Closed",
+        taskSummary: task.task,
+        assignedTo: task.assignedTo,
+        department: task.department,
+        startDate: task.startDate || new Date().toISOString(),
+        endDate: task.endDate || new Date().toISOString(),
+      }));
+      setTasks(updated);
+    } else {
+      toast.error(data.message || "Failed to load tasks");
     }
-  };
+  } catch (err) {
+    toast.error("Error loading tasks");
+    console.error(err);
+  } finally {
+    setLoading(false);
+  }
+};
+
+  
+  
   useEffect(() => {
     fetchTasks();
   }, [token]);
