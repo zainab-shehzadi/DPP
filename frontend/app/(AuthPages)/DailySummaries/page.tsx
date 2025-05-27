@@ -225,49 +225,99 @@ useEffect(() => {
     }
   };
 
+  // const fetchTasksByDocument = async (docId: string) => {
+  //   setLoading(true); // Always show loader first
+  //   if (!docId) {
+  //     setTasks([]); // Clear tasks when no docId
+  //     setLoading(false); // Stop loading
+  //     return;
+  //   }
+
+  //   try {
+  //     const res = await fetch(
+  //       `${process.env.NEXT_PUBLIC_API_BASE_URL}/api/tasks/get-by-document?documentId=${docId}`,
+  //       {
+  //         headers: { Authorization: `Bearer ${token}` },
+  //       }
+  //     );
+
+  //     const data = await res.json();
+
+  //     if (res.ok) {
+  //       const updated = data.tasks.map((task: any) => ({
+  //         ...task,
+  //         column:
+  //           task.status === "pending"
+  //             ? "To Do"
+  //             : task.status === "in-progress"
+  //             ? "In Progress"
+  //             : "Closed",
+  //         taskSummary: task.task,
+  //         assignedTo: [{ firstname: name || "You" }],
+  //         startDate: task.startDate || new Date().toISOString(),
+  //         endDate: task.endDate || new Date().toISOString(),
+  //       }));
+  //       setTasks(updated);
+  //     } else {
+  //       toast.error(data.message || "Failed to load tasks");
+  //     }
+  //   } catch (err) {
+  //     toast.error("Error fetching tasks");
+  //     console.error(err);
+  //   } finally {
+  //     setLoading(false);
+  //   }
+  // };
+
+
   const fetchTasksByDocument = async (docId: string) => {
-    setLoading(true); // Always show loader first
-    if (!docId) {
-      setTasks([]); // Clear tasks when no docId
-      setLoading(false); // Stop loading
-      return;
-    }
+  setLoading(true); // Always show loader first
+  if (!docId) {
+    setTasks([]); // Clear tasks when no docId
+    setLoading(false); // Stop loading
+    return;
+  }
 
-    try {
-      const res = await fetch(
-        `${process.env.NEXT_PUBLIC_API_BASE_URL}/api/tasks/get-by-document?documentId=${docId}`,
-        {
-          headers: { Authorization: `Bearer ${token}` },
-        }
-      );
-
-      const data = await res.json();
-
-      if (res.ok) {
-        const updated = data.tasks.map((task: any) => ({
-          ...task,
-          column:
-            task.status === "pending"
-              ? "To Do"
-              : task.status === "in-progress"
-              ? "In Progress"
-              : "Closed",
-          taskSummary: task.task,
-          assignedTo: [{ firstname: name || "You" }],
-          startDate: task.startDate || new Date().toISOString(),
-          endDate: task.endDate || new Date().toISOString(),
-        }));
-        setTasks(updated);
-      } else {
-        toast.error(data.message || "Failed to load tasks");
+  try {
+    const res = await fetch(
+      `${process.env.NEXT_PUBLIC_API_BASE_URL}/api/tasks/get-by-document`,
+      {
+        method: "POST",
+        headers: {
+          "Content-Type": "application/json",
+          Authorization: `Bearer ${token}`,
+        },
+        body: JSON.stringify({ documentId: docId }),
       }
-    } catch (err) {
-      toast.error("Error fetching tasks");
-      console.error(err);
-    } finally {
-      setLoading(false);
+    );
+
+    const data = await res.json();
+
+    if (res.ok) {
+      const updated = data.tasks.map((task: any) => ({
+        ...task,
+        column:
+          task.status === "pending"
+            ? "To Do"
+            : task.status === "in-progress"
+            ? "In Progress"
+            : "Closed",
+        taskSummary: task.task,
+        assignedTo: [{ firstname: name || "You" }],
+        startDate: task.startDate || new Date().toISOString(),
+        endDate: task.endDate || new Date().toISOString(),
+      }));
+      setTasks(updated);
+    } else {
+      toast.error(data.message || "Failed to load tasks");
     }
-  };
+  } catch (err) {
+    toast.error("Error fetching tasks");
+    console.error(err);
+  } finally {
+    setLoading(false);
+  }
+};
 
   useEffect(() => {
     if (selectedDocId) fetchTasksByDocument(selectedDocId);

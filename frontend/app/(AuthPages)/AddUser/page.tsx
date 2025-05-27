@@ -88,26 +88,55 @@ export default function Dashboard() {
       toast.error("Error adding user. Please try again.");
     }
   };
-  useEffect(() => {
-    const fetchFacilityAdmins = async () => {
-      try {
-        const res = await fetch(
-          `${process.env.NEXT_PUBLIC_API_BASE_URL}/api/facility/facility-admins`
-        );
+  // useEffect(() => {
+  //   const fetchFacilityAdmins = async () => {
+  //     try {
+  //       const res = await fetch(
+  //         `${process.env.NEXT_PUBLIC_API_BASE_URL}/api/facility/facility-admins`
+  //       );
 
-        const data = await res.json();
-        console.log(data);
-        if (res.ok) {
-          setFacilityAdmins(data?.facilities?.map((f) => f.facilityName));
-        } else {
-          toast.error("Failed to fetch facility admins:", data.message);
+  //       const data = await res.json();
+  //       console.log(data);
+  //       if (res.ok) {
+  //         setFacilityAdmins(data?.facilities?.map((f) => f.facilityName));
+  //       } else {
+  //         toast.error("Failed to fetch facility admins:", data.message);
+  //       }
+  //     } catch (error: any) {
+  //       toast.error("Error fetching facility admins:", error);
+  //     }
+  //   };
+  //   fetchFacilityAdmins();
+  // }, []);
+  useEffect(() => {
+  const fetchFacilityAdmins = async () => {
+    try {
+      const res = await fetch(
+        `${process.env.NEXT_PUBLIC_API_BASE_URL}/api/facility/facility-admins`,
+        {
+          method: "POST",
+          headers: {
+            "Content-Type": "application/json",
+          },
+          body: JSON.stringify({}), // empty body
         }
-      } catch (error: any) {
-        toast.error("Error fetching facility admins:", error);
+      );
+
+      const data = await res.json();
+      console.log(data);
+      if (res.ok) {
+        setFacilityAdmins(data?.facilities?.map((f) => f.facilityName));
+      } else {
+        toast.error(data.message || "Failed to fetch facility admins");
       }
-    };
-    fetchFacilityAdmins();
-  }, []);
+    } catch (error: any) {
+      toast.error("Error fetching facility admins");
+      console.error(error);
+    }
+  };
+  fetchFacilityAdmins();
+}, []);
+
   const handleFacilitySubmit = async (e) => {
     e.preventDefault();
 

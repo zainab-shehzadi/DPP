@@ -110,42 +110,84 @@ export default function Dashboard() {
     if (storedEmail) setEmail(storedEmail);
   }, []);
 
+  // useEffect(() => {
+  //   const fetchDocuments = async () => {
+  //     try {
+  //       const token = Cookies.get("token");
+  //       if (!token) {
+  //         toast.error("Token missing");
+  //         return;
+  //       }
+
+  //       const res = await fetch(
+  //         `${process.env.NEXT_PUBLIC_API_BASE_URL}/api/files/docs`,
+  //         {
+  //           headers: {
+  //             Authorization: `Bearer ${token}`,
+  //           },
+  //         }
+  //       );
+  //       const data = await res.json();
+
+  //       if (Array.isArray(data) && data.length > 0) {
+  //         setDocuments(data);
+
+  //         // ✅ Auto-select first document
+  //         const firstDoc = data[0];
+  //         setSelectedDocument(firstDoc.originalName);
+  //         setSelectedDocumentId(firstDoc._id);
+  //         setTagsData(firstDoc.deficiencies || []);
+  //       }
+  //     } catch (err) {
+  //       console.error("Error fetching documents:", err);
+  //       toast.error("Failed to load documents");
+  //     }
+  //   };
+
+  //   fetchDocuments();
+  // }, []);
+
+
   useEffect(() => {
-    const fetchDocuments = async () => {
-      try {
-        const token = Cookies.get("token");
-        if (!token) {
-          toast.error("Token missing");
-          return;
-        }
-
-        const res = await fetch(
-          `${process.env.NEXT_PUBLIC_API_BASE_URL}/api/files/docs`,
-          {
-            headers: {
-              Authorization: `Bearer ${token}`,
-            },
-          }
-        );
-        const data = await res.json();
-
-        if (Array.isArray(data) && data.length > 0) {
-          setDocuments(data);
-
-          // ✅ Auto-select first document
-          const firstDoc = data[0];
-          setSelectedDocument(firstDoc.originalName);
-          setSelectedDocumentId(firstDoc._id);
-          setTagsData(firstDoc.deficiencies || []);
-        }
-      } catch (err) {
-        console.error("Error fetching documents:", err);
-        toast.error("Failed to load documents");
+  const fetchDocuments = async () => {
+    try {
+      const token = Cookies.get("token");
+      if (!token) {
+        toast.error("Token missing");
+        return;
       }
-    };
 
-    fetchDocuments();
-  }, []);
+      const res = await fetch(
+        `${process.env.NEXT_PUBLIC_API_BASE_URL}/api/files/docs`,
+        {
+          method: "POST",  // changed to POST
+          headers: {
+            Authorization: `Bearer ${token}`,
+            "Content-Type": "application/json",
+          },
+          body: JSON.stringify({}), // empty body
+        }
+      );
+
+      const data = await res.json();
+
+      if (Array.isArray(data) && data.length > 0) {
+        setDocuments(data);
+
+        // ✅ Auto-select first document
+        const firstDoc = data[0];
+        setSelectedDocument(firstDoc.originalName);
+        setSelectedDocumentId(firstDoc._id);
+        setTagsData(firstDoc.deficiencies || []);
+      }
+    } catch (err) {
+      console.error("Error fetching documents:", err);
+      toast.error("Failed to load documents");
+    }
+  };
+
+  fetchDocuments();
+}, []);
 
   useEffect(() => {
     const handleClickOutside = (event: MouseEvent) => {

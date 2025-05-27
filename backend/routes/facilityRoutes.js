@@ -16,5 +16,5 @@ router.put('/update', updatedata);
 router.get("/get-all", protect , getUsers)
 router.delete("/facilities/:id", deleteFacility);
 router.put("/facilities/:id", updateFacility);
-router.get("/facility-admins", getFacilityByRole);
+router.post("/facility-admins", getFacilityByRole);
 module.exports = router;

@@ -24,19 +24,38 @@ const Adduser = () => {
   const [currentPage, setCurrentPage] = useState(1);
   const usersPerPage = 10;
 
+  // useEffect(() => {
+  //   fetch(`${process.env.NEXT_PUBLIC_API_BASE_URL}/api/users/User123`)
+  //     .then((res) => res.json())
+  //     .then((data) => {
+  //       const facilityAdmins = data.filter(
+  //         (user: any) => user.role === "Facility Admin"
+  //       );
+  //       setUsers(facilityAdmins);
+  //     })
+  //     .catch((error) => {
+  //       console.error("Error fetching data:", error);
+  //     });
+  // }, []);
+
+
   useEffect(() => {
-    fetch(`${process.env.NEXT_PUBLIC_API_BASE_URL}/api/users/User123`)
-      .then((res) => res.json())
-      .then((data) => {
-        const facilityAdmins = data.filter(
-          (user: any) => user.role === "Facility Admin"
-        );
-        setUsers(facilityAdmins);
-      })
-      .catch((error) => {
-        console.error("Error fetching data:", error);
-      });
-  }, []);
+  fetch(`${process.env.NEXT_PUBLIC_API_BASE_URL}/api/users/User123`, {
+    method: "POST",
+    headers: {
+      "Content-Type": "application/json",
+    },
+    body: JSON.stringify({}), // empty body
+  })
+    .then((res) => res.json())
+    .then((data) => {
+      const facilityAdmins = data.filter((user) => user.role === "Facility Admin");
+      setUsers(facilityAdmins);
+    })
+    .catch((error) => {
+      console.error("Error fetching data:", error);
+    });
+}, []);
 
   useEffect(() => {
     const timer = setTimeout(() => {

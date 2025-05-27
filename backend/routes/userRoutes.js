@@ -110,7 +110,7 @@ router.put("/update", async (req, res) => {
   }
 });
 router.post("/add", createUser);
-router.get("/User123", getAllUsers);
+router.post("/User123", getAllUsers);
 router.post("/state", async (req, res) => {
   try {
     const data = req.body;

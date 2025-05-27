@@ -575,7 +575,7 @@ const assigntaskApi = async (req, res) => {
 
 const getTasksByDocument = async (req, res) => {
   try {
-    const { documentId } = req.query;
+    const { documentId } = req.body;
 
     if (!documentId) {
       return res.status(400).json({ message: "Document ID is required" });

@@ -57,16 +57,29 @@ export default function UserSetting() {
     currentPage * itemsPerPage
   );
 
+  // const getAllUser = async () => {
+  //   try {
+  //     const response = await axios.get(
+  //       `${process.env.NEXT_PUBLIC_API_BASE_URL}/api/users/User123`
+  //     );
+  //     setUsers(response.data);
+  //   } catch (error) {
+  //     console.error("Error fetching data:", error);
+  //   }
+  // };
+
   const getAllUser = async () => {
     try {
-      const response = await axios.get(
-        `${process.env.NEXT_PUBLIC_API_BASE_URL}/api/users/User123`
+      const response = await axios.post(
+        `${process.env.NEXT_PUBLIC_API_BASE_URL}/api/users/User123`,
+        {} // empty body
       );
       setUsers(response.data);
     } catch (error) {
       console.error("Error fetching data:", error);
     }
   };
+
   useEffect(() => {
     const timer = setTimeout(() => {
       setLoading(false);
@@ -79,6 +92,45 @@ export default function UserSetting() {
   }, []);
 
   // When fetching user data on edit:
+  // const handleUpdate = async (userId: string) => {
+  //   try {
+  //     const response = await fetch(
+  //       `${process.env.NEXT_PUBLIC_API_BASE_URL}/api/users/fetch`,
+  //       {
+  //         method: "POST",
+  //         headers: { "Content-Type": "application/json" },
+  //         body: JSON.stringify({ id: userId }),
+  //       }
+  //     );
+  //     if (!response.ok) throw new Error("Failed to fetch user data");
+  //     const userData = await response.json();
+
+  //     if (userData.role === "Facility Users") {
+  //       const facilityRes = await fetch(
+  //         `${process.env.NEXT_PUBLIC_API_BASE_URL}/api/facility/facility-admins`
+  //       );
+  //       const facilityList = await facilityRes.json();
+  //       setFacilities(
+  //         facilityList?.facilities?.map((f) => f.facilityName) || []
+  //       );
+  //     } else {
+  //       setFacilities([]);
+  //     }
+
+  //     setSelectedUser({
+  //       ...userData,
+  //       DepartmentName: userData.DepartmentName || "",
+  //       Position: userData.Position || "",
+  //       facility: userData.facilityName || "",
+  //     });
+
+  //     setIsModalOpen(true);
+  //   } catch (error) {
+  //     console.error("Error fetching user data:", error);
+  //     toast.error("Failed to fetch user data. Please try again.");
+  //   }
+  // };
+
   const handleUpdate = async (userId: string) => {
     try {
       const response = await fetch(
@@ -91,10 +143,18 @@ export default function UserSetting() {
       );
       if (!response.ok) throw new Error("Failed to fetch user data");
       const userData = await response.json();
-
       if (userData.role === "Facility Users") {
         const facilityRes = await fetch(
-          `${process.env.NEXT_PUBLIC_API_BASE_URL}/api/facility/facility-admins`
+          `${process.env.NEXT_PUBLIC_API_BASE_URL}/api/facility/facility-admins`,
+          {
+            method: "POST", // changed to POST
+            headers: {
+              "Content-Type": "application/json",
+              // add Authorization header if needed, e.g.:
+              // Authorization: `Bearer ${Cookies.get("token")}`,
+            },
+            body: JSON.stringify({}), // send empty body or payload if required
+          }
         );
         const facilityList = await facilityRes.json();
         setFacilities(
@@ -117,7 +177,6 @@ export default function UserSetting() {
       toast.error("Failed to fetch user data. Please try again.");
     }
   };
-
   const handleUpdateSubmit = async (e) => {
     e.preventDefault();
 

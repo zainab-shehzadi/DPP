@@ -16,7 +16,7 @@ const router = express.Router();
 
 router.post("/assign-task-api", protect , assigntaskApi);
 router.post("/get-my-task" , protect , getMyTasks)
-router.get("/get-by-document", protect, getTasksByDocument);
+router.post("/get-by-document", protect, getTasksByDocument);
 router.get("/documents-with-tasks", protect, getDocumentsWithTasks); // ✅ Add this
 router.post("/create", protect, createManualTask);
 router.post("/by-department", protect, getUsersByDepartment);
