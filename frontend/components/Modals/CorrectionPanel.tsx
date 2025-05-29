@@ -60,7 +60,7 @@ const CorrectionPanel: React.FC<CorrectionPanelProps> = ({
     (def) => def.Tag === selectedTag
   );
   const status = matchingDeficiency?.status;
-  console.log("datajkshd", data);
+
   const handlePOCClick = () => {
     const hasPolicy = policy && policy.length > 0;
     const hasAIPolicy = AIPolicy && AIPolicy.length > 0;

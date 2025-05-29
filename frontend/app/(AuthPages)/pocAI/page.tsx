@@ -111,42 +111,41 @@ function docUpload() {
   //   fetchDocuments();
   // }, []);
 
-
   useEffect(() => {
-  const fetchDocuments = async () => {
-    try {
-      const token = Cookies.get("token");
-      if (!token) {
-        console.error("Access token not found!");
-        return;
-      }
-      const res = await fetch(
-        `${process.env.NEXT_PUBLIC_API_BASE_URL}/api/files/docs`,
-        {
-          method: "POST",
-          headers: {
-            Authorization: `Bearer ${token}`,
-            Accept: "application/json",
-            "Content-Type": "application/json",
-          },
-          body: JSON.stringify({}), // empty body
+    const fetchDocuments = async () => {
+      try {
+        const token = Cookies.get("token");
+        if (!token) {
+          console.error("Access token not found!");
+          return;
         }
-      );
+        const res = await fetch(
+          `${process.env.NEXT_PUBLIC_API_BASE_URL}/api/files/docs`,
+          {
+            method: "POST",
+            headers: {
+              Authorization: `Bearer ${token}`,
+              Accept: "application/json",
+              "Content-Type": "application/json",
+            },
+            body: JSON.stringify({}), // empty body
+          }
+        );
 
-      const data = await res.json();
-      console.log("data", data);
+        const data = await res.json();
+        console.log("data", data);
 
-      if (Array.isArray(data)) {
-        setDocuments(data);
+        if (Array.isArray(data)) {
+          setDocuments(data);
+        }
+      } catch (error) {
+        console.error("Error fetching documents:", error);
+        toast.error("Error fetching documents");
       }
-    } catch (error) {
-      console.error("Error fetching documents:", error);
-      toast.error("Error fetching documents");
-    }
-  };
+    };
 
-  fetchDocuments();
-}, []);
+    fetchDocuments();
+  }, []);
 
   useEffect(() => {
     const timer = setTimeout(() => {
@@ -278,7 +277,7 @@ function docUpload() {
     setSelectedTag(tag);
     setSelectedID(defId);
   };
-  console.log("selectedTagID:", selectedID);
+
   const handleCheckboxChange = (docId) => {
     setSelectedDocs((prevSelected) =>
       prevSelected.includes(docId)
@@ -591,9 +590,6 @@ function docUpload() {
     }
   };
   const handleSaveChanges = async () => {
-    console.log("Saving changes...");
-    console.log("selectedTagID:", selectedID);
-    console.log("Edited Text:", editedText, selectedDocumentId, selectedID);
     if (!boxRef.current || !selectedDocumentId || !selectedID) {
       toast.error(" Missing required data. Please try again.");
       return;
@@ -922,7 +918,6 @@ function docUpload() {
               (() => {
                 return (
                   <TagDetailsView
-                   
                     navigateToPOCTab={navigateToPOCTab}
                     selectedDocument={selectedDocument}
                     selectedTag={selectedTag || ""}

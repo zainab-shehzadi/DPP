@@ -39,8 +39,7 @@ const POCAllySection = ({
   AIPolicy,
 }) => {
   if (activeTab !== "POC AI Ally") return null;
-  console.log("selectedDocument", selectedDocument);
-
+ 
   return (
     <>
       <div

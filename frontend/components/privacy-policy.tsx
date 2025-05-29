@@ -3,7 +3,7 @@ import React from "react";
 
 const PrivacyPolicy: React.FC = () => {
   return (
-    <div className="py-6 px-20 bg-white">
+    <div className="py-6 px-32 bg-white">
       {/* Profile Header */}
 
       <h1 className="text-4xl font-bold text-center mb-18">Privacy Policy</h1>
