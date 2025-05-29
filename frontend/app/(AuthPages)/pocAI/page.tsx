@@ -354,209 +354,6 @@ function docUpload() {
     }
   };
 
-  // const handleEdit = () => {
-  //   if (!boxRef.current) return;
-
-  //   const fallbackDeficiency = data?.find((d: any) => d.Tag === selectedTag);
-
-  //   const solutionToRender =
-  //     matchingDeficiency?.Solution &&
-  //     typeof matchingDeficiency.Solution === "object"
-  //       ? matchingDeficiency.Solution
-  //       : fallbackDeficiency?.Solution &&
-  //         typeof fallbackDeficiency.Solution === "object"
-  //       ? fallbackDeficiency.Solution
-  //       : null;
-
-  //   if (!solutionToRender) {
-  //     toast.error(" No solution data to edit.");
-  //     return;
-  //   }
-
-  //   try {
-  //     const formattedText = Object.entries(solutionToRender)
-  //       .map(([key, value]) => `${key}: ${value}`)
-  //       .join("\n");
-
-  //     setEditedText(formattedText);
-  //     setIsModalOpen(true);
-  //   } catch (err) {
-  //     console.error("Error formatting solution:", err);
-  //     toast.error(" Failed to prepare data for editing.");
-  //   }
-  // };
-  // // const handleSaveChanges = async () => {
-  // //   console.log("Saving changes...");
-  // //   console.log("selectedTagID:", selectedID);
-  // //   console.log("Edited Text:", editedText, selectedDocumentId, selectedID);
-  // //   if (!boxRef.current || !selectedDocumentId || !selectedID) {
-  // //     toast.error(" Missing required data. Please try again.");
-  // //     return;
-  // //   }
-
-  // //   const token = Cookies.get("token");
-  // //   if (!token) {
-  // //     toast.error(" User not authenticated.");
-  // //     return;
-  // //   }
-
-  // //   // 🔄 Convert textarea back to object format
-  // //   const lines = editedText.trim().split("\n");
-  // //   const solutionObject = {};
-
-  // //   for (const line of lines) {
-  // //     const [key, ...rest] = line.split(":");
-  // //     if (key && rest.length > 0) {
-  // //       solutionObject[key.trim()] = rest.join(":").trim();
-  // //     }
-  // //   }
-
-  // //   const updatedSolution =
-  // //     Object.keys(solutionObject).length > 0 ? solutionObject : null;
-
-  // //   try {
-  // //     const response = await fetch(
-  // //       `${process.env.NEXT_PUBLIC_API_BASE_URL}/api/files/updateSolution`,
-  // //       {
-  // //         method: "PUT",
-  // //         headers: {
-  // //           "Content-Type": "application/json",
-  // //           Authorization: `Bearer ${token}`,
-  // //         },
-  // //         body: JSON.stringify({
-  // //           documentId: selectedDocumentId,
-  // //           tagId: selectedID,
-  // //           solution: updatedSolution,
-  // //         }),
-  // //       }
-  // //     );
-
-  // //     const data = await response.json();
-
-  // //     const newSolution = data.updatedSolution || {};
-
-  // //     setSolution(newSolution);
-
-  // //     // Patch into matchingDeficiency if needed
-  // //     if (matchingDeficiency) {
-  // //       matchingDeficiency.Solution = newSolution;
-  // //     }
-  // //     const formattedText = Object.entries(newSolution)
-  // //       .map(([key, value]) => `${key}: ${value}`)
-  // //       .join("\n");
-
-  // //     setEditedText(formattedText);
-  // //     toast.success(" Plan of Correction updated successfully!");
-  // //     setIsModalOpen(false);
-  // //   } catch (error) {
-  // //     console.error("❌ Error saving data:", error);
-  // //     toast.error(
-  // //       "❌ Failed to save changes. Please check your connection and try again."
-  // //     );
-  // //   }
-  // // };
-
-  // const handleSaveChanges = async () => {
-  //   console.log("Saving changes...");
-  //   console.log("selectedTagID:", selectedID);
-  //   console.log("Edited Text:", editedText, selectedDocumentId, selectedID);
-  //   if (!boxRef.current || !selectedDocumentId || !selectedID) {
-  //     toast.error(" Missing required data. Please try again.");
-  //     return;
-  //   }
-
-  //   const token = Cookies.get("token");
-  //   if (!token) {
-  //     toast.error(" User not authenticated.");
-  //     return;
-  //   }
-
-  //   // Convert textarea back to object format
-  //   const lines = editedText.trim().split("\n");
-  //   const solutionObject = {};
-
-  //   for (const line of lines) {
-  //     const [key, ...rest] = line.split(":");
-  //     if (key && rest.length > 0) {
-  //       solutionObject[key.trim()] = rest.join(":").trim();
-  //     }
-  //   }
-
-  //   // Validate mandatory questions
-  //   const mandatoryQuestions = [
-  //     "Question 1",
-  //     "Question 2",
-  //     "Question 3",
-  //     "Question 4",
-  //   ];
-  //   const normalize = (str) => str.trim().toLowerCase();
-
-  //   const normalizedSolutionObject = {};
-  //   for (const [key, val] of Object.entries(solutionObject)) {
-  //     normalizedSolutionObject[normalize(key)] = val;
-  //   }
-
-  //   const normalizedMandatory = mandatoryQuestions.map(normalize);
-  //   for (const question of mandatoryQuestions) {
-  //     if (
-  //       !solutionObject.hasOwnProperty(question) ||
-  //       !solutionObject[question] ||
-  //       solutionObject[question].trim() === ""
-  //     ) {
-  //       console.log(`Missing or empty: "${question}"`);
-  //       toast.error(
-  //         `Answer for mandatory question "${question}" is missing or empty.`
-  //       );
-  //       return; // Stop saving
-  //     }
-  //   }
-
-  //   console.log("Parsed solutionObject:", solutionObject);
-
-  //   const updatedSolution =
-  //     Object.keys(solutionObject).length > 0 ? solutionObject : null;
-
-  //   try {
-  //     const response = await fetch(
-  //       `${process.env.NEXT_PUBLIC_API_BASE_URL}/api/files/updateSolution`,
-  //       {
-  //         method: "PUT",
-  //         headers: {
-  //           "Content-Type": "application/json",
-  //           Authorization: `Bearer ${token}`,
-  //         },
-  //         body: JSON.stringify({
-  //           documentId: selectedDocumentId,
-  //           tagId: selectedID,
-  //           solution: updatedSolution,
-  //         }),
-  //       }
-  //     );
-
-  //     const data = await response.json();
-
-  //     const newSolution = data.updatedSolution || {};
-
-  //     setSolution(newSolution);
-
-  //     // Patch into matchingDeficiency if needed
-  //     if (matchingDeficiency) {
-  //       matchingDeficiency.Solution = newSolution;
-  //     }
-  //     const formattedText = Object.entries(newSolution)
-  //       .map(([key, value]) => `${key}: ${value}`)
-  //       .join("\n");
-
-  //     setEditedText(formattedText);
-  //     toast.success(" Plan of Correction updated successfully!");
-  //     setIsModalOpen(false);
-  //   } catch (error) {
-  //     console.error("❌ Error saving data:", error);
-  //     toast.error(
-  //       "❌ Failed to save changes. Please check your connection and try again."
-  //     );
-  //   }
-  // };
 
   const handleEdit = () => {
     if (!boxRef.current) return;
@@ -585,7 +382,6 @@ function docUpload() {
       setEditedText(formattedText);
       setIsModalOpen(true);
     } catch (err) {
-      console.error("Error formatting solution:", err);
       toast.error(" Failed to prepare data for editing.");
     }
   };
@@ -656,6 +452,8 @@ function docUpload() {
       );
     }
   };
+
+  
   const handleTabClick = (tabName: any) => {
     if (tabName === "Tags" && !selectedDocument) {
       toast.error("Please select a document first.");

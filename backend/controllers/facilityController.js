@@ -118,6 +118,56 @@ const transporter = nodemailer.createTransport({
   },
 });
 
+// const checkFacility = async (req, res) => {
+//   try {
+//     const { email } = req.body;
+
+//     if (!email) {
+//       return res.status(400).json({ message: "Email is required" });
+//     }
+//     if (email == "anthony@paklogics.com") {
+//       return res.status(200).json({ message: "OK", access: "granted" });
+//     }
+//     // Step 1: Check user role
+//     const user = await User.findOne({ email });
+
+//     if (!user) {
+//       return res.status(404).json({ message: "User not found" });
+//     }
+
+//     // Step 2: If role is Facility Users → allow without checking facility
+//     if (user.role === "Facility Users") {
+//       return res.status(200).json({ message: "OK", access: "granted" });
+//     }
+
+//     // Step 3: If role is Facility Admin → check assigned facility
+//     if (user.role === "Facility Admin") {
+//       const facility = await FacilitySignup.findOne({ email });
+
+//       if (!facility) {
+//         return res.status(403).json({ message: "Facility not assigned yet." });
+//       }
+//       if(user.role === "Regional Admin"){
+// const facility = await FacilitySignup.findOne({ email });
+// if(!facility)
+// { return res.status(403).json({ message: "Facility not assigned yet." }}
+//       return res
+//         .status(200)
+//         .json({ message: "OK", access: "granted", facility });
+//     }
+//     }
+//     console.log(user.role);
+//     console.log(facility);
+//     return res.status(403).json({ message: "Access denied for this role." });
+//   } catch (error) {
+//     console.error("Error in checkFacility:", error);
+//     res.status(500).json({
+//       message: "Server error while checking facility",
+//       error: error.message,
+//     });
+//   }
+// };
+
 const checkFacility = async (req, res) => {
   try {
     const { email } = req.body;
@@ -125,32 +175,43 @@ const checkFacility = async (req, res) => {
     if (!email) {
       return res.status(400).json({ message: "Email is required" });
     }
-    if (email == "anthony@paklogics.com") {
-      return res.status(200).json({ message: "OK", access: "granted" });
+
+    // Special case
+    if (email === "anthony@paklogics.com") {
+      const facility = await FacilitySignup.findOne({ email });
+      if (!facility) {
+        return res.status(403).json({ message: "Facility not assigned yet." });
+      }
+
+      return res
+        .status(200)
+        .json({ message: "OK", access: "granted", facility });
     }
-    // Step 1: Check user role
+
     const user = await User.findOne({ email });
 
     if (!user) {
       return res.status(404).json({ message: "User not found" });
     }
 
-    // Step 2: If role is Facility Users → allow without checking facility
+    // Facility Users get automatic access
     if (user.role === "Facility Users") {
       return res.status(200).json({ message: "OK", access: "granted" });
     }
 
-    // Step 3: If role is Facility Admin → check assigned facility
-    if (user.role === "Facility Admin") {
+    // Facility Admin or Regional Admin → check facility assignment
+    if (user.role === "Facility Admin" || user.role === "Regional Admin") {
       const facility = await FacilitySignup.findOne({ email });
 
       if (!facility) {
         return res.status(403).json({ message: "Facility not assigned yet." });
       }
+
       return res
         .status(200)
         .json({ message: "OK", access: "granted", facility });
     }
+  
     return res.status(403).json({ message: "Access denied for this role." });
   } catch (error) {
     console.error("Error in checkFacility:", error);
@@ -160,6 +221,7 @@ const checkFacility = async (req, res) => {
     });
   }
 };
+
 const getFacilityByEmail = async (req, res) => {
   try {
     const { email } = req.body;
@@ -245,7 +307,6 @@ const updateFacility = async (req, res) => {
 
 const getFacilityByRole = async (req, res) => {
   try {
-   
     const adminUsers = await User.find({ role: "Facility Admin" }).select(
       "email"
     );

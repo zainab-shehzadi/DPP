@@ -177,7 +177,6 @@ const extractInfoApi = async (req, res) => {
       console.error("NGROK API call failed:", ngrokError.message);
       return res.status(500).json({ error: "Failed to process input text." });
     }
-console.log("Tags:", tags, "Policies:", policies, "Deficiencies:", deficiencies);
     // ✅ Check for existing entry
     const existing = await extractedInfo.findOne({
       userId,
@@ -218,76 +217,7 @@ console.log("Tags:", tags, "Policies:", policies, "Deficiencies:", deficiencies)
   }
 };
 
-// const extractInfoApi = async (req, res) => {
-//   try {
-//     const userId = req.user?.id;
-//     if (!userId) {
-//       return res.status(401).json({ error: "Unauthorized: user ID missing." });
-//     }
 
-//     const { text, Deficiency } = req.body;
-//     if (!text || !Deficiency) {
-//       return res.status(400).json({ error: "Deficiency text is required." });
-//     }
-
-//     // Call extraction API
-//     let tags = [];
-//     let policies = [];
-//     let deficiencies = [];
-
-//     try {
-//       const response = await axios.post(
-//         `${process.env.NGROK_URL}/extract-info/`,
-//         { text }
-//       );
-
-//       tags = response.data.tags || [];
-//       policies = response.data.policies || [];
-//       deficiencies = [...(response.data.deficiencies || []), Deficiency];
-//     } catch (ngrokError) {
-//       console.error("NGROK API call failed:", ngrokError.message);
-//       return res.status(500).json({ error: "Failed to process input text." });
-//     }
-
-//     // 🔍 Check for existing extractedInfo with same tags and deficiencies
-//     const existing = await extractedInfo.findOne({
-//       userId,
-//       tags: { $all: tags },
-//       deficiencies: { $all: deficiencies },
-//     });
-
-//     if (existing) {
-//       return res.status(200).json({
-//         message: "Similar extraction already exists.",
-//         data: existing,
-//         isExisting: true,
-//       });
-//     }
-
-//     // 💾 Save new if not found
-//     const savedInfo = await extractedInfo.create({
-//       userId,
-//       inputText: text,
-//       tags,
-//       policies,
-//       deficiencies,
-//     });
-
-//     res.status(201).json({
-//       message: "Extraction successful.",
-//       data: savedInfo,
-//       isExisting: false,
-//     });
-//   } catch (error) {
-//     console.error("Server error:", error.message);
-//     res.status(500).json({
-//       error: "Server error occurred.",
-//       details: error.message,
-//     });
-//   }
-// };
-
-//get file
 const getUserFiles = async (req, res) => {
   try {
     const userId = req.user?.id;
@@ -402,7 +332,6 @@ const regeneratePolicy = async (req, res) => {
       extractedInfoId,
     } = req.body;
 
-    // Input validation
     if (!extractedInfoId) {
       return res.status(400).json({ error: "extractedInfoId is required." });
     }
@@ -421,21 +350,12 @@ const regeneratePolicy = async (req, res) => {
     const extractedInfoDoc = await extractedInfo.findById(extractedInfoId);
 
     if (!extractedInfoDoc) {
-      return res
-        .status(404)
-        .json({ error: "Extracted info record not found." });
+      return res.status(404).json({ error: "Extracted info record not found." });
     }
 
-    // If already has updatedPolicy, return it
-    if (extractedInfoDoc.updatedPolicy) {
-      return res.status(200).json({
-        message: "Existing solution policies found.",
-        data: extractedInfoDoc.updatedPolicy,
-        isExisting: true,
-      });
-    }
+    // Always regenerate (overwrite if already exists)
 
-    // Otherwise, call external policy generation service
+    // Call external policy generation service
     let solutionPolicies = null;
 
     try {
@@ -456,7 +376,7 @@ const regeneratePolicy = async (req, res) => {
       });
     }
 
-    // Save the full solution object to MongoDB
+    // Save the new solution object to MongoDB
     if (solutionPolicies?.solution_policies) {
       extractedInfoDoc.updatedPolicy = {
         solution_policies: solutionPolicies.solution_policies,
@@ -466,7 +386,7 @@ const regeneratePolicy = async (req, res) => {
       await extractedInfoDoc.save();
 
       return res.status(200).json({
-        message: "Policy regeneration successful.",
+        message: "Policy regeneration successful. Existing policy was replaced.",
         data: extractedInfoDoc.updatedPolicy,
         isExisting: false,
       });
@@ -483,6 +403,7 @@ const regeneratePolicy = async (req, res) => {
     });
   }
 };
+
 
 const fetchPolicyByTagAndDeficiency = async (req, res) => {
   try {

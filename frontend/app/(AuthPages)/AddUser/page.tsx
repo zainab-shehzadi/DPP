@@ -9,6 +9,7 @@ import { FaEye, FaEyeSlash } from "react-icons/fa";
 
 import { departmentLabels, departmentPositions, roles } from "@/constants/dpp";
 import Cookies from "js-cookie";
+import UserDropdown from "@/components/profile-dropdown";
 export default function Dashboard() {
   const router = useRouter();
   const [firstName, setFirstName] = useState("");
@@ -190,16 +191,9 @@ export default function Dashboard() {
               <h2 className="text-2xl font-bold">
                 Hello, <span className="text-blue-900">{name}</span>
               </h2>
-              <div className="flex items-center border border-gray-300 p-2 rounded-md">
-                <Image
-                  src="/assets/image.png"
-                  width={40}
-                  height={40}
-                  alt="User Profile"
-                  className="rounded-full"
-                />
-                <span className="ml-2 text-gray-800">User </span>
-              </div>
+              <div className="flex items-center space-x-2 sm:space-x-4 mt-2 sm:mt-0">
+                              <UserDropdown />
+                            </div>
             </header>
 
             <div className="w-full h-[60px] bg-[#002F6C] h-10 rounded-lg mb-8"></div>

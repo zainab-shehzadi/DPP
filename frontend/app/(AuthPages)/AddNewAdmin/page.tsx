@@ -5,6 +5,7 @@ import React, { useState, useEffect } from "react";
 import Link from "next/link";
 import Sidebar from "@/components/Sidebar";
 import Cookies from "js-cookie";
+import UserDropdown from "@/components/profile-dropdown";
 
 interface User {
   _id: string;
@@ -108,17 +109,8 @@ const Adduser = () => {
               <h2 className="text-2xl sm:text-3xl font-bold">
                 Hello, <span className="text-blue-900">{name}</span>
               </h2>
-              <div className="flex items-center space-x-4 mt-4 sm:mt-0">
-                <div className="flex items-center border border-gray-300 p-2 rounded-md space-x-2">
-                  <Image
-                    src="/assets/image.png"
-                    width={40}
-                    height={40}
-                    className="rounded-full"
-                    alt="User Profile"
-                  />
-                  <span className="text-gray-800">User</span>
-                </div>
+              <div className="flex items-center space-x-2 sm:space-x-4 mt-2 sm:mt-0">
+                <UserDropdown/>
               </div>
             </header>
 

@@ -10,7 +10,6 @@ interface TagDetailsViewProps {
   handleTagClick: (tag: string, id: string) => void;
   setDropdownOpen2: (open: boolean) => void;
   navigateToPOCTab: (tag: string, def: string, data: any) => void;
-  
 }
 
 const TagDetailsView: React.FC<TagDetailsViewProps> = ({
@@ -19,7 +18,6 @@ const TagDetailsView: React.FC<TagDetailsViewProps> = ({
   handleTagClick,
   setDropdownOpen2,
   navigateToPOCTab,
-  
 }) => {
   const derivedTags =
     Array.isArray(selectedDocument?.tags) && selectedDocument.tags.length > 0
@@ -144,7 +142,7 @@ const TagDetailsView: React.FC<TagDetailsViewProps> = ({
       ? "bg-green-200 text-[#e5edf8] "
       : selectedTag === item.tag
       ? "bg-blue-900  "
-      : "bg-[#CCE2FF] hover:bg-blue-300 text-black"
+      : "bg-[#CCE2FF] hover:bg-blue-300 "
   }
 `}
                     onClick={() => {

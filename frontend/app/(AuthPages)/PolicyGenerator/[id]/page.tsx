@@ -177,7 +177,7 @@ export default function PolicyGenerator() {
               {isGenerating ? "Generating..." : "Re-Generate Policy"}
             </button>
           </div> */}
-          <div className="bg-white border shadow-lg rounded-lg p-4 sm:p-6 w-full max-w-full md:max-w-md lg:max-w-lg xl:max-w-3xl flex flex-col justify-between">
+          <div className="bg-white border shadow-lg rounded-lg p-4 sm:p-6 w-full  flex flex-col justify-between h-[calc(90vh-140px)] overflow-auto">
             <div>
               {/* Back with Tag Title */}
               <div className="flex items-center mb-4 lg:mb-12">
@@ -216,12 +216,12 @@ export default function PolicyGenerator() {
               disabled={isGenerating}
               className="bg-blue-900 text-white px-4 py-2 rounded-lg self-end mt-4 text-sm disabled:opacity-50"
             >
-              {isGenerating ? "Generating..." : "AI Re-Generate Policy"}
+              {isGenerating ? "AI Generating..." : "AI Re-Generate Policy"}
             </button>
           </div>
 
           {/* Right Container */}
-          <div className="bg-white border shadow-lg rounded-lg p-4 sm:p-6 w-full max-w-full md:max-w-md lg:max-w-lg xl:max-w-3xl flex flex-col justify-between">
+          <div className="bg-white border shadow-lg rounded-lg p-4 sm:p-6 w-full flex flex-col justify-between h-[calc(90vh-140px)]  overflow-auto">
             <div>
               <div className="flex justify-between items-center">
                 <h4 className="text-[#002F6C] font-bold text-lg sm:text-xl lg:text-2xl  mb-10 ">

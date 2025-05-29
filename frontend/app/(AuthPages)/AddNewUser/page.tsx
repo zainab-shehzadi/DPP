@@ -5,6 +5,7 @@ import React, { useState, useEffect } from "react";
 import Link from "next/link";
 import Sidebar from "@/components/Sidebar";
 import Cookies from "js-cookie";
+import UserDropdown from "@/components/profile-dropdown";
 
 interface User {
   _id: string;
@@ -23,7 +24,7 @@ const Adduser = () => {
 
   // Pagination state
   const [currentPage, setCurrentPage] = useState(1);
-  const usersPerPage = 10; 
+  const usersPerPage = 10;
 
   // useEffect(() => {
   //   fetch(`${process.env.NEXT_PUBLIC_API_BASE_URL}/api/users/User123`)
@@ -39,32 +40,32 @@ const Adduser = () => {
   //     });
   // }, []);
 
-   useEffect(() => {
-  const fetchUsers = async () => {
-    try {
-      const res = await fetch(
-        `${process.env.NEXT_PUBLIC_API_BASE_URL}/api/users/User123`,
-        {
-          method: "POST",
-          headers: {
-            "Content-Type": "application/json",
-          },
-          body: JSON.stringify({}) // send empty body or payload if required
-        }
-      );
+  useEffect(() => {
+    const fetchUsers = async () => {
+      try {
+        const res = await fetch(
+          `${process.env.NEXT_PUBLIC_API_BASE_URL}/api/users/User123`,
+          {
+            method: "POST",
+            headers: {
+              "Content-Type": "application/json",
+            },
+            body: JSON.stringify({}), // send empty body or payload if required
+          }
+        );
 
-      const data = await res.json();
-      const facilityAdmins = data.filter(
-        (user: any) => user.role === "Facility Users"
-      );
-      setUsers(facilityAdmins);
-    } catch (error) {
-      console.error("Error fetching data:", error);
-    }
-  };
+        const data = await res.json();
+        const facilityAdmins = data.filter(
+          (user: any) => user.role === "Facility Users"
+        );
+        setUsers(facilityAdmins);
+      } catch (error) {
+        console.error("Error fetching data:", error);
+      }
+    };
 
-  fetchUsers();
-}, []);
+    fetchUsers();
+  }, []);
 
   useEffect(() => {
     const timer = setTimeout(() => {
@@ -118,17 +119,8 @@ const Adduser = () => {
               <h2 className="text-2xl sm:text-3xl font-bold">
                 Hello, <span className="text-blue-900">{name}</span>
               </h2>
-              <div className="flex items-center space-x-4 mt-4 sm:mt-0">
-                <div className="flex items-center border border-gray-300 p-2 rounded-md space-x-2">
-                  <Image
-                    src="/assets/image.png"
-                    width={40}
-                    height={40}
-                    className="rounded-full"
-                    alt="User Profile"
-                  />
-                  <span className="text-gray-800">User</span>
-                </div>
+              <div className="flex items-center space-x-2 sm:space-x-4 mt-2 sm:mt-0">
+                <UserDropdown />
               </div>
             </header>
 
@@ -154,11 +146,15 @@ const Adduser = () => {
                   <tr className="bg-gray-100 text-black border-b border-[#F2F2F2]">
                     <th className="px-6 py-6 font-semibold text-sm">Sr.N</th>
                     <th className="px-6 py-4 font-semibold text-sm">Date</th>
-                    <th className="px-6 py-4 font-semibold text-sm">User Name</th>
+                    <th className="px-6 py-4 font-semibold text-sm">
+                      User Name
+                    </th>
                     <th className="px-6 py-4 font-semibold text-sm">
                       Email Address
                     </th>
-                    <th className="px-6 py-4 font-semibold text-sm">Facility</th>
+                    <th className="px-6 py-4 font-semibold text-sm">
+                      Facility
+                    </th>
                   </tr>
                 </thead>
                 <tbody>
@@ -180,7 +176,9 @@ const Adduser = () => {
                           hour12: true,
                         })}
                       </td>
-                      <td className="py-4 px-6 text-gray-700">{user.firstname}</td>
+                      <td className="py-4 px-6 text-gray-700">
+                        {user.firstname}
+                      </td>
                       <td className="py-4 px-6 text-gray-700">{user.email}</td>
                       <td className="py-4 px-6 text-gray-700">
                         {user.facilityName || "-"}

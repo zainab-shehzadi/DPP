@@ -19,7 +19,7 @@ const EditModal: React.FC<EditModalProps> = ({
       onClick={() => setIsModalOpen(false)}
     >
       <div
-        className="bg-white p-6 rounded-lg shadow-lg w-[600px] h-[400px] max-h-screen flex flex-col"
+        className="bg-white p-6 rounded-lg shadow-lg w-[1000px] h-[500px] max-h-screen flex flex-col"
         onClick={(e) => e.stopPropagation()}
       >
         <h2 className="text-xl font-bold mb-4">Edit Plan of Correction</h2>
