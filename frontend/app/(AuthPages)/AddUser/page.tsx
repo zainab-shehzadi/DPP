@@ -55,7 +55,10 @@ export default function Dashboard() {
       toast.error("Please fill in all required fields!");
       return;
     }
-
+    if (password.length < 8) {
+      toast.error("Password must be at least 8 characters long!");
+      return;
+    }
     try {
       const response = await fetch(
         `${process.env.NEXT_PUBLIC_API_BASE_URL}/api/users/signup`,

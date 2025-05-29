@@ -2,8 +2,7 @@
 import React, { useState, useEffect, useRef, use } from "react";
 import DateDisplay from "@/components/date";
 import Sidebar from "@/components/Sidebar";
-import UserDropdown from "@/components/profile-dropdown";
-import { FaFileAlt, FaSlash } from "react-icons/fa";
+
 import "react-datepicker/dist/react-datepicker.css";
 import { useRouter } from "next/navigation";
 import Notification from "@/components/Notification";

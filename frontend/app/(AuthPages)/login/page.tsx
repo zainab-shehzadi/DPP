@@ -231,9 +231,7 @@ import React, { useState, useEffect } from "react";
 import { useRouter } from "next/navigation";
 import Image2 from "@/components/imageright";
 import { toast } from "react-toastify";
-import Image from "next/image";
 import Cookies from "js-cookie";
-
 const Login: React.FC = () => {
   const [email, setEmail] = useState("");
   const [password, setPassword] = useState("");
@@ -252,72 +250,6 @@ const Login: React.FC = () => {
     if (parts.length === 2) return parts.pop()?.split(";").shift();
     return null;
   };
-  //   const handleSubmit = async (e: React.FormEvent) => {
-  //   e.preventDefault();
-
-  //   if (isSubmitting) return; // prevent double submission
-  //   setIsSubmitting(true);
-
-  //   try {
-  //     const response = await fetch(
-  //       `${process.env.NEXT_PUBLIC_API_BASE_URL}/api/users/login`,
-  //       {
-  //         method: "POST",
-  //         headers: {
-  //           "Content-Type": "application/json",
-  //         },
-  //         body: JSON.stringify({ email, password }),
-  //       }
-  //     );
-
-  //     const data = await response.json();
-  //     console.log("data 48", data)
-
-  //     if (response.ok) {
-  //       toast.success("Login successful! Redirecting...", {
-  //         position: "top-right",
-  //       });
-
-  //       // Set cookies
-  //       setCookie("name", data.name);
-  //       setCookie("token", data.token);
-  //       setCookie("email", data.email);
-  //       setCookie("role", data.role);
-  //       setCookie("DepartmentName", data.DepartmentName || "");
-  //       setCookie("priceType", data.priceType || "");
-  //       setCookie("priceCycle", data.priceCycle || "");
-
-  //       // Normalize cookie values
-  //       const normalize = (v: string | null | undefined) =>
-  //         (v || "").toLowerCase().replace(/['"]+/g, "").trim();
-
-  //       const role = normalize(getCookie("role"));
-  //       const cycle = normalize(getCookie("priceCycle"));
-
-  //       // Redirect logic
-  //       if (role === "facility admin") {
-  //         if (!cycle || cycle === "undefined" || cycle === "null") {
-  //           setTimeout(() => router.push("/Pricing"), 2000);
-  //         } else {
-  //           setTimeout(() => router.push("/Dashboard"), 2000);
-  //         }
-  //       } else {
-  //         setTimeout(() => router.push("/Dashboard"), 2000);
-  //       }
-  //     } else {
-  //       toast.error(data.message || "Login failed!", {
-  //         position: "top-right",
-  //       });
-  //       setIsSubmitting(false);
-  //     }
-  //   } catch (error) {
-  //     console.error("Error:", error);
-  //     toast.error("An error occurred. Please try again.", {
-  //       position: "top-right",
-  //     });
-  //     setIsSubmitting(false);
-  //   }
-  // };
 
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
@@ -340,6 +272,7 @@ const Login: React.FC = () => {
 
       const facilityData = await facilityRes.json();
       console.log("data 48", facilityData);
+      Cookies.set("facilityName", facilityData?.facility?.facilityName);
       if (facilityData.message !== "OK" || facilityData.access !== "granted") {
         toast.error("Facility is not assigned to this user.", {
           position: "top-right",
@@ -508,7 +441,7 @@ const Login: React.FC = () => {
           </div> */}
 
           {/* Button */}
-      
+
           {/* <div className="mt-6 text-left">
             <p
               className="text-lg mb-4"

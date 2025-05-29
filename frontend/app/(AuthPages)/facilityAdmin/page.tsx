@@ -105,10 +105,10 @@ export default function Dashboard() {
       return;
     }
 
-    // if (password !== confirmPassword) {
-    //   toast.error("Passwords do not match!");
-    //   return;
-    // }
+    if (password.length < 8) {
+      toast.error("Password must be at least 8 characters long!");
+      return;
+    }
 
     try {
       const response = await fetch(
@@ -122,7 +122,7 @@ export default function Dashboard() {
             email,
             password,
             confirmPassword,
-            role: "Facility Admin", // force-set
+            role: "Facility Admin",
             position,
             DepartmentName: departmentName,
           }),

@@ -111,6 +111,7 @@ export default function Dashboard() {
 
     return () => clearTimeout(timer);
   }, []);
+  const facility= Cookies.get("facilityName");
   return (
     <div className="flex flex-col lg:flex-row">
       <HeaderWithToggle onToggleSidebar={toggleSidebar} />
@@ -134,7 +135,7 @@ export default function Dashboard() {
 
             <div className="flex items-center space-x-4 mt-4 lg:mt-8  justify-between">
               <h3 className="text-lg lg:text-2xl font-bold text-blue-900">
-                Facility
+                {facility}
               </h3>
               <DateDisplay />
             </div>

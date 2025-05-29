@@ -94,24 +94,25 @@ export default function Dashboard() {
   //     });
   // }, []);
 
-
   useEffect(() => {
-  fetch(`${process.env.NEXT_PUBLIC_API_BASE_URL}/api/users/User123`, {
-    method: "POST",
-    headers: {
-      "Content-Type": "application/json",
-    },
-    body: JSON.stringify({}), // empty body
-  })
-    .then((res) => res.json())
-    .then((data) => {
-      const facilityAdmins = data.filter((user) => user.role === "Facility Admin");
-      setUsers(facilityAdmins);
+    fetch(`${process.env.NEXT_PUBLIC_API_BASE_URL}/api/users/User123`, {
+      method: "POST",
+      headers: {
+        "Content-Type": "application/json",
+      },
+      body: JSON.stringify({}), // empty body
     })
-    .catch((error) => {
-      console.error("Error fetching data:", error);
-    });
-}, []);
+      .then((res) => res.json())
+      .then((data) => {
+        const facilityAdmins = data.filter(
+          (user) => user.role === "Facility Admin"
+        );
+        setUsers(facilityAdmins);
+      })
+      .catch((error) => {
+        console.error("Error fetching data:", error);
+      });
+  }, []);
 
   useEffect(() => {
     const handleClickOutside = (event: MouseEvent) => {
@@ -191,8 +192,30 @@ export default function Dashboard() {
                   </svg>
                 </button>
 
-                {dropdownOpen && (
+                {/* {dropdownOpen && (
                   <div className="absolute right-0 mt-2 w-52 bg-white shadow-lg rounded-lg z-50 border border-gray-200">
+                    {users.map((user) => (
+                      <div
+                        key={user._id}
+                        className="flex items-center px-4 py-2 hover:bg-gray-200"
+                      >
+                        <button
+                          onClick={async () => {
+                            setSelectedUserId(user._id);
+                            await fetchUserDocuments(user._id);
+                            setDropdownOpen(false);
+                          }}
+                          className="w-full text-left text-gray-800 text-sm"
+                        >
+                          {user.firstname} {user.lastname || ""}
+                        </button>
+                      </div>
+                    ))}
+                  </div>
+                )} */}
+
+                {dropdownOpen && (
+                  <div className="absolute right-0 mt-2 w-52 bg-white shadow-lg rounded-lg z-50 border border-gray-200 max-h-60 overflow-y-auto">
                     {users.map((user) => (
                       <div
                         key={user._id}
@@ -220,7 +243,7 @@ export default function Dashboard() {
           <div className="border-t border-gray-300 mt-4" />
 
           {/* Document Cards with Count & Styling */}
-          <div className="bg-white p-6 rounded-lg shadow-md mx-auto mt-8 w-auto border border-gray-200">
+          <div className="bg-white p-6 rounded-lg shadow-md mt-8 w-auto  border border-gray-200">
             <h3 className="text-xl font-semibold text-blue-900 mb-4">
               Documents
             </h3>

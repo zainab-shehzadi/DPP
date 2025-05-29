@@ -15,8 +15,8 @@ const SidebarUploadPanel = ({ handleFileDrop, handleFileSelect, handleFileUpload
   return (
     <>
       <div className="fixed top-0 right-0 h-full bg-white shadow-lg p-10 z-50 w-full max-w-md">
-        <h2 className="font-semibold text-gray-700 mb-2 text-2xl">
-          New <span className="text-blue-900">Plan Of Correction</span>
+        <h2 className="font-bold text-blue-900 mb-2 text-2xl text-center">
+          New Plan Of Correction
         </h2>
         <p className="mb-6 text-lg text-center">Please Upload Your Document</p>
 
