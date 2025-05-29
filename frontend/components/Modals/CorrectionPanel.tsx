@@ -68,7 +68,8 @@ const CorrectionPanel: React.FC<CorrectionPanelProps> = ({
     if (hasPolicy || hasAIPolicy) {
       toggleSidebar();
     } else {
-      toast.error("Firstly generate policy for Plan of Correction.");
+      toggleSidebar();
+      // toast.error("Firstly generate policy for Plan of Correction.");
     }
   };
 

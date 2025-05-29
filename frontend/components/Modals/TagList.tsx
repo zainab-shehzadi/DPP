@@ -148,7 +148,7 @@ const TagList: React.FC<TagListProps> = ({
         )}
       </div>
 
-      {selectedDeficiency?.Description && (
+      {selectedDeficiency?.Deficiency && (
         <div className="mt-6 flex justify-center">
           {AIPolicy.length > 0 || (policy.length > 0 && selectedPolicyID) ? (
             <button

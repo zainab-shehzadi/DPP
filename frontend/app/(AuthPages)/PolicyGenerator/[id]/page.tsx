@@ -216,7 +216,7 @@ export default function PolicyGenerator() {
               disabled={isGenerating}
               className="bg-blue-900 text-white px-4 py-2 rounded-lg self-end mt-4 text-sm disabled:opacity-50"
             >
-              {isGenerating ? "Generating..." : "Re-Generate Policy"}
+              {isGenerating ? "Generating..." : "AI Re-Generate Policy"}
             </button>
           </div>
 
