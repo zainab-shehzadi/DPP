@@ -415,7 +415,6 @@ const FacilityAdminCreationFlow = () => {
       await fetchFacilities();
     } catch (error) {
       console.error("Error in handleSubmit:", error);
-      toast.error(`Error: ${error.message}`);
     } finally {
       setLoading(false);
     }
