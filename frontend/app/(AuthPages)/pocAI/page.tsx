@@ -223,8 +223,8 @@ function docUpload() {
       console.log("Result data type:", typeof result.data);
       console.log("Is result.data an array?", Array.isArray(result.data));
 
-      // Handle different response structures
-let dataArray: any[] = [];
+      // Handle different response structures - Fixed TypeScript error
+      let dataArray: any[] = []; // Explicitly type as any[]
       if (Array.isArray(result.data)) {
         dataArray = result.data;
       } else if (Array.isArray(result)) {
@@ -329,7 +329,7 @@ let dataArray: any[] = [];
     setSelectedID(defId);
   };
 
-  const handleCheckboxChange = (docId) => {
+  const handleCheckboxChange = (docId: string) => {
     setSelectedDocs((prevSelected) =>
       prevSelected.includes(docId)
         ? prevSelected.filter((id) => id !== docId)
@@ -458,7 +458,7 @@ let dataArray: any[] = [];
 
     // 🔄 Convert textarea back to object format
     const lines = editedText.trim().split("\n");
-    const solutionObject = {};
+    const solutionObject: Record<string, string> = {};
 
     for (const line of lines) {
       const [key, ...rest] = line.split(":");
@@ -492,9 +492,10 @@ let dataArray: any[] = [];
 
       setSolution(newSolution);
       setSelectedDocument((prev) => {
-        const updatedData = prev.deficiencies.data.map((def) =>
+        if (!prev) return prev;
+        const updatedData = prev.deficiencies?.data?.map((def) =>
           def.Tag === selectedTag ? { ...def, Solution: newSolution } : def
-        );
+        ) || [];
 
         return {
           ...prev,
