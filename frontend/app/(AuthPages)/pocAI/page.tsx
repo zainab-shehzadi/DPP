@@ -30,7 +30,9 @@ interface DocumentType {
   originalName: string;
   fileUrl?: string;
   uploadedAt: Date;
-  deficiencies?: DeficiencyType[];
+  deficiencies?: {
+    data: DeficiencyType[];
+  };
 }
 
 function docUpload() {
@@ -71,44 +73,11 @@ function docUpload() {
   const matchingDeficiency = selectedDocument?.deficiencies?.data?.find(
     (def) => def?.Tag === selectedTag
   );
+
   useEffect(() => {
     const token = Cookies.get("token");
     setToken(token);
   }, []);
-
-  // useEffect(() => {
-  //   const fetchDocuments = async () => {
-  //     try {
-  //       const token = Cookies.get("token");
-  //       if (!token) {
-  //         console.error("Access token not found!");
-  //         return;
-  //       }
-  //       const res = await fetch(
-  //         `${process.env.NEXT_PUBLIC_API_BASE_URL}/api/files/docs`,
-  //         {
-  //           method: "GET",
-  //           headers: {
-  //             Authorization: `Bearer ${token}`,
-  //           },
-  //         }
-  //       );
-
-  //       const data = await res.json();
-  //       console.log("data", data);
-
-  //       if (Array.isArray(data)) {
-  //         setDocuments(data);
-  //       } else {
-  //       }
-  //     } catch (error) {
-  //       console.error("Error fetching documents:", error);
-  //       toast.error("Error fetching documents");
-  //     }
-  //   };
-
-  //   fetchDocuments();
-  // }, []);
 
   useEffect(() => {
     const fetchDocuments = async () => {
@@ -128,7 +97,7 @@ function docUpload() {
               Accept: "application/json",
               "Content-Type": "application/json",
             },
-           body: JSON.stringify({ facilityId }),
+            body: JSON.stringify({ facilityId }),
           }
         );
         console.log("Response:", res);
@@ -435,121 +404,121 @@ function docUpload() {
   };
 
   const handleEdit = () => {
-  if (!boxRef.current) return;
+    if (!boxRef.current) return;
 
-  // ✅ FIXED: Correct path for matchingDeficiency
-  const matchingDeficiency = selectedDocument?.deficiencies?.data?.find(
-    (def) => def.Tag === selectedTag
-  );
+    // ✅ FIXED: Correct path for matchingDeficiency
+    const matchingDeficiency = selectedDocument?.deficiencies?.data?.find(
+      (def) => def.Tag === selectedTag
+    );
 
-  const fallbackDeficiency = data?.find((d: any) => d.Tag === selectedTag);
+    const fallbackDeficiency = data?.find((d: any) => d.Tag === selectedTag);
 
-  const solutionToRender =
-    matchingDeficiency?.Solution &&
-    typeof matchingDeficiency.Solution === "object"
-      ? matchingDeficiency.Solution
-      : fallbackDeficiency?.Solution &&
-        typeof fallbackDeficiency.Solution === "object"
-      ? fallbackDeficiency.Solution
-      : null;
+    const solutionToRender =
+      matchingDeficiency?.Solution &&
+      typeof matchingDeficiency.Solution === "object"
+        ? matchingDeficiency.Solution
+        : fallbackDeficiency?.Solution &&
+          typeof fallbackDeficiency.Solution === "object"
+        ? fallbackDeficiency.Solution
+        : null;
 
-  if (!solutionToRender) {
-    toast.error("No solution data to edit.");
-    return;
-  }
-
-  try {
-    const formattedText = Object.entries(solutionToRender)
-      .map(([key, value]) => `${key}: ${value}`)
-      .join("\n");
-
-    setEditedText(formattedText);
-    setIsModalOpen(true);
-  } catch (err) {
-    toast.error("Failed to prepare data for editing.");
-  }
-};
-
-const handleSaveChanges = async () => {
-  if (!boxRef.current || !selectedDocumentId || !selectedID) {
-    toast.error("Missing required data. Please try again.");
-    return;
-  }
-
-  const token = Cookies.get("token");
-  if (!token) {
-    toast.error("User not authenticated.");
-    return;
-  }
-
-  // ✅ FIXED: Get fresh matchingDeficiency reference
-  const matchingDeficiency = selectedDocument?.deficiencies?.data?.find(
-    (def) => def.Tag === selectedTag
-  );
-
-  // 🔄 Convert textarea back to object format
-  const lines = editedText.trim().split("\n");
-  const solutionObject = {};
-
-  for (const line of lines) {
-    const [key, ...rest] = line.split(":");
-    if (key && rest.length > 0) {
-      solutionObject[key.trim()] = rest.join(":").trim();
+    if (!solutionToRender) {
+      toast.error("No solution data to edit.");
+      return;
     }
-  }
 
-  const updatedSolution =
-    Object.keys(solutionObject).length > 0 ? solutionObject : null;
+    try {
+      const formattedText = Object.entries(solutionToRender)
+        .map(([key, value]) => `${key}: ${value}`)
+        .join("\n");
 
-  try {
-    const response = await fetch(
-      `${process.env.NEXT_PUBLIC_API_BASE_URL}/api/files/updateSolution`,
-      {
-        method: "PUT",
-        headers: {
-          "Content-Type": "application/json",
-          Authorization: `Bearer ${token}`,
-        },
-        body: JSON.stringify({
-          documentId: selectedDocumentId,
-          tagId: selectedID,
-          solution: updatedSolution,
-        }),
+      setEditedText(formattedText);
+      setIsModalOpen(true);
+    } catch (err) {
+      toast.error("Failed to prepare data for editing.");
+    }
+  };
+
+  const handleSaveChanges = async () => {
+    if (!boxRef.current || !selectedDocumentId || !selectedID) {
+      toast.error("Missing required data. Please try again.");
+      return;
+    }
+
+    const token = Cookies.get("token");
+    if (!token) {
+      toast.error("User not authenticated.");
+      return;
+    }
+
+    // ✅ FIXED: Get fresh matchingDeficiency reference
+    const matchingDeficiency = selectedDocument?.deficiencies?.data?.find(
+      (def) => def.Tag === selectedTag
+    );
+
+    // 🔄 Convert textarea back to object format
+    const lines = editedText.trim().split("\n");
+    const solutionObject = {};
+
+    for (const line of lines) {
+      const [key, ...rest] = line.split(":");
+      if (key && rest.length > 0) {
+        solutionObject[key.trim()] = rest.join(":").trim();
       }
-    );
+    }
 
-    const data = await response.json();
-    const newSolution = data.updatedSolution || {};
+    const updatedSolution =
+      Object.keys(solutionObject).length > 0 ? solutionObject : null;
 
-    setSolution(newSolution);
-    setSelectedDocument((prev) => {
-      const updatedData = prev.deficiencies.data.map((def) =>
-        def.Tag === selectedTag ? { ...def, Solution: newSolution } : def
-      );
-      
-      return {
-        ...prev,
-        deficiencies: {
-          ...prev.deficiencies,
-          data: updatedData
+    try {
+      const response = await fetch(
+        `${process.env.NEXT_PUBLIC_API_BASE_URL}/api/files/updateSolution`,
+        {
+          method: "PUT",
+          headers: {
+            "Content-Type": "application/json",
+            Authorization: `Bearer ${token}`,
+          },
+          body: JSON.stringify({
+            documentId: selectedDocumentId,
+            tagId: selectedID,
+            solution: updatedSolution,
+          }),
         }
-      };
-    });
+      );
 
-    const formattedText = Object.entries(newSolution)
-      .map(([key, value]) => `${key}: ${value}`)
-      .join("\n");
+      const data = await response.json();
+      const newSolution = data.updatedSolution || {};
 
-    setEditedText(formattedText);
-    toast.success("Plan of Correction updated successfully!");
-    setIsModalOpen(false);
-  } catch (error) {
-    console.error("❌ Error saving data:", error);
-    toast.error(
-      "❌ Failed to save changes. Please check your connection and try again."
-    );
-  }
-};
+      setSolution(newSolution);
+      setSelectedDocument((prev) => {
+        const updatedData = prev.deficiencies.data.map((def) =>
+          def.Tag === selectedTag ? { ...def, Solution: newSolution } : def
+        );
+
+        return {
+          ...prev,
+          deficiencies: {
+            ...prev.deficiencies,
+            data: updatedData,
+          },
+        };
+      });
+
+      const formattedText = Object.entries(newSolution)
+        .map(([key, value]) => `${key}: ${value}`)
+        .join("\n");
+
+      setEditedText(formattedText);
+      toast.success("Plan of Correction updated successfully!");
+      setIsModalOpen(false);
+    } catch (error) {
+      console.error("❌ Error saving data:", error);
+      toast.error(
+        "❌ Failed to save changes. Please check your connection and try again."
+      );
+    }
+  };
   const handleTabClick = (tabName: any) => {
     if (tabName === "Tags" && !selectedDocument) {
       toast.error("Please select a document first.");
