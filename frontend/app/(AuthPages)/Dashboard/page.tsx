@@ -222,7 +222,10 @@ export default function Dashboard() {
     } else {
       const facilityName = Cookies.get("facilityName");
       if (facilityName) {
-        setSelectedFacility({ facilityName });
+        setSelectedFacility({
+          _id: "unknown",
+          facilityName,
+        });
       }
     }
   }, [userRole, userEmail]);
