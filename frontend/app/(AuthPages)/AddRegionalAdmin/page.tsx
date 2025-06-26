@@ -63,24 +63,24 @@ const AddRegionalAdmin = () => {
   // };
 
   const fetchFacilityCodes = async () => {
-  try {
-    const response = await fetch(
-      `${process.env.NEXT_PUBLIC_API_BASE_URL}/api/facility/facility-codes`,
-      {
-        method: "POST",
-        headers: {
-          "Content-Type": "application/json",
-        },
+    try {
+      const response = await fetch(
+        `${process.env.NEXT_PUBLIC_API_BASE_URL}/api/facility/facility-codes`,
+        {
+          method: "POST",
+          headers: {
+            "Content-Type": "application/json",
+          },
+        }
+      );
+      const data = await response.json();
+      if (data.success) {
+        setFacilityCodes(data.facilityCodes);
       }
-    );
-    const data = await response.json();
-    if (data.success) {
-      setFacilityCodes(data.facilityCodes);
+    } catch (error) {
+      console.error("Error fetching facility codes:", error);
     }
-  } catch (error) {
-    console.error("Error fetching facility codes:", error);
-  }
-};
+  };
 
   // const fetchRequests = async () => {
   //   setLoading(true);
@@ -114,44 +114,44 @@ const AddRegionalAdmin = () => {
   //   }
   // };
 
-const fetchRequests = async () => {
-  setLoading(true);
-  try {
-    const requestBody = {
-      page: currentPage,
-      limit: usersPerPage,
-      sortBy,
-      sortOrder,
-      ...(statusFilter !== "all" && { status: statusFilter }),
-      ...(facilityCodeFilter && { facilityCode: facilityCodeFilter }),
-      ...(searchTerm && { search: searchTerm }),
-    };
+  const fetchRequests = async () => {
+    setLoading(true);
+    try {
+      const requestBody = {
+        page: currentPage,
+        limit: usersPerPage,
+        sortBy,
+        sortOrder,
+        ...(statusFilter !== "all" && { status: statusFilter }),
+        ...(facilityCodeFilter && { facilityCode: facilityCodeFilter }),
+        ...(searchTerm && { search: searchTerm }),
+      };
 
-    const response = await fetch(
-      `${process.env.NEXT_PUBLIC_API_BASE_URL}/api/facility/requests`,
-      {
-        method: "POST",
-        headers: {
-          "Content-Type": "application/json",
-        },
-        body: JSON.stringify(requestBody),
+      const response = await fetch(
+        `${process.env.NEXT_PUBLIC_API_BASE_URL}/api/facility/requests`,
+        {
+          method: "POST",
+          headers: {
+            "Content-Type": "application/json",
+          },
+          body: JSON.stringify(requestBody),
+        }
+      );
+      const data = await response.json();
+
+      if (data.success) {
+        setUsers(data.data);
+        setTotalPages(data.pagination.totalPages);
+        setTotalRequests(data.pagination.totalRequests);
+      } else {
+        console.error("Error fetching requests:", data.message);
       }
-    );
-    const data = await response.json();
-
-    if (data.success) {
-      setUsers(data.data);
-      setTotalPages(data.pagination.totalPages);
-      setTotalRequests(data.pagination.totalRequests);
-    } else {
-      console.error("Error fetching requests:", data.message);
+    } catch (error) {
+      console.error("Error fetching requests:", error);
+    } finally {
+      setLoading(false);
     }
-  } catch (error) {
-    console.error("Error fetching requests:", error);
-  } finally {
-    setLoading(false);
-  }
-};
+  };
 
   const updateRequestStatus = async (
     requestId: string,
@@ -392,72 +392,87 @@ const fetchRequests = async () => {
                     <th className="px-6 py-4 font-semibold text-sm">Action</th>
                   </tr>
                 </thead>
-              <tbody>
-  {[...users]
-    .sort((a, b) => new Date(b.requestedAt) - new Date(a.requestedAt)) // Sort by newest first
-    .map((user, index) => (
-      <tr
-        key={user._id}
-        className="hover:bg-gray-50 border-b text-gray-900 text-sm"
-      >
-        <td className="py-4 px-6 text-blue-700 font-medium">
-          {(currentPage - 1) * usersPerPage + index + 1}
-        </td>
-        <td className="py-4 px-6 text-gray-600">
-          {new Date(user.requestedAt).toLocaleString("en-US", {
-            year: "numeric",
-            month: "short",
-            day: "2-digit",
-            hour: "2-digit",
-            minute: "2-digit",
-            hour12: true,
-          })}
-        </td>
-        <td className="py-4 px-6 text-gray-700 font-medium">
-          {user.facilityAdmin.facilityCode}
-        </td>
-        <td className="py-4 px-6 text-gray-700">
-          {user.facilityAdmin.firstname} {user.facilityAdmin.lastname}
-        </td>
-        <td className="py-4 px-6 text-gray-700">
-          {user.facilityAdmin.email}
-        </td>
-        <td className="py-4 px-6 text-gray-700">
-          {user.facilityAdmin.facilityName}
-        </td>
-        <td className="py-4 px-6">
-          <span className={getStatusBadge(user.status)}>
-            {user.status.charAt(0).toUpperCase() + user.status.slice(1)}
-          </span>
-        </td>
-        <td className="py-4 px-6">
-          {user.status === "pending" ? (
-            <div className="flex space-x-2">
-              <button
-                onClick={() => updateRequestStatus(user._id, "approve")}
-                disabled={updating === user._id}
-                className="bg-green-600 text-white px-3 py-1 rounded-md text-sm hover:bg-green-700 disabled:opacity-50"
-              >
-                {updating === user._id ? "Updating..." : "Approve"}
-              </button>
-              <button
-                onClick={() => updateRequestStatus(user._id, "rejected")}
-                disabled={updating === user._id}
-                className="bg-red-600 text-white px-3 py-1 rounded-md text-sm hover:bg-red-700 disabled:opacity-50"
-              >
-                {updating === user._id ? "Updating..." : "Reject"}
-              </button>
-            </div>
-          ) : (
-            <span className="text-gray-500 text-sm">
-              {user.status === "approve" ? "Approve" : "Rejected"}
-            </span>
-          )}
-        </td>
-      </tr>
-    ))}
-</tbody>
-
+                <tbody>
+                  {[...users]
+                    .sort(
+                      (a, b) =>
+                        new Date(b.requestedAt).getTime() -
+                        new Date(a.requestedAt).getTime()
+                    )
+                    .map((user, index) => (
+                      <tr
+                        key={user._id}
+                        className="hover:bg-gray-50 border-b text-gray-900 text-sm"
+                      >
+                        <td className="py-4 px-6 text-blue-700 font-medium">
+                          {(currentPage - 1) * usersPerPage + index + 1}
+                        </td>
+                        <td className="py-4 px-6 text-gray-600">
+                          {new Date(user.requestedAt).toLocaleString("en-US", {
+                            year: "numeric",
+                            month: "short",
+                            day: "2-digit",
+                            hour: "2-digit",
+                            minute: "2-digit",
+                            hour12: true,
+                          })}
+                        </td>
+                        <td className="py-4 px-6 text-gray-700 font-medium">
+                          {user.facilityAdmin.facilityCode}
+                        </td>
+                        <td className="py-4 px-6 text-gray-700">
+                          {user.facilityAdmin.firstname}{" "}
+                          {user.facilityAdmin.lastname}
+                        </td>
+                        <td className="py-4 px-6 text-gray-700">
+                          {user.facilityAdmin.email}
+                        </td>
+                        <td className="py-4 px-6 text-gray-700">
+                          {user.facilityAdmin.facilityName}
+                        </td>
+                        <td className="py-4 px-6">
+                          <span className={getStatusBadge(user.status)}>
+                            {user.status.charAt(0).toUpperCase() +
+                              user.status.slice(1)}
+                          </span>
+                        </td>
+                        <td className="py-4 px-6">
+                          {user.status === "pending" ? (
+                            <div className="flex space-x-2">
+                              <button
+                                onClick={() =>
+                                  updateRequestStatus(user._id, "approve")
+                                }
+                                disabled={updating === user._id}
+                                className="bg-green-600 text-white px-3 py-1 rounded-md text-sm hover:bg-green-700 disabled:opacity-50"
+                              >
+                                {updating === user._id
+                                  ? "Updating..."
+                                  : "Approve"}
+                              </button>
+                              <button
+                                onClick={() =>
+                                  updateRequestStatus(user._id, "rejected")
+                                }
+                                disabled={updating === user._id}
+                                className="bg-red-600 text-white px-3 py-1 rounded-md text-sm hover:bg-red-700 disabled:opacity-50"
+                              >
+                                {updating === user._id
+                                  ? "Updating..."
+                                  : "Reject"}
+                              </button>
+                            </div>
+                          ) : (
+                            <span className="text-gray-500 text-sm">
+                              {user.status === "approve"
+                                ? "Approve"
+                                : "Rejected"}
+                            </span>
+                          )}
+                        </td>
+                      </tr>
+                    ))}
+                </tbody>
               </table>
             </div>
 
