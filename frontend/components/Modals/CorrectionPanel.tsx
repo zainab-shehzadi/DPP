@@ -191,9 +191,12 @@ const CorrectionPanel: React.FC<CorrectionPanelProps> = ({
         const res = await fetch(
           `${process.env.NEXT_PUBLIC_API_BASE_URL}/api/users/me`,
           {
+            method: "POST",
+
             headers: {
               Authorization: `Bearer ${Cookies.get("token")}`,
             },
+            body: JSON.stringify({}),
           }
         );
 
@@ -364,16 +367,20 @@ const CorrectionPanel: React.FC<CorrectionPanelProps> = ({
             <button
               onClick={handleApproveToggle}
               className={`bg-red-600 text-white px-4 py-2 rounded-lg text-sm shadow-md cursor-pointer ${
-                approveLoading ? "opacity-50 cursor-not-allowed" : "hover:bg-blue-800"
+                approveLoading
+                  ? "opacity-50 cursor-not-allowed"
+                  : "hover:bg-blue-800"
               }`}
             >
-                 {approveLoading ? "unApproving..." : "Unapprove"}
+              {approveLoading ? "unApproving..." : "Unapprove"}
             </button>
           ) : (
             <button
               onClick={handleApproveToggle}
               className={`bg-[#002F6C] text-white px-4 py-2 rounded-lg text-sm shadow-md transition ${
-                approveLoading ? "opacity-50 cursor-not-allowed" : "hover:bg-blue-800"
+                approveLoading
+                  ? "opacity-50 cursor-not-allowed"
+                  : "hover:bg-blue-800"
               }`}
               disabled={approveLoading}
             >

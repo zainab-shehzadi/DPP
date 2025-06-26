@@ -80,11 +80,13 @@ const RegionalAdminRequest = () => {
         const token = Cookies.get("token");
 
         const response = await fetch("http://localhost:5000/api/users/me", {
-          method: "GET",
+          method: "POST",
           headers: {
             Authorization: `Bearer ${token}`,
             "Content-Type": "application/json",
           },
+          body: JSON.stringify({}),
+
         });
 
         if (!response.ok) {
@@ -115,7 +117,7 @@ const RegionalAdminRequest = () => {
 
     fetchCurrentFacilityAdmin();
   }, []);
-  
+
   // Optional: Separate useEffect to handle email changes (if email can be changed later)
   useEffect(() => {
     if (email && email !== currentFacilityAdmin?.email) {
@@ -311,13 +313,12 @@ const RegionalAdminRequest = () => {
           <div>
             <span className="font-medium">Status:</span>
             <span
-              className={`ml-1 px-2 py-1 rounded-full text-xs ${
-                currentFacilityAdmin?.status === "approved"
+              className={`ml-1 px-2 py-1 rounded-full text-xs ${currentFacilityAdmin?.status === "approved"
                   ? "bg-green-100 text-green-800"
                   : currentFacilityAdmin?.status === "pending"
-                  ? "bg-yellow-100 text-yellow-800"
-                  : "bg-red-100 text-red-800"
-              }`}
+                    ? "bg-yellow-100 text-yellow-800"
+                    : "bg-red-100 text-red-800"
+                }`}
             >
               {currentFacilityAdmin?.status}
             </span>

@@ -54,16 +54,20 @@ const RegionalFacilities = () => {
   const [userRole, setUserRole] = useState<string>(""); // Added user role state
   const [selectedFacilityCode, setSelectedFacilityCode] = useState<string>(""); // For filtering facilities
 
+ 
+
   useEffect(() => {
     const getUserRole = async () => {
       try {
         const res = await fetch(
           `${process.env.NEXT_PUBLIC_API_BASE_URL}/api/users/me`,
           {
-            headers: {
-              Authorization: `Bearer ${Cookies.get("token")}`,
-            },
-          }
+              method: "POST",
+              headers: {
+                Authorization: `Bearer ${Cookies.get("token")}`,
+              },
+              body: JSON.stringify({}),
+            }
         );
 
         const data = await res.json();
