@@ -72,9 +72,18 @@ const usStates = [
 ];
 
 const FacilityAdminCreationFlow = () => {
+  interface Facility {
+    _id: string;
+    facilityName: string;
+    facilityAddress?: string;
+    noOfBeds?: number;
+    state?: string;
+    facilityCode?: string;
+  }
+
   const [loadingFacilities, setLoadingFacilities] = useState(false);
   const [selectedAdminId, setSelectedAdminId] = useState("");
-  const [facilities, setFacilities] = useState([]);
+  const [facilities, setFacilities] = useState<Facility[]>([]);
   const [currentStep, setCurrentStep] = useState(1);
   const [loading, setLoading] = useState(false);
   const [showPassword, setShowPassword] = useState(false);
@@ -93,7 +102,9 @@ const FacilityAdminCreationFlow = () => {
   // Facility Assignment State
   const [facilityOption, setFacilityOption] = useState("");
   const [selectedFacilityId, setSelectedFacilityId] = useState("");
-  const [availableFacilities, setAvailableFacilities] = useState([]);
+  const [availableFacilities, setAvailableFacilities] = useState<Facility[]>(
+    []
+  );
   console.log("available facilities 56", availableFacilities);
 
   // New Facility State
@@ -246,10 +257,9 @@ const FacilityAdminCreationFlow = () => {
     setLoading(true);
     try {
       if (facilityOption === "existing") {
-        const selectedFacility = facilities.find(
-          (f) => f.facilityName === selectedFacilityId
+        const selectedFacility = availableFacilities.find(
+          (f) => f._id === selectedFacilityId
         );
-
         const selectedAdmin = admins.find((a) => a?._id === selectedAdminId);
         if (!selectedFacility && selectedAdmin) {
           const existingAdminandnewfaciltyResponse = await fetch(
@@ -283,32 +293,37 @@ const FacilityAdminCreationFlow = () => {
           }
         }
 
-        if (facilityOption === "existing" &&  selectedAdmin && selectedFacility) {
-          console.log("running 287")
-        const assignmentResponse = await fetch(
-          `${process.env.NEXT_PUBLIC_API_BASE_URL}/api/facility/assign-admin-to-facility`,
-          {
-            method: "POST",
-            headers: {
-              "Content-Type": "application/json",
-              Authorization: `Bearer ${Cookies.get("token")}`,
-            },
-            body: JSON.stringify({
-              adminId: selectedAdminId,
-              facilityId: selectedFacility?._id,
-              facilityName: selectedFacility?.facilityName,
-            }),
-          }
-        );
-
-        const assignmentData = await assignmentResponse.json();
-
-        if (!assignmentResponse.ok) {
-          toast.error(
-            assignmentData.message || "Failed to assign admin to facility"
+        if (
+          facilityOption === "existing" &&
+          selectedAdmin &&
+          selectedFacility
+        ) {
+          console.log("running 287");
+          const assignmentResponse = await fetch(
+            `${process.env.NEXT_PUBLIC_API_BASE_URL}/api/facility/assign-admin-to-facility`,
+            {
+              method: "POST",
+              headers: {
+                "Content-Type": "application/json",
+                Authorization: `Bearer ${Cookies.get("token")}`,
+              },
+              body: JSON.stringify({
+                adminId: selectedAdminId,
+                facilityId: selectedFacility?._id,
+                facilityName: selectedFacility?.facilityName,
+              }),
+            }
           );
-          return;
-        }}
+
+          const assignmentData = await assignmentResponse.json();
+
+          if (!assignmentResponse.ok) {
+            toast.error(
+              assignmentData.message || "Failed to assign admin to facility"
+            );
+            return;
+          }
+        }
 
         toast.success("Admin successfully assigned to facility!");
       } else if (facilityOption === "new") {
@@ -681,8 +696,8 @@ const FacilityAdminCreationFlow = () => {
             >
               <option value="">Select a facility</option>
               {availableFacilities.map((facility, index) => (
-                <option key={index} value={facility}>
-                  {facility}
+                <option key={facility?._id} value={facility?._id}>
+                  {facility?.facilityName}
                 </option>
               ))}
             </select>
