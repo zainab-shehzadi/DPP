@@ -9,6 +9,7 @@ const POCAllySection = ({
   activeTab,
   selectedPolicyID,
   selectedDocument,
+    setActiveTab, // ✅ ADD THIS
   selectedTag,
   selectedID,
   setSelectedTag,
