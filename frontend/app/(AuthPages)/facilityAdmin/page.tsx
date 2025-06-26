@@ -18,6 +18,7 @@ import Cookies from "js-cookie";
 import { departmentLabels, departmentPositions } from "@/constants/dpp";
 import { toast } from "react-toastify";
 import { useRouter } from "next/navigation";
+
 const usStates = [
   "Alabama",
   "Alaska",
@@ -71,16 +72,26 @@ const usStates = [
   "Wyoming",
 ];
 
-const FacilityAdminCreationFlow = () => {
-  interface Facility {
-    _id: string;
-    facilityName: string;
-    facilityAddress?: string;
-    noOfBeds?: number;
-    state?: string;
-    facilityCode?: string;
-  }
+interface Facility {
+  _id: string;
+  facilityName: string;
+  facilityAddress?: string;
+  noOfBeds?: number;
+  state?: string;
+  facilityCode?: string;
+}
 
+interface Admin {
+  _id: string;
+  firstname: string;
+  lastname: string;
+  email: string;
+  role?: string;
+  position?: string;
+  DepartmentName?: string;
+}
+
+const FacilityAdminCreationFlow = () => {
   const [loadingFacilities, setLoadingFacilities] = useState(false);
   const [selectedAdminId, setSelectedAdminId] = useState("");
   const [facilities, setFacilities] = useState<Facility[]>([]);
@@ -89,6 +100,7 @@ const FacilityAdminCreationFlow = () => {
   const [showPassword, setShowPassword] = useState(false);
   const [isSidebarOpen, setIsSidebarOpen] = useState(false);
   const router = useRouter();
+  
   // User Details State
   const [firstName, setFirstName] = useState("");
   const [lastName, setLastName] = useState("");
@@ -97,14 +109,12 @@ const FacilityAdminCreationFlow = () => {
   const [confirmPassword, setConfirmPassword] = useState("");
   const [departmentName, setDepartmentName] = useState("");
   const [position, setPosition] = useState("");
-  const [admins, setAdmins] = useState([]);
+  const [admins, setAdmins] = useState<Admin[]>([]);
 
   // Facility Assignment State
   const [facilityOption, setFacilityOption] = useState("");
   const [selectedFacilityId, setSelectedFacilityId] = useState("");
-  const [availableFacilities, setAvailableFacilities] = useState<Facility[]>(
-    []
-  );
+  const [availableFacilities, setAvailableFacilities] = useState<Facility[]>([]);
   console.log("available facilities 56", availableFacilities);
 
   // New Facility State
@@ -114,6 +124,7 @@ const FacilityAdminCreationFlow = () => {
   const [newFacilityBeds, setNewFacilityBeds] = useState("");
   const [facilityCode, setFacilityCode] = useState("");
   const [facilityAssignmentOption, setFacilityAssignmentOption] = useState("");
+  
   const positions = departmentName
     ? departmentPositions[departmentName] || []
     : [];
@@ -165,8 +176,7 @@ const FacilityAdminCreationFlow = () => {
       const data = await res.json();
       if (res.ok) {
         setFacilities(data?.facility || []);
-        const unassignedFacilities = data?.facility.map((f) => f.facilityName);
-        setAvailableFacilities(unassignedFacilities);
+        setAvailableFacilities(data?.facility || []);
       } else {
         toast.error(data.message || "Failed to load facilities");
       }
@@ -201,22 +211,6 @@ const FacilityAdminCreationFlow = () => {
     return false;
   };
 
-  // const validateStep2 = () => {
-  //   if (facilityOption === "existing") {
-  //     return selectedFacilityId;
-  //   } else if (facilityOption === "new") {
-  //     return (
-  //       newFacilityName &&
-  //       newFacilityAddress &&
-  //       newFacilityState &&
-  //       newFacilityBeds &&
-  //       facilityCode
-  //     );
-  //   }
-  //   return false;
-  // };
-
-  // Update the validateStep2 function
   const validateStep2 = () => {
     if (facilityAssignmentOption === "existing") {
       return selectedFacilityId;
@@ -231,8 +225,6 @@ const FacilityAdminCreationFlow = () => {
     }
     return false;
   };
-
-  // Update the handleSubmit function touse facilityAssignmentOption instead of facilityOption for facility logic
 
   const handleNext = () => {
     if (currentStep === 1 && validateStep1()) {
@@ -260,7 +252,8 @@ const FacilityAdminCreationFlow = () => {
         const selectedFacility = availableFacilities.find(
           (f) => f._id === selectedFacilityId
         );
-        const selectedAdmin = admins.find((a) => a?._id === selectedAdminId);
+        const selectedAdmin = admins.find((a) => a._id === selectedAdminId);
+        
         if (!selectedFacility && selectedAdmin) {
           const existingAdminandnewfaciltyResponse = await fetch(
             `${process.env.NEXT_PUBLIC_API_BASE_URL}/api/facility/create-facility-with-existing-admin`,
@@ -271,7 +264,7 @@ const FacilityAdminCreationFlow = () => {
                 Authorization: `Bearer ${Cookies.get("token")}`,
               },
               body: JSON.stringify({
-                adminId: selectedAdmin?._id,
+                adminId: selectedAdmin._id,
                 email,
                 facilityName: newFacilityName,
                 facilityAddress: newFacilityAddress,
@@ -282,8 +275,7 @@ const FacilityAdminCreationFlow = () => {
             }
           );
 
-          const assignmentData =
-            await existingAdminandnewfaciltyResponse.json();
+          const assignmentData = await existingAdminandnewfaciltyResponse.json();
 
           if (!existingAdminandnewfaciltyResponse.ok) {
             toast.error(
@@ -293,11 +285,7 @@ const FacilityAdminCreationFlow = () => {
           }
         }
 
-        if (
-          facilityOption === "existing" &&
-          selectedAdmin &&
-          selectedFacility
-        ) {
+        if (facilityOption === "existing" && selectedAdmin && selectedFacility) {
           console.log("running 287");
           const assignmentResponse = await fetch(
             `${process.env.NEXT_PUBLIC_API_BASE_URL}/api/facility/assign-admin-to-facility`,
@@ -309,8 +297,8 @@ const FacilityAdminCreationFlow = () => {
               },
               body: JSON.stringify({
                 adminId: selectedAdminId,
-                facilityId: selectedFacility?._id,
-                facilityName: selectedFacility?.facilityName,
+                facilityId: selectedFacility._id,
+                facilityName: selectedFacility.facilityName,
               }),
             }
           );
@@ -401,9 +389,7 @@ const FacilityAdminCreationFlow = () => {
           }
         );
 
-        toast.success(
-          "Facility Admin created and facility assigned successfully!"
-        );
+        toast.success("Facility Admin created and facility assigned successfully!");
       }
 
       setCurrentStep(1);
@@ -695,9 +681,9 @@ const FacilityAdminCreationFlow = () => {
               className="w-full p-3 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-transparent"
             >
               <option value="">Select a facility</option>
-              {availableFacilities.map((facility, index) => (
-                <option key={facility?._id} value={facility?._id}>
-                  {facility?.facilityName}
+              {availableFacilities.map((facility) => (
+                <option key={facility._id} value={facility._id}>
+                  {facility.facilityName}
                 </option>
               ))}
             </select>
@@ -787,6 +773,7 @@ const FacilityAdminCreationFlow = () => {
       </div>
     </div>
   );
+
   const renderStep3 = () => (
     <div className="space-y-6">
       <h3 className="text-xl font-semibold text-gray-800 mb-6">
@@ -850,25 +837,26 @@ const FacilityAdminCreationFlow = () => {
             Facility Assignment
           </h4>
           <div className="text-sm text-gray-600 space-y-1">
-            {facilityOption === "existing" && selectedFacilityId ? (
-              (console.log("selectedFacilityId", selectedFacilityId),
+            {facilityAssignmentOption === "existing" && selectedFacilityId ? (
               (() => {
                 const selectedFacility = availableFacilities.find(
                   (f) => f._id === selectedFacilityId
                 );
 
-                return selectedFacilityId ? (
+                return selectedFacility ? (
                   <>
                     <p>
                       <strong>Assignment Type:</strong> Existing Facility
                     </p>
-
                     <p>
-                      <strong>Facility Code</strong> {selectedFacilityId}
+                      <strong>Facility Name:</strong> {selectedFacility.facilityName}
+                    </p>
+                    <p>
+                      <strong>Facility Code:</strong> {selectedFacility.facilityCode}
                     </p>
                   </>
                 ) : null;
-              })())
+              })()
             ) : (
               <>
                 <p>
@@ -895,7 +883,7 @@ const FacilityAdminCreationFlow = () => {
         </div>
       </div>
     </div>
-  );
+  ); ``
 
   return (
     <div className="flex min-h-screen bg-gray-100">
