@@ -2,7 +2,7 @@
 
 import React, { useEffect, useState } from "react";
 import { FaCloudUploadAlt, FaChevronDown } from "react-icons/fa";
-import FacilitySelector from "../FacilitySelector/page.jsx";
+import FacilitySelector from "../../../components/FacilitySelector/FacilitySelector.jsx";
 import axios from "axios";
 import Sidebar from "@/components/Sidebar";
 import { useRouter } from "next/navigation";
