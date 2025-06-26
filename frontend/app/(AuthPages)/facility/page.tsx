@@ -521,7 +521,7 @@ const RegionalFacilities = () => {
                           (u) => u.email === facility?.email
                         );
 
-                        await handleDelete(selectedFacilityId, facilityAdmin);
+                        await handleDelete(selectedFacilityId);
                         setShowDeleteModal(false);
                         setSelectedFacilityId(null);
                       }}
