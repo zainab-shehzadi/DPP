@@ -49,7 +49,7 @@ router.get("/get-access-token", async (req, res) => {
     res.status(500).json({ error: "Internal server error" });
   }
 });
-router.get("/me", protect, getMe);
+router.post("/me", protect, getMe);
 router.post("/role", getUserRole);
 router.post("/email", getUserByEmail);
 router.post("/signup", registerUser);
