@@ -78,8 +78,8 @@ const RegionalAdminRequest = () => {
       try {
         setFacilityAdminLoading(true);
         const token = Cookies.get("token");
-
-        const response = await fetch("http://localhost:5000/api/users/me", {
+        
+        const response = await fetch(`${process.env.NEXT_PUBLIC_API_BASE_URL}/api/users/me`, {
           method: "POST",
           headers: {
             Authorization: `Bearer ${token}`,
