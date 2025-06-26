@@ -8,8 +8,11 @@ interface DeficiencyType {
 }
 
 interface DocumentType {
-  deficiencies?: DeficiencyType[];
+  deficiencies?: {
+    data: DeficiencyType[];
+  };
 }
+
 
 interface LongDescriptionPanelProps {
   selectedDocument: DocumentType | null;
