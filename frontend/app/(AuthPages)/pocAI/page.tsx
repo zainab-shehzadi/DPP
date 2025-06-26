@@ -224,7 +224,7 @@ function docUpload() {
       console.log("Is result.data an array?", Array.isArray(result.data));
 
       // Handle different response structures
-      let dataArray = [];
+let dataArray: any[] = [];
       if (Array.isArray(result.data)) {
         dataArray = result.data;
       } else if (Array.isArray(result)) {
