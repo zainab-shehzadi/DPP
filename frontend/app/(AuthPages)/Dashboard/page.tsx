@@ -15,6 +15,14 @@ import SidebarUploadPanel from "@/components/Modals/SidebarUploadPanel";
 import { toast } from "react-toastify";
 
 export default function Dashboard() {
+  interface Facility {
+    _id: string;
+    facilityName: string;
+    facilityAddress?: string;
+    facilityCode?: string;
+    // Add other properties if necessary
+  }
+
   const router = useRouter();
   const name = Cookies.get("name");
   const userRole = Cookies.get("role");
@@ -35,7 +43,9 @@ export default function Dashboard() {
 
   const [loading1, setLoading1] = useState(true);
   const [facilities, setFacilities] = useState([]);
-  const [selectedFacility, setSelectedFacility] = useState(null);
+  const [selectedFacility, setSelectedFacility] = useState<Facility | null>(
+    null
+  );
   const [showFacilityDropdown, setShowFacilityDropdown] = useState(false);
   const [loadingFacilities, setLoadingFacilities] = useState(false);
 
@@ -109,77 +119,6 @@ export default function Dashboard() {
     setFile(uploadedFile);
     setUploadStatus(`File "${uploadedFile.name}" is ready to upload.`);
   };
-
-  // const handleFileUpload = async () => {
-  //   if (!file) {
-  //     setUploadStatus("Please select a file to upload.");
-  //     setTimeout(() => setUploadStatus(""), 3000);
-  //     return;
-  //   }
-  //   const Address = Cookies.get("facilityAddress");
-  //   const accessToken = Cookies.get("token");
-  //   const formData = new FormData();
-
-  //   formData.append("address", Address || "");
-  //   formData.append("file", file);
-
-  //   if (selectedFacility) {
-  //     formData.append("facilityId", selectedFacility._id);
-  //   }
-
-  //   setLoading(true);
-
-  //   try {
-  //     const response = await axios.post(
-  //       `${process.env.NEXT_PUBLIC_API_BASE_URL}/api/files/upload`,
-  //       formData,
-  //       {
-  //         headers: {
-  //           "Content-Type": "multipart/form-data",
-  //           Authorization: `Bearer ${accessToken}`,
-  //         },
-  //       }
-  //     );
-
-  //     if (response.status === 201) {
-  //       setUploadStatus("Upload successful!");
-  //       setFile(null);
-  //       toggleSidebar();
-  //       router.push("/pocAI");
-  //       setUploadStatus("");
-  //     } else {
-  //       setUploadStatus("Unexpected error occurred.");
-  //       setTimeout(() => setUploadStatus(""), 3000);
-  //     }
-  //   } catch (error: any) {
-  //     const errMsg = error?.response?.data?.error;
-
-  //     if (error.response?.status === 400) {
-  //       if (errMsg === "File already exists.") {
-  //         setUploadStatus("File already exists.");
-  //          setFile(null); 
-  //       } else if (errMsg?.includes("Address mismatch")) {
-  //         setUploadStatus(
-  //           "Address mismatch: Please verify the facility address."
-  //         );
-  //           setFile(null); 
-
-  //       } else {
-  //         setUploadStatus(errMsg || "Upload failed due to a client error.");
-  //          setFile(null); 
-
-  //       }
-  //     } else {
-  //       setUploadStatus("File upload failed. Please try again.");
-  //        setFile(null); 
-  //     }
-
-  //     setTimeout(() => setUploadStatus(""), 3000);
-  //   } finally {
-  //     setLoading(false);
-  //   }
-  // };
-
 
   const handleFileUpload = async () => {
     if (!file) {
@@ -310,7 +249,7 @@ export default function Dashboard() {
                 <UserDropdown />
               </div>
             </header>
-            
+
             <FacilitySelector
               onFacilityChange={(facility) => {
                 console.log("Selected facility:", facility);
