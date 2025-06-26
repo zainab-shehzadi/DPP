@@ -20,7 +20,7 @@ const LongDescriptionPanel: React.FC<LongDescriptionPanelProps> = ({
   selectedDocument,
   selectedTag,
 }) => {
-  const matchingDeficiency = selectedDocument?.deficiencies?.find(
+  const matchingDeficiency = selectedDocument?.deficiencies?.data?.find(
     (def) => def.Tag === selectedTag
   );
   const descRef = useRef<HTMLDivElement>(null);

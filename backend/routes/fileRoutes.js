@@ -68,9 +68,6 @@ router.post("/tags-with-descriptions", async (req, res) => {
     res.status(500).json({ error: "Internal server error" });
   }
 });
-
-
-
 router.post("/update-status", async (req, res) => {
   const { docId, tagId, status, email } = req.body;
 
@@ -106,9 +103,7 @@ router.post("/update-status", async (req, res) => {
     return res.status(500).json({ error: "Server error" });
   }
 });
-
 router.put("/updateSolution", protect, updateSolution);
-
 router.put("/updateSolution1", async (req, res) => {
   try {
     const { email, id, tagId, solution } = req.body;
@@ -171,7 +166,6 @@ router.put("/updateSolution1", async (req, res) => {
     res.status(500).json({ error: "Internal server error" });
   }
 });
-
 router.post("/tag-details", async (req, res) => {
   try {
     let { tagId, tagName } = req.body;
@@ -249,7 +243,6 @@ router.post("/tag-details", async (req, res) => {
     res.status(500).json({ error: "Internal server error" });
   }
 });
-
 router.post("/update-status", async (req, res) => {
   try {
     const { tagId, status } = req.body;
@@ -279,10 +272,6 @@ router.post("/update-status", async (req, res) => {
     res.status(500).json({ error: "Internal server error." });
   }
 });
-
-
-
-
 router.post("/tagDescriptions", async (req, res) => {
   try {
     const { email, id, tagId } = req.body;

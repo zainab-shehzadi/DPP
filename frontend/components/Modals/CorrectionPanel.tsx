@@ -4,6 +4,7 @@ import GeneratePOCSidebar from "./GeneratePOCSidebar";
 import { toast } from "react-toastify";
 import Cookies from "js-cookie";
 import { useRouter } from "next/navigation";
+import { set } from "mongoose";
 
 interface CorrectionPanelProps {
   data: any;
@@ -23,7 +24,7 @@ interface CorrectionPanelProps {
   answer2: string;
   setAnswer2: (text: string) => void;
   handleSubmit: () => void;
-  boxRef: React.RefObject<HTMLDivElement>;
+  boxRef: React.RefObject<HTMLUListElement>;
   setSelectedDocument: (doc: any) => void;
   handleNavigateToTags: () => void;
   isAuthenticated: () => void;
@@ -48,7 +49,6 @@ const CorrectionPanel: React.FC<CorrectionPanelProps> = ({
   handleSubmit,
   boxRef,
   handleNavigateToTags,
-  isAuthenticated,
   policy,
   AIPolicy,
 }) => {
@@ -56,11 +56,11 @@ const CorrectionPanel: React.FC<CorrectionPanelProps> = ({
   const [userRole, setUserRole] = useState("");
   const [userLoading, setUserLoading] = useState(true);
   const [assignLoading, setAssignLoading] = React.useState(false);
-  const matchingDeficiency = selectedDocument?.deficiencies?.find(
+  const matchingDeficiency = selectedDocument?.deficiencies?.data?.find(
     (def) => def.Tag === selectedTag
   );
   const status = matchingDeficiency?.status;
-
+  const [approveLoading, setApproveLoading] = useState(false);
   const handlePOCClick = () => {
     const hasPolicy = policy && policy.length > 0;
     const hasAIPolicy = AIPolicy && AIPolicy.length > 0;
@@ -73,10 +73,11 @@ const CorrectionPanel: React.FC<CorrectionPanelProps> = ({
     }
   };
 
-  const handleApprove = async () => {
+  const handleApproveToggle = async () => {
+    const token = Cookies.get("token");
+    const newStatus = status === "approved" ? "unapproved" : "approved"; // Toggle status
+    setApproveLoading(true);
     try {
-      const token = Cookies.get("token");
-
       const res = await fetch(
         `${process.env.NEXT_PUBLIC_API_BASE_URL}/api/files/approve-tag`,
         {
@@ -87,9 +88,10 @@ const CorrectionPanel: React.FC<CorrectionPanelProps> = ({
           },
           body: JSON.stringify({
             documentId: selectedDocument._id,
-            tagId: selectedDocument?.deficiencies?.find(
+            tagId: selectedDocument?.deficiencies?.data?.find(
               (d) => d.Tag === selectedTag
             )?._id,
+            newStatus: newStatus, // Send the new status
           }),
         }
       );
@@ -97,19 +99,36 @@ const CorrectionPanel: React.FC<CorrectionPanelProps> = ({
       const result = await res.json();
 
       if (!res.ok) {
-        throw new Error(result.error || "Failed to approve tag");
+        throw new Error(result.error || "Failed to update tag status");
       }
 
-      toast.success("Tag approved successfully!");
+      toast.success(
+        `Tag ${
+          newStatus === "approved" ? "approved" : "unapproved"
+        } successfully!`
+      );
+
+      // ✅ FIXED: Update the correct nested structure
       setSelectedDocument((prev) => {
-        const updatedDefs = prev.deficiencies.map((d) =>
-          d.Tag === selectedTag ? { ...d, status: "approved" } : d
+        const updatedData = prev.deficiencies.data.map((d) =>
+          d.Tag === selectedTag ? { ...d, status: newStatus } : d
         );
-        return { ...prev, deficiencies: updatedDefs };
+
+        return {
+          ...prev,
+          deficiencies: {
+            ...prev.deficiencies,
+            data: updatedData,
+          },
+        };
       });
     } catch (error) {
-      toast.error("Could not approve tag.");
-      console.error("Approve error:", error);
+      toast.error(
+        `Could not ${status === "approved" ? "unapprove" : "approve"} tag.`
+      );
+      console.error("Toggle Approval Error:", error);
+    } finally {
+      setApproveLoading(false);
     }
   };
 
@@ -157,14 +176,12 @@ const CorrectionPanel: React.FC<CorrectionPanelProps> = ({
       }
 
       toast.success("Task assigned successfully.");
-     
       localStorage.setItem("selectedDocumentId", selectedDocument._id);
       router.push("/TaskListPage");
     } catch (error: any) {
       toast.error(error.message || "Something went wrong.");
-      console.error("Assign Task Error:", error);
     } finally {
-      setAssignLoading(false); 
+      setAssignLoading(false);
     }
   };
 
@@ -197,10 +214,7 @@ const CorrectionPanel: React.FC<CorrectionPanelProps> = ({
   }, []);
 
   return (
-    <div
-      className=" border shadow-lg rounded-lg p-4 sm:p-6 flex flex-col justify-between h-[calc(90vh-140px)] overflow-auto"
-      ref={boxRef}
-    >
+    <div className="border shadow-lg rounded-lg p-4 sm:p-6 flex flex-col justify-between h-[calc(90vh-140px)] overflow-auto">
       {/* Header */}
       <div>
         <div className="flex justify-between items-center">
@@ -228,6 +242,7 @@ const CorrectionPanel: React.FC<CorrectionPanelProps> = ({
 
         {/* Solution List */}
         <ul
+          ref={boxRef}
           className="list-disc list-inside text-sm sm:text-base lg:text-md font-light leading-relaxed text-[#33343E] mt-6"
           style={{ fontFamily: "'Plus Jakarta Sans', sans-serif" }}
         >
@@ -312,65 +327,16 @@ const CorrectionPanel: React.FC<CorrectionPanelProps> = ({
           )}
         </>
       )}
+
       {((matchingDeficiency?.Solution &&
         Object.keys(matchingDeficiency.Solution).length > 0) ||
         (data?.find((d: any) => d.Tag === selectedTag)?.Solution &&
           Object.keys(data.find((d: any) => d.Tag === selectedTag)!.Solution)
             .length > 0)) && (
         <div className="flex justify-end space-x-4 mt-4">
-          {status === "approved" &&
-            !userLoading &&
-            ["Facility Admin", "Regional Admin"].includes(userRole) && (
-              <button
-                onClick={assignTask}
-                className={`flex items-center justify-center border border-[#002F6C] text-[#002F6C] px-4 py-2 rounded-lg text-sm shadow-md transition-colors duration-300 ${
-                  loading
-                    ? "cursor-not-allowed opacity-50"
-                    : "hover:bg-gray-100"
-                }`}
-                disabled={loading}
-              >
-                <svg
-                  xmlns="http://www.w3.org/2000/svg"
-                  fill="none"
-                  viewBox="0 0 24 24"
-                  strokeWidth={1.5}
-                  stroke="currentColor"
-                  className="w-4 h-4 mr-2"
-                >
-                  <path
-                    strokeLinecap="round"
-                    strokeLinejoin="round"
-                    d="M15 10l4.553 4.553-4.553 4.553m-6-9L4.447 14.553 9 19"
-                  />
-                </svg>
-                {assignLoading ? "Assigning..." : "Assign Task"}
-              </button>
-            )}
-
-          {status === "approved" ? (
+          {status === "approved" && !userLoading && (
             <button
-              disabled
-              className="bg-green-600 text-white px-4 py-2 rounded-lg text-sm shadow-md cursor-not-allowed"
-            >
-              ✅ Approved
-            </button>
-          ) : status !== "assigned" ? (
-            <button
-              onClick={handleApprove}
-              disabled={loading}
-              className={`bg-[#002F6C] text-white px-4 py-2 rounded-lg text-sm shadow-md transition ${
-                loading ? "opacity-50 cursor-not-allowed" : "hover:bg-blue-800"
-              }`}
-            >
-              {loading ? "Approving..." : "Approve"}
-            </button>
-          ) : null}
-
-          {/* Optional: still show Assigned tag if needed */}
-          {status === "assigned" && (
-            <button
-              onClick={handleNavigateToTags}
+              onClick={assignTask}
               className={`flex items-center justify-center border border-[#002F6C] text-[#002F6C] px-4 py-2 rounded-lg text-sm shadow-md transition-colors duration-300 ${
                 loading ? "cursor-not-allowed opacity-50" : "hover:bg-gray-100"
               }`}
@@ -390,7 +356,28 @@ const CorrectionPanel: React.FC<CorrectionPanelProps> = ({
                   d="M15 10l4.553 4.553-4.553 4.553m-6-9L4.447 14.553 9 19"
                 />
               </svg>
-              Assigned
+              {assignLoading ? "Assigning..." : "Assign Task"}
+            </button>
+          )}
+
+          {status === "approved" ? (
+            <button
+              onClick={handleApproveToggle}
+              className={`bg-red-600 text-white px-4 py-2 rounded-lg text-sm shadow-md cursor-pointer ${
+                approveLoading ? "opacity-50 cursor-not-allowed" : "hover:bg-blue-800"
+              }`}
+            >
+                 {approveLoading ? "unApproving..." : "Unapprove"}
+            </button>
+          ) : (
+            <button
+              onClick={handleApproveToggle}
+              className={`bg-[#002F6C] text-white px-4 py-2 rounded-lg text-sm shadow-md transition ${
+                approveLoading ? "opacity-50 cursor-not-allowed" : "hover:bg-blue-800"
+              }`}
+              disabled={approveLoading}
+            >
+              {approveLoading ? "Approving..." : "Approve"}
             </button>
           )}
         </div>

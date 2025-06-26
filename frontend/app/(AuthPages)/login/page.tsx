@@ -258,7 +258,6 @@ const Login: React.FC = () => {
     setIsSubmitting(true);
 
     try {
-      // 1. Check if facility is assigned
       const facilityRes = await fetch(
         `${process.env.NEXT_PUBLIC_API_BASE_URL}/api/facility/check-facility123`,
         {
@@ -272,7 +271,10 @@ const Login: React.FC = () => {
 
       const facilityData = await facilityRes.json();
       console.log("data 48", facilityData);
+      Cookies.set("selectedFacilityId", facilityData?.facility?._id);
+      Cookies.set("facilityId", facilityData?.facility?._id)
       Cookies.set("facilityName", facilityData?.facility?.facilityName);
+      Cookies.set("facilityAddress", facilityData?.facility?.facilityAddress);
       if (facilityData.message !== "OK" || facilityData.access !== "granted") {
         toast.error("Facility is not assigned to this user.", {
           position: "top-right",
@@ -280,8 +282,6 @@ const Login: React.FC = () => {
         setIsSubmitting(false);
         return;
       }
-
-      // 2. Proceed with login
       const response = await fetch(
         `${process.env.NEXT_PUBLIC_API_BASE_URL}/api/users/login`,
         {
@@ -294,7 +294,6 @@ const Login: React.FC = () => {
       );
 
       const data = await response.json();
-      console.log("data 48", data);
 
       if (response.ok) {
         toast.success("Login successful! Redirecting...", {

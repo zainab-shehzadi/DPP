@@ -12,6 +12,7 @@ export function middleware(req: NextRequest) {
   const privateRoutes = [
     "/Dashboard",
     "/UserSetting",
+    "/AddRegionalAdmin",
     "/AddNewUser",
     "/AddUser",
     "/HistoryPage",
@@ -21,6 +22,7 @@ export function middleware(req: NextRequest) {
     "/TaskListPage",
     "/profileSetting",
     "/facilitySetting",
+    "/AddRegionalAdmin"
   ];
 
   if (url.pathname === "/") {
@@ -67,7 +69,7 @@ export const config = {
     "/InsightPage",
     "/TaskDetailPage",
     "/DailySummaries",
-
+"/AddRegionalAdmin",
     "/TaskListPage",
     "/profileSetting",
     "/facilitySetting",

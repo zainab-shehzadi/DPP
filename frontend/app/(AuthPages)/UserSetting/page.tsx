@@ -48,7 +48,7 @@ export default function UserSetting() {
       ? users
       : users.filter((user) => user.role === roleFilter);
   const totalUsers = filteredUsers.filter((u) =>
-    ["Facility Admin", "Facility Users"].includes(u.role)
+    ["Facility Users"].includes(u.role)
   ).length;
 
   const totalPages = Math.ceil(totalUsers / itemsPerPage);
@@ -91,46 +91,6 @@ export default function UserSetting() {
     getAllUser();
   }, []);
 
-  // When fetching user data on edit:
-  // const handleUpdate = async (userId: string) => {
-  //   try {
-  //     const response = await fetch(
-  //       `${process.env.NEXT_PUBLIC_API_BASE_URL}/api/users/fetch`,
-  //       {
-  //         method: "POST",
-  //         headers: { "Content-Type": "application/json" },
-  //         body: JSON.stringify({ id: userId }),
-  //       }
-  //     );
-  //     if (!response.ok) throw new Error("Failed to fetch user data");
-  //     const userData = await response.json();
-
-  //     if (userData.role === "Facility Users") {
-  //       const facilityRes = await fetch(
-  //         `${process.env.NEXT_PUBLIC_API_BASE_URL}/api/facility/facility-admins`
-  //       );
-  //       const facilityList = await facilityRes.json();
-  //       setFacilities(
-  //         facilityList?.facilities?.map((f) => f.facilityName) || []
-  //       );
-  //     } else {
-  //       setFacilities([]);
-  //     }
-
-  //     setSelectedUser({
-  //       ...userData,
-  //       DepartmentName: userData.DepartmentName || "",
-  //       Position: userData.Position || "",
-  //       facility: userData.facilityName || "",
-  //     });
-
-  //     setIsModalOpen(true);
-  //   } catch (error) {
-  //     console.error("Error fetching user data:", error);
-  //     toast.error("Failed to fetch user data. Please try again.");
-  //   }
-  // };
-
   const handleUpdate = async (userId: string) => {
     try {
       const response = await fetch(
@@ -150,13 +110,12 @@ export default function UserSetting() {
             method: "POST", // changed to POST
             headers: {
               "Content-Type": "application/json",
-              // add Authorization header if needed, e.g.:
-              // Authorization: `Bearer ${Cookies.get("token")}`,
             },
             body: JSON.stringify({}), // send empty body or payload if required
           }
         );
         const facilityList = await facilityRes.json();
+        console.log("facilityList: ", facilityList);
         setFacilities(
           facilityList?.facilities?.map((f) => f.facilityName) || []
         );
@@ -325,7 +284,7 @@ export default function UserSetting() {
                   }}
                   className="border border-gray-300 rounded-md px-4 py-2 focus:outline-none focus:ring-2 focus:ring-blue-900"
                 >
-                  <option value="Facility Admin">Facility Admin</option>
+                  {/* <option value="Facility Admin">Facility Admin</option> */}
                   <option value="Facility Users">Facility Users</option>
                 </select>
               </div>
@@ -385,14 +344,7 @@ export default function UserSetting() {
 
                     return (
                       <React.Fragment key={roleGroup}>
-                        {/* <tr>
-                          <td
-                            colSpan={6}
-                            className="bg-gray-200 px-6 py-3 font-semibold text-blue-800"
-                          >
-                            {roleGroup}
-                          </td>
-                        </tr> */}
+                  
 
                         {paginatedUsers.map((user, idx) => (
                           <tr
@@ -425,18 +377,22 @@ export default function UserSetting() {
                                     height={14}
                                   />
                                 </button>
-                                <button
-                                  className="text-red-500 hover:text-red-700"
-                                  onClick={() => handleDeleteClick(user._id)}
-                                  title="Delete User"
-                                >
-                                  <Image
-                                    src="/assets/delete.png"
-                                    alt="Delete"
-                                    width={14}
-                                    height={14}
-                                  />
-                                </button>
+
+                                {/* Show Delete button only if user is NOT a Facility Admin */}
+                                {user.role !== "Facility Admin" && (
+                                  <button
+                                    className="text-red-500 hover:text-red-700"
+                                    onClick={() => handleDeleteClick(user._id)}
+                                    title="Delete User"
+                                  >
+                                    <Image
+                                      src="/assets/delete.png"
+                                      alt="Delete"
+                                      width={14}
+                                      height={14}
+                                    />
+                                  </button>
+                                )}
                               </div>
                             </td>
                           </tr>

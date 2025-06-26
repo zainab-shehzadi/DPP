@@ -57,11 +57,9 @@ const mongoose = require("mongoose");
 const TaskSchema = new mongoose.Schema({
   headline: {
     type: String,
-    
   },
   description: {
     type: String,
-   
   },
   frequency: {
     type: String,
@@ -69,10 +67,10 @@ const TaskSchema = new mongoose.Schema({
     default: "daily",
   },
 
-customSchedule: {
-  type: String,
-  default: "",
-},
+  customSchedule: {
+    type: String,
+    default: "",
+  },
 
   task: String,
   department: {

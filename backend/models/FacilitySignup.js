@@ -9,7 +9,7 @@ const facilitySignupSchema = new mongoose.Schema(
     },
     facilityName: {
       type: String,
-      required: [true, "Facility Name is required"],
+      required: [true, "Facility name is required"],
     },
     state: {
       type: String,
@@ -17,11 +17,14 @@ const facilitySignupSchema = new mongoose.Schema(
     },
     facilityAddress: {
       type: String,
-      required: [true, "Facility Address is required"],
+      required: [true, "Facility address is required"],
     },
     noOfBeds: {
       type: Number,
-      required: [true, "Number of Beds is required"],
+      required: [true, "Number of beds is required"],
+    },
+    facilityCode:{
+   type: String,
     },
     status: {
       type: String,

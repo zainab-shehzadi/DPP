@@ -5,7 +5,7 @@ const User = require("../models/User");
 
 const createFacility = async (req, res) => {
   try {
-    const { email, facilityName, facilityAddress, noOfBeds, state } = req.body;
+    const { email, facilityName, facilityAddress, noOfBeds, state, facilityCode,role } = req.body;
 
     if (!email || !facilityName || !facilityAddress || !noOfBeds || !state) {
       return res.status(400).json({ message: "All fields are required." });
@@ -19,6 +19,7 @@ const createFacility = async (req, res) => {
       facility.facilityAddress = facilityAddress;
       facility.noOfBeds = noOfBeds;
       facility.state = state;
+      facility.facilityCode =state
       await facility.save();
     } else {
       facility = new Facility({
@@ -27,6 +28,7 @@ const createFacility = async (req, res) => {
         facilityName,
         facilityAddress,
         noOfBeds,
+        facilityCode
       });
       await facility.save();
     }
@@ -34,7 +36,7 @@ const createFacility = async (req, res) => {
     // Update the user: status to 'pending' and role to 'Facility Admin'
     const updatedUser = await User.findOneAndUpdate(
       { email },
-      { $set: { status: "pending", role: "Facility Admin" } },
+      { $set: { status: "pending", role: role} },
       { new: true }
     );
 
@@ -68,6 +70,53 @@ const getFacility = async (req, res) => {
     });
   }
 };
+//  const getFacility1 = async (req, res) => {
+//   try {
+  
+
+//     // Fetch all users with role "Facility Admin", excluding the specified emails
+//     const facilityAdmins = await User.find({
+//       role: "Facility Admin",
+//       email: { $nin: excludeEmails },
+//     });
+
+//     // Extract emails of those admins
+//     const emails = facilityAdmins.map((admin) => admin.email);
+
+//     // Get facilities linked to those emails
+//     const facilities = await FacilitySignup.find({ email: { $in: emails } });
+
+//     // Enrich each facility with corresponding user's info
+//     const enrichedFacilities = facilities.map((facility) => {
+//       const matchingUser = facilityAdmins.find(
+//         (u) => u.email === facility.email
+//       );
+
+//       return {
+//         _id: facility._id,
+//         email: facility.email,
+//         facilityName: facility.facilityName,
+//         facilityAddress: facility.facilityAddress,
+//         noOfBeds: facility.noOfBeds,
+//         state: facility.state,
+//         facilityCode: facility.facilityCode,
+//         status: facility.status,
+//         createdAt: facility.createdAt,
+//         updatedAt: facility.updatedAt,
+//         adminName: `${matchingUser?.firstname || ""} ${matchingUser?.lastname || ""}`.trim(),
+//         department: matchingUser?.DepartmentName || "",
+//       };
+//     });
+
+//     res.status(200).json({ facility: enrichedFacilities });
+//   } catch (error) {
+//     console.error("Error fetching facilities:", error);
+//     res.status(500).json({
+//       message: "Failed to fetch facility data",
+//       error: error.message,
+//     });
+//   }
+// };
 
 const getFacility1 = async (req, res) => {
   try {
@@ -88,8 +137,10 @@ const getFacility1 = async (req, res) => {
         facilityAddress: facility.facilityAddress,
         noOfBeds: facility.noOfBeds,
         state: facility.state,
+        facilityCode: facility.facilityCode,
         status: facility.status,
         createdAt: facility.createdAt,
+
         updatedAt: facility.updatedAt,
         adminName: `${matchingUser?.firstname || ""} ${
           matchingUser?.lastname || ""
@@ -118,56 +169,6 @@ const transporter = nodemailer.createTransport({
   },
 });
 
-// const checkFacility = async (req, res) => {
-//   try {
-//     const { email } = req.body;
-
-//     if (!email) {
-//       return res.status(400).json({ message: "Email is required" });
-//     }
-//     if (email == "anthony@paklogics.com") {
-//       return res.status(200).json({ message: "OK", access: "granted" });
-//     }
-//     // Step 1: Check user role
-//     const user = await User.findOne({ email });
-
-//     if (!user) {
-//       return res.status(404).json({ message: "User not found" });
-//     }
-
-//     // Step 2: If role is Facility Users → allow without checking facility
-//     if (user.role === "Facility Users") {
-//       return res.status(200).json({ message: "OK", access: "granted" });
-//     }
-
-//     // Step 3: If role is Facility Admin → check assigned facility
-//     if (user.role === "Facility Admin") {
-//       const facility = await FacilitySignup.findOne({ email });
-
-//       if (!facility) {
-//         return res.status(403).json({ message: "Facility not assigned yet." });
-//       }
-//       if(user.role === "Regional Admin"){
-// const facility = await FacilitySignup.findOne({ email });
-// if(!facility)
-// { return res.status(403).json({ message: "Facility not assigned yet." }}
-//       return res
-//         .status(200)
-//         .json({ message: "OK", access: "granted", facility });
-//     }
-//     }
-//     console.log(user.role);
-//     console.log(facility);
-//     return res.status(403).json({ message: "Access denied for this role." });
-//   } catch (error) {
-//     console.error("Error in checkFacility:", error);
-//     res.status(500).json({
-//       message: "Server error while checking facility",
-//       error: error.message,
-//     });
-//   }
-// };
-
 const checkFacility = async (req, res) => {
   try {
     const { email } = req.body;
@@ -176,17 +177,17 @@ const checkFacility = async (req, res) => {
       return res.status(400).json({ message: "Email is required" });
     }
 
-    // Special case
-    if (email === "anthony@paklogics.com") {
-      const facility = await FacilitySignup.findOne({ email });
-      if (!facility) {
-        return res.status(403).json({ message: "Facility not assigned yet." });
-      }
+    // // Special case
+    // if (email === "anthony@paklogics.com") {
+    //   const facility = await FacilitySignup.findOne({ email });
+    //   if (!facility) {
+    //     return res.status(403).json({ message: "Facility not assigned yet." });
+    //   }
 
-      return res
-        .status(200)
-        .json({ message: "OK", access: "granted", facility });
-    }
+    //   return res
+    //     .status(200)
+    //     .json({ message: "OK", access: "granted", facility });
+    // }
 
     const user = await User.findOne({ email });
 
@@ -194,18 +195,12 @@ const checkFacility = async (req, res) => {
       return res.status(404).json({ message: "User not found" });
     }
 
-    // Facility Users get automatic access
     if (user.role === "Facility Users") {
       return res.status(200).json({ message: "OK", access: "granted" });
     }
 
-    // Facility Admin or Regional Admin → check facility assignment
-    if (user.role === "Facility Admin" || user.role === "Regional Admin") {
+    if (user.role === "Facility Admin" || "Regional Admin") {
       const facility = await FacilitySignup.findOne({ email });
-
-      if (!facility) {
-        return res.status(403).json({ message: "Facility not assigned yet." });
-      }
 
       return res
         .status(200)
@@ -272,15 +267,15 @@ const deleteFacility = async (req, res) => {
 const updateFacility = async (req, res) => {
   try {
     const { id } = req.params;
-    const { email, facilityName, facilityAddress, noOfBeds, state } = req.body;
+    const { email, facilityName, facilityAddress, noOfBeds, state , facilityCode} = req.body;
 
-    if (!email || !facilityName || !facilityAddress || !noOfBeds || !state) {
+    if (!email || !facilityName || !facilityAddress || !noOfBeds || !state ||!facilityCode) {
       return res.status(400).json({ message: "All fields are required" });
     }
 
     const updatedFacility = await Facility.findByIdAndUpdate(
       id,
-      { email, facilityName, facilityAddress, noOfBeds, state },
+      { email, facilityName, facilityAddress, noOfBeds, state , facilityCode },
       { new: true }
     );
 
@@ -305,23 +300,40 @@ const updateFacility = async (req, res) => {
   }
 };
 
+// const getFacilityByRole = async (req, res) => {
+//   try {
+//     const adminUsers = await User.find({ role: "Facility Admin" }).select(
+//       "email"
+//     );
+
+//     const adminEmails = adminUsers.map((user) => user.email);
+//     const matchedFacilities = await FacilitySignup.find({
+//       email: { $in: adminEmails },
+//     });
+
+//     res.status(200).json({ facilities: matchedFacilities });
+//   } catch (error) {
+//     console.error("Error fetching facilities by role:", error);
+//     res.status(500).json({ message: "Failed to fetch facilities", error });
+//   }
+// };
+
+
 const getFacilityByRole = async (req, res) => {
   try {
-    const adminUsers = await User.find({ role: "Facility Admin" }).select(
-      "email"
-    );
+    const excludedEmails = ["anthony@paklogics.com"];
 
-    const adminEmails = adminUsers.map((user) => user.email);
-    const matchedFacilities = await FacilitySignup.find({
-      email: { $in: adminEmails },
+    const facilities = await FacilitySignup.find({
+      email: { $nin: excludedEmails }
     });
 
-    res.status(200).json({ facilities: matchedFacilities });
+    res.status(200).json({ facilities });
   } catch (error) {
-    console.error("Error fetching facilities by role:", error);
+    console.error("Error fetching facilities:", error);
     res.status(500).json({ message: "Failed to fetch facilities", error });
   }
 };
+
 
 const statusupdate = async (req, res) => {
   const { status, email } = req.body;

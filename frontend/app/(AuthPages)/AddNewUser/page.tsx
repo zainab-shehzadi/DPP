@@ -58,6 +58,7 @@ const Adduser = () => {
         const facilityAdmins = data.filter(
           (user: any) => user.role === "Facility Users"
         );
+        console.log("Fetched Users:", facilityAdmins);
         setUsers(facilityAdmins);
       } catch (error) {
         console.error("Error fetching data:", error);

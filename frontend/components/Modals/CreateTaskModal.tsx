@@ -162,7 +162,7 @@ const CreateTaskModal: React.FC<CreateTaskModalProps> = ({
         }
       }
     } catch (err: any) {
-    toast.error("Failed to fetch updated task data", err);
+
     }
   };
 
@@ -171,6 +171,7 @@ const CreateTaskModal: React.FC<CreateTaskModalProps> = ({
       fetchTasksAndPopulate();
     }
   }, [isOpen, isEditMode]);
+  
   useEffect(() => {
     const fetchUsers = async () => {
       if (!isOpen || (!department && !isEditMode)) return;

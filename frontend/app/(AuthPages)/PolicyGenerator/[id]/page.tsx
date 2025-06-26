@@ -88,9 +88,7 @@ export default function PolicyGenerator() {
 
       const result = await res.json();
       console.log(result);
-
-      if (!res.ok)
-        throw new Error(result.message || "Failed to regenerate policy");
+    
       if (
         result?.data?.solution_policies &&
         Array.isArray(result.data.solution_policies)
@@ -189,7 +187,7 @@ export default function PolicyGenerator() {
                   <FaArrowLeft />
                 </button>
                 <h4 className="font-bold text-lg sm:text-xl lg:text-2xl text-[#002F6C]">
-                  {tags}
+                  {tags || "Selected Tag"}
                 </h4>
               </div>
 

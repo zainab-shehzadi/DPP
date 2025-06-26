@@ -18,6 +18,7 @@ function facilitySetting() {
   const [facilityAddress, setFacilityAddress] = useState("");
   const [noOfBeds, setNoOfBeds] = useState("");
   const [loading, setLoading] = useState(true);
+  const [isButtonLoading, setIsButtonLoading] = useState(false);
   const [email, setEmail] = useState<string | null>(null);
   const [isRequestSent, setIsRequestSent] = useState(false);
   const [status, setStatus] = useState<string | null>(null);
@@ -66,7 +67,7 @@ function facilitySetting() {
         }
 
         const data = await response.json();
-        
+
         if (data?.profileImage) {
           setImageUrl(data.profileImage);
         }
@@ -133,7 +134,48 @@ function facilitySetting() {
     }
   };
 
+  // const handleSaveChanges = async () => {
+  //   try {
+  //     setMessage("");
+
+  //     const updatedData = {
+  //       email,
+  //       facilityName,
+  //       facilityAddress,
+  //       noOfBeds: Number(noOfBeds),
+  //     };
+  //     console.log(updatedData);
+  //     // Make the API request
+  //     const response = await fetch(
+  //       `${process.env.NEXT_PUBLIC_API_BASE_URL}/api/facility/update`,
+  //       {
+  //         method: "PUT",
+  //         headers: {
+  //           "Content-Type": "application/json",
+  //         },
+  //         body: JSON.stringify(updatedData),
+  //       }
+  //     );
+
+  //     if (!response.ok) {
+  //       throw new Error(`Failed to update data. Status: ${response.status}`);
+  //     }
+
+  //     const result = await response.json();
+  //     console.log("Update successful:", result);
+  //     setIsEditing(false);
+  //     toast.success("Data successfully updated.");
+  //   } catch (error) {
+  //     console.error("Error saving changes:", error);
+  //     setMessage("Failed to save changes. Please try again.");
+  //     setTimeout(() => {
+  //       setMessage("");
+  //     }, 3000);
+  //   }
+  // };
+
   const handleSaveChanges = async () => {
+    setIsButtonLoading(true); // Start loading
     try {
       setMessage("");
 
@@ -143,8 +185,7 @@ function facilitySetting() {
         facilityAddress,
         noOfBeds: Number(noOfBeds),
       };
-      console.log(updatedData);
-      // Make the API request
+
       const response = await fetch(
         `${process.env.NEXT_PUBLIC_API_BASE_URL}/api/facility/update`,
         {
@@ -161,20 +202,26 @@ function facilitySetting() {
       }
 
       const result = await response.json();
-      console.log("Update successful:", result);
       setIsEditing(false);
       toast.success("Data successfully updated.");
     } catch (error) {
       console.error("Error saving changes:", error);
       setMessage("Failed to save changes. Please try again.");
-      setTimeout(() => {
-        setMessage("");
-      }, 3000);
+    } finally {
+      setIsButtonLoading(false); // Stop loading
     }
   };
 
-  const handleEditClick = () => {
-    requestAdminApproval();
+
+  const handleEditClick = async () => {
+    setIsButtonLoading(true);
+    try {
+      await requestAdminApproval();
+    } catch (err) {
+      console.error(err);
+    } finally {
+      setIsButtonLoading(false);
+    }
   };
 
   const name = Cookies.get("name");
@@ -269,7 +316,25 @@ function facilitySetting() {
                         disabled={status !== "approve"}
                       />
                     </div>
-
+                    <div className="mb-4">
+                      <label
+                        htmlFor="facilityAddress"
+                        className="block text-black-900"
+                      >
+                        Facility Address
+                      </label>
+                      <input
+                        type="text"
+                        id="facilityAddress"
+                        value={facilityAddress}
+                        onChange={(e) => setFacilityAddress(e.target.value)}
+                        placeholder="Enter Facility Address"
+                        className={`mt-2 w-full h-[49px] p-2 rounded-[7.5px] ${
+                          status === "approve" ? "bg-[#e2f3ff]" : "bg-[#F9F9F9]"
+                        } transition-all text-gray-700`}
+                        disabled={status !== "approve"}
+                      />
+                    </div>
                     <div className="mb-4">
                       <label
                         htmlFor="noOfBeds"
@@ -283,26 +348,6 @@ function facilitySetting() {
                         value={noOfBeds}
                         onChange={(e) => setNoOfBeds(e.target.value)}
                         placeholder="Enter Number of Beds"
-                        className={`mt-2 w-full h-[49px] p-2 rounded-[7.5px] ${
-                          status === "approve" ? "bg-[#e2f3ff]" : "bg-[#F9F9F9]"
-                        } transition-all text-gray-700`}
-                        disabled={status !== "approve"}
-                      />
-                    </div>
-
-                    <div className="mb-4">
-                      <label
-                        htmlFor="facilityAddress"
-                        className="block text-black-900"
-                      >
-                        Facility
-                      </label>
-                      <input
-                        type="text"
-                        id="facilityAddress"
-                        value={facilityAddress}
-                        onChange={(e) => setFacilityAddress(e.target.value)}
-                        placeholder="Enter Facility Address"
                         className={`mt-2 w-full h-[49px] p-2 rounded-[7.5px] ${
                           status === "approve" ? "bg-[#e2f3ff]" : "bg-[#F9F9F9]"
                         } transition-all text-gray-700`}
@@ -366,30 +411,56 @@ function facilitySetting() {
 
                     {/* Button logic based on status */}
                     {status === "approve" ? (
+                      // <button
+                      //   className={`bg-blue-900 text-white px-6 py-2 rounded-md ${
+                      //     loading ? "opacity-50 cursor-not-allowed" : ""
+                      //   }`}
+                      //   onClick={
+                      //     isEditing
+                      //       ? handleSaveChanges
+                      //       : () => setIsEditing(true)
+                      //   } // Call save or toggle editing
+                      //   disabled={loading}
+                      // >
+                      //   {isEditing ? "Save" : "Edit"}
+                      // </button>
+
                       <button
-                        className={`bg-blue-900 text-white px-6 py-2 rounded-md ${
-                          loading ? "opacity-50 cursor-not-allowed" : ""
+                        className={`bg-blue-900 text-white px-6 py-2 rounded-md flex justify-center items-center gap-2 ${
+                          isButtonLoading ? "opacity-50 cursor-not-allowed" : ""
                         }`}
                         onClick={
                           isEditing
                             ? handleSaveChanges
                             : () => setIsEditing(true)
-                        } // Call save or toggle editing
-                        disabled={loading}
+                        }
+                        disabled={isButtonLoading}
                       >
-                        {isEditing ? "Save" : "Edit"}
+                        {isButtonLoading ? (
+                          <div className="w-5 h-5 border-2 border-white border-t-transparent rounded-full animate-spin" />
+                        ) : isEditing ? (
+                          "Save"
+                        ) : (
+                          "Edit"
+                        )}
                       </button>
                     ) : status === "pending" ? (
                       <button
-                        className={`bg-yellow-500 text-white px-6 py-2 rounded-md ${
-                          loading || isRequestSent
+                        className={`bg-yellow-500 text-white px-6 py-2 rounded-md flex justify-center items-center gap-2 ${
+                          isButtonLoading || isRequestSent
                             ? "opacity-50 cursor-not-allowed"
                             : ""
                         }`}
-                        onClick={handleEditClick} // Send request
-                        disabled={loading || isRequestSent}
+                        onClick={handleEditClick}
+                        disabled={isButtonLoading || isRequestSent}
                       >
-                        {isRequestSent ? "Request Sent" : "Send Request"}
+                        {isButtonLoading ? (
+                          <div className="w-5 h-5 border-2 border-white border-t-transparent rounded-full animate-spin" />
+                        ) : isRequestSent ? (
+                          "Request Sent"
+                        ) : (
+                          "Send Request"
+                        )}
                       </button>
                     ) : status === "reject" ? (
                       <div>

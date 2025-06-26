@@ -45,13 +45,13 @@ const Sidebar: React.FC<SidebarProps> = ({
       path: "/Dashboard",
       label: "Dashboard",
       icon: <FaChartBar />,
-      roles: ["Regional Admin", "Facility Admin"],
+      roles: ["Regional Admin", "Facility Admin", "Super Admin"],
     },
     {
       path: "/pocAI",
       label: "POC AI",
       icon: <FaFileAlt />,
-      roles: ["Regional Admin", "Facility Admin"],
+      roles: ["Regional Admin", "Facility Admin", "Super Admin"],
     },
     {
       path: "/DocumentInsights",
@@ -63,37 +63,54 @@ const Sidebar: React.FC<SidebarProps> = ({
       path: "/TaskListPage",
       label: "Task List",
       icon: <FaList />,
-      roles: ["Regional Admin", "Facility Admin", "Facility Users"],
+      roles: [
+        "Regional Admin",
+        "Facility Admin",
+        "Facility Users",
+        "Super Admin",
+      ],
     },
     {
       path: "/DailySummaries",
       label: "Daily Summaries",
       icon: <FaClock />,
-      roles: ["Regional Admin", "Facility Admin"],
+      roles: ["Regional Admin", "Facility Admin", "Super Admin"],
     },
     {
       path: "/facility",
       label: "Facilities",
       icon: <FaBuilding />,
-      roles: ["Regional Admin"],
+      roles: ["Super Admin"],
+    },
+    {
+      path: "/RegionalAdminRequests",
+      label: "Regional Admin Request",
+      icon: <FaBuilding />,
+      roles: ["Facility Admin"],
+    },
+    {
+      path: "/AddRegionalAdmin",
+      label: "Add Regional Admin",
+      icon: <FaUserPlus />,
+      roles: ["Super Admin"],
     },
     {
       path: "/AddNewUser",
       label: "Add Facility User",
       icon: <FaUserPlus />,
-      roles: ["Regional Admin", "Facility Admin"],
+      roles: ["Regional Admin", "Facility Admin", "Super Admin"],
     },
     {
       path: "/AddNewAdmin",
       label: "Add Facility Admin",
       icon: <FaUserPlus />,
-      roles: ["Regional Admin"],
+      roles: ["Regional Admin", "Super Admin"],
     },
     {
       path: "/UserSetting",
       label: "User Settings",
       icon: <FaUsersCog />,
-      roles: ["Regional Admin", "Facility Admin"],
+      roles: ["Regional Admin", "Facility Admin", "Super Admin"],
     },
     {
       path: "/HistoryPage",
@@ -105,7 +122,7 @@ const Sidebar: React.FC<SidebarProps> = ({
       path: "/InsightPage",
       label: "Insights",
       icon: <FaCreditCard />,
-      roles: ["Regional Admin", "Facility Admin"],
+      roles: ["Regional Admin", "Facility Admin", "Super Admin"],
     },
   ];
 
@@ -131,31 +148,8 @@ const Sidebar: React.FC<SidebarProps> = ({
     return options;
   };
 
-  // useEffect(() => {
-  //   const fetchUser = async () => {
-  //     try {
-  //       const res = await fetch(`${process.env.NEXT_PUBLIC_API_BASE_URL}/api/users/me`, {
-  //         headers: {
-  //           Authorization: `Bearer ${Cookies.get("token")}`,
-  //         },
-  //       });
-
-  //       const data = await res.json();
-  //       if (res.ok) {
-  //         setUserRole(data.user.role);
-  //       } else {
-  //         console.error("Failed to get user info:", data.message);
-  //       }
-  //     } catch (error) {
-  //       console.error("Error fetching user info:", error);
-  //     }
-  //   };
-
-  //   fetchUser();
-  // }, []);
   useEffect(() => {
     const userRole = Cookies.get("role") || "";
-
     setUserRole(userRole);
   }, []);
 

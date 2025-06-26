@@ -77,20 +77,11 @@ const registerUser = async (req, res) => {
     email,
     role,
     password,
-
-    facilityName, // ✅ Add this
+    facilityName,
   } = req.body;
 
   try {
-    if (
-      !DepartmentName ||
-      !position ||
-      !firstName ||
-      !lastName ||
-      !email ||
-      !role ||
-      !password
-    ) {
+    if (!firstName || !lastName || !email || !role || !password ) {
       return res.status(400).json({ message: "All fields are required" });
     }
 
@@ -110,9 +101,10 @@ const registerUser = async (req, res) => {
       email,
       role,
       password: hashedPassword,
-      facilityName, // ✅ Save this in the DB
+      facilityName,
       status: "onboarding",
     });
+    console.log("User created successfully:", user);
 
     if (user) {
       res.status(201).json({
@@ -123,7 +115,7 @@ const registerUser = async (req, res) => {
         lastname: user.lastname,
         email: user.email,
         role: user.role,
-        facilityName: user.facilityName, // ✅ Send it in response
+        facilityName: user.facilityName,
         status: user.status,
         token: generateToken(user.id),
       });
@@ -466,53 +458,52 @@ const createUser = async (req, res) => {
 };
 
 const updatePassowrd = async (req, res) => {
-   try {
-      const { currentPassword, newPassword } = req.body;
-  
-      // Validate that both currentPassword and newPassword are provided
-      if (!currentPassword || !newPassword) {
-        return res
-          .status(400)
-          .json({ message: "Current password and new password are required" });
-      }
-  
-      const userId = req.user?.id;
-      if (!userId) {
-        return res.status(401).json({ error: "Unauthorized: user ID missing." });
-      }
-  
-  
-      // Find the user by ID
-      const user = await User.findById(userId);
-  
-      // If the user is not found
-      if (!user) {
-        return res.status(404).json({ message: "User not found" });
-      }
-  
-      // Compare the provided current password with the stored password
-      const passwordMatch = await bcrypt.compare(currentPassword, user.password);
-  
-      // If the current password doesn't match the stored password
-      if (!passwordMatch) {
-        return res.status(401).json({ message: "Current password is incorrect" });
-      }
-  
-      // Hash the new password before saving it
-      const hashedPassword = await bcrypt.hash(newPassword, 10);
-  
-      // Update the user's password in the database
-      user.password = hashedPassword;
-      await user.save();
-  
-      // Respond with a success message
-      res.status(200).json({ message: "Password changed successfully" });
-    } catch (error) {
-      // Log the error and respond with a generic error message
-      console.error("Error changing password:", error);
-      res.status(500).json({ message: "Internal server error" });
+  try {
+    const { currentPassword, newPassword } = req.body;
+
+    // Validate that both currentPassword and newPassword are provided
+    if (!currentPassword || !newPassword) {
+      return res
+        .status(400)
+        .json({ message: "Current password and new password are required" });
     }
-}
+
+    const userId = req.user?.id;
+    if (!userId) {
+      return res.status(401).json({ error: "Unauthorized: user ID missing." });
+    }
+
+    // Find the user by ID
+    const user = await User.findById(userId);
+
+    // If the user is not found
+    if (!user) {
+      return res.status(404).json({ message: "User not found" });
+    }
+
+    // Compare the provided current password with the stored password
+    const passwordMatch = await bcrypt.compare(currentPassword, user.password);
+
+    // If the current password doesn't match the stored password
+    if (!passwordMatch) {
+      return res.status(401).json({ message: "Current password is incorrect" });
+    }
+
+    // Hash the new password before saving it
+    const hashedPassword = await bcrypt.hash(newPassword, 10);
+
+    // Update the user's password in the database
+    user.password = hashedPassword;
+    await user.save();
+
+    // Respond with a success message
+    res.status(200).json({ message: "Password changed successfully" });
+  } catch (error) {
+    // Log the error and respond with a generic error message
+    console.error("Error changing password:", error);
+    res.status(500).json({ message: "Internal server error" });
+  }
+};
 const deleteUser = async (req, res) => {
   try {
     const { id } = req.body;
@@ -539,14 +530,10 @@ const deleteUser = async (req, res) => {
 const getUserByEmail = async (req, res) => {
   try {
     const { email } = req.body;
-
-    console.log("Fetching user for email:", email); // Debugging log
-
-    // Fetch user from the database
     const user = await User.findOne({ email });
 
     if (!user) {
-      console.log("User not found for email:", email); // Debugging log
+      console.log("User not found for email:", email);
       return res.status(404).json({ message: "User not found" });
     }
 
@@ -589,7 +576,6 @@ const editUserByEmail = async (req, res) => {
   try {
     const { email, firstname, lastname, Position, DepartmentName } = req.body;
 
-  
     const updatedUser = await User.findOneAndUpdate(
       { email },
       {

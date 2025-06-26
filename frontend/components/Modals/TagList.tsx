@@ -2,6 +2,7 @@ import React, { useEffect, useState } from "react";
 import Cookies from "js-cookie";
 
 import { useRouter } from "next/navigation";
+import { toast } from "react-toastify";
 
 interface TagListProps {
   selectedDocument: any;
@@ -29,13 +30,13 @@ const TagList: React.FC<TagListProps> = ({
   const derivedTags =
     Array.isArray(selectedDocument?.tags) && selectedDocument.tags.length > 0
       ? selectedDocument.tags
-      : selectedDocument?.deficiencies?.map((def: any) => ({
+      : selectedDocument?.deficiencies?.data?.map((def: any) => ({
           _id: def._id,
           tag: def.Tag,
           longDescription: def.Deficiency,
           solution: def.Solution,
         })) || [];
-  const selectedDeficiency = selectedDocument?.deficiencies?.find(
+  const selectedDeficiency = selectedDocument?.deficiencies?.data?.find(
     (def: any) => def.Tag === selectedTag
   );
 
@@ -66,7 +67,7 @@ const TagList: React.FC<TagListProps> = ({
       );
 
       const data = await res.json();
-      console.log("extracted info", data);
+
       if (!res.ok) throw new Error(data.message || "Failed to generate policy");
 
       localStorage.setItem("policyID", JSON.stringify(data.data._id));
@@ -74,10 +75,8 @@ const TagList: React.FC<TagListProps> = ({
       localStorage.setItem("selectedDocumentId", selectedDocument?._id || "");
       localStorage.setItem("selectedTagID", selectedID || "");
       router.push(`/PolicyGenerator/${data.data._id}`);
-
-      console.log("Policy generated:", data);
-    } catch (error) {
-      console.error("Error generating policy:", error);
+    } catch (error: any) {
+      toast.error("Error generating policy:", error);
     } finally {
       setIsGenerating(false);
     }
@@ -89,7 +88,7 @@ const TagList: React.FC<TagListProps> = ({
         <h4 className="font-bold text-blue-900 text-lg mb-4">Tags</h4>
 
         <div
-          className="w-full bg-gray-50 border border-gray-200 rounded-lg shadow-md p-2"
+          className="w-fit bg-gray-50 border border-gray-200 rounded-lg shadow-md p-2"
           style={{ maxHeight: "300px", overflowY: "auto" }}
         >
           <ul className="flex flex-col gap-1">
@@ -99,7 +98,7 @@ const TagList: React.FC<TagListProps> = ({
 
                 // Only get status if selected
                 const selectedDeficiency = isSelected
-                  ? selectedDocument?.deficiencies?.find(
+                  ? selectedDocument?.deficiencies?.data?.find(
                       (d: any) => d.Tag === item.tag
                     )
                   : null;
@@ -143,7 +142,9 @@ const TagList: React.FC<TagListProps> = ({
         {selectedDeficiency && (
           <div className="mt-4 text-sm text-[#33343E]">
             <p className="font-bold mb-2 text-lg">Description:</p>
-            <p className="mb-2">{selectedDeficiency.Description}</p>
+            <p className="mb-2 max-w-md break-words">
+              {selectedDeficiency.Description}
+            </p>
           </div>
         )}
       </div>

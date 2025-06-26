@@ -276,6 +276,7 @@ const { default: mongoose } = require("mongoose");
 //     });
 //   }
 // };
+
 const getMyTasks = async (req, res) => {
   try {
     const userId = req.user._id;
@@ -318,7 +319,6 @@ const getMyTasks = async (req, res) => {
         }
       });
     });
-console.log("myTasks", myTasks);
     return res.status(200).json({ tasks: myTasks });
   } catch (error) {
     console.error("Failed to fetch user tasks:", error);
@@ -385,7 +385,7 @@ const assigntaskApi = async (req, res) => {
     const taskList = await Promise.all(
       tasks.map(async (item, index) => {
         const taskLine = typeof item === "string" ? item : item.task;
-        const headlineItem = item?.title;
+        const headlineItem = item?.headline;
         const departmentItem = item?.department;
 
         console.log("headlines 64", headlineItem);
@@ -482,10 +482,10 @@ const assigntaskApi = async (req, res) => {
         const uniqueUserIds = [...assignedUserIds];
         return {
           task: taskLine,
-          headline: headlineItem, 
-          description: "", 
-          frequency: "daily", 
-          customSchedule: "", 
+          headline: headlineItem,
+          description: "",
+          frequency: "daily",
+          customSchedule: "",
           department: departmentItem,
           role: taskRoles.map((tr) => tr.role).join(", "),
           assignedTo: uniqueUserIds,
@@ -540,6 +540,8 @@ const assigntaskApi = async (req, res) => {
     });
   }
 };
+
+
 // backend/controllers/taskController.js
 // const getTasksByDocument = async (req, res) => {
 //   try {

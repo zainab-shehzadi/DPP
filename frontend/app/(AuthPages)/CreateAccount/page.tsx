@@ -1,5 +1,5 @@
 "use client";
-import Link from 'next/link';
+import Link from "next/link";
 import React, { useState } from "react";
 import "@fortawesome/fontawesome-free/css/all.min.css";
 
@@ -17,7 +17,6 @@ const Signup: React.FC = () => {
     console.log("Email:", email);
     console.log("Role:", role);
     console.log("Password:", password);
-   
   };
 
   return (
@@ -28,16 +27,22 @@ const Signup: React.FC = () => {
           <h2 className="text-3xl font-bold text-gray-800 mb-1 text-left">
             Sign Up
           </h2>
-          
+
           <form onSubmit={handleSubmit} className="flex flex-col gap-4">
-          <div className="mt-1 text-left">
-  <p className="text-lg mb-4" style={{ fontFamily: 'Poppins, sans-serif', color: '#969AB8' }}>
-    Already have an account?{" "}
-    <Link href="/login" className="text-[#002f6c] font-semibold hover:bg-[#002f6c] hover:text-white">
-      Log In
-    </Link>
-  </p>
-</div>
+            <div className="mt-1 text-left">
+              <p
+                className="text-lg mb-4"
+                style={{ fontFamily: "Poppins, sans-serif", color: "#969AB8" }}
+              >
+                Already have an account?{" "}
+                <Link
+                  href="/login"
+                  className="text-[#002f6c] font-semibold hover:bg-[#002f6c] hover:text-white"
+                >
+                  Log In
+                </Link>
+              </p>
+            </div>
 
             <div className="flex gap-4">
               <div className="mb-4 flex-1">
@@ -106,8 +111,7 @@ const Signup: React.FC = () => {
                 className="w-full px-3 py-2 border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-blue-500"
               />
             </div>
-            
-           
+
             <button
               type="submit"
               className="w-full py-3 bg-[#002f6c] text-white font-semibold rounded-lg transition-colors hover:bg-blue-700"
@@ -130,7 +134,6 @@ const Signup: React.FC = () => {
               <span className="ml-2">Facebook</span>
             </button>
           </div>
-          
         </div>
       </div>
 

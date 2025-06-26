@@ -30,11 +30,11 @@ const taskSchema = new mongoose.Schema({
           userId: {
             type: mongoose.Schema.Types.ObjectId,
             ref: "User",
-            required: false,  // Optional userId reference
+            required: false, 
           },
           firstname: {
             type: String,
-            required: false,  // Optional firstname
+            required: false,  
           },
         },
       ],

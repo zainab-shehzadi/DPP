@@ -45,7 +45,7 @@ const TaskDetailModal: React.FC<TaskDetailModalProps> = ({
 
           <div className="flex items-center space-x-2">
             {!userLoading &&
-              ["Facility Admin", "Regional Admin"].includes(userRole || "") && (
+              ["Facility Admin", "Regional Admin","Super Admin"].includes(userRole || "") && (
                 <>
                   <button
                     onClick={onEdit}

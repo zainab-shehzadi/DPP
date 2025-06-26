@@ -1,18 +1,16 @@
-const FormData = require("form-data");
-const pdf = require("pdf-parse");
+const path = require("path");
+2;
 const axios = require("axios");
+const FormData = require("form-data");
 const { v4: uuidv4 } = require("uuid");
 const mongoose = require("mongoose");
 const dotenv = require("dotenv");
 dotenv.config();
 const uploadedAt = new Date();
-// AWS SDK
 const { S3Client } = require("@aws-sdk/client-s3");
 const { Upload } = require("@aws-sdk/lib-storage");
-const { Readable } = require("stream");
 const File = require("../models/File");
 const extractedInfo = require("../models/extractedInfo");
-// AWS S3 Configuration
 const s3 = new S3Client({
   region: process.env.AWS_REGION,
   credentials: {
@@ -47,27 +45,217 @@ const approveSolution = async (req, res) => {
   try {
     const { documentId, tagId } = req.body;
 
+    // Validate if both documentId and tagId are provided
     if (!documentId || !tagId) {
       return res.status(400).json({ error: "Missing documentId or tagId" });
     }
 
-    const updatedFile = await File.findOneAndUpdate(
-      { _id: documentId, "deficiencies._id": tagId },
-      { $set: { "deficiencies.$.status": "approved" } },
-      { new: true }
-    );
-    console.log("tag approved", updatedFile);
-    if (!updatedFile) {
+    // Find the deficiency and get its current status
+    const file = await File.findOne({
+      _id: documentId,
+      "deficiencies.data._id": tagId,
+    });
+
+    if (!file) {
       return res.status(404).json({ error: "Document or tag not found" });
     }
 
-    res.status(200).json({ message: "Tag approved", document: updatedFile });
+    // Find the specific deficiency by tagId
+    const deficiency = file.deficiencies.data.find(
+      (def) => def._id.toString() === tagId
+    );
+
+    if (!deficiency) {
+      return res.status(404).json({ error: "Tag not found in document" });
+    }
+
+    // Toggle the status: if it's 'approved', set it to 'unapproved' and vice versa
+    const newStatus =
+      deficiency.status === "approved" ? "unapproved" : "approved";
+
+    // Update the status in the database
+    const updatedFile = await File.findOneAndUpdate(
+      { _id: documentId, "deficiencies.data._id": tagId },
+      { $set: { "deficiencies.data.$.status": newStatus } },
+      { new: true } // This option returns the updated document
+    );
+
+    // Return the updated file
+    res.status(200).json({
+      message: `Tag ${newStatus} successfully!`,
+      document: updatedFile,
+    });
   } catch (error) {
-    console.error("Error approving tag:", error);
+    console.error("Error toggling approval status:", error);
     res.status(500).json({ error: "Internal server error" });
   }
 };
+const { Readable } = require("stream");
 
+const uploadFile = async (req, res) => {
+  try {
+    if (!req.file) {
+      return res.status(400).json({ error: "No file uploaded." });
+    }
+
+    const userId = req.user?.id;
+    const clientAddress = req.body.address;
+    const facilityId = req.body.facilityId;
+    console.log("Client Address:", clientAddress);
+    console.log("Facility ID:", facilityId);
+    if (!userId) {
+      return res.status(401).json({ error: "Unauthorized: user ID missing." });
+    }
+
+    if (!clientAddress) {
+      return res.status(400).json({ error: "Client address is required." });
+    }
+
+    const existingFile = await File.findOne({
+      userId,
+      originalName: req.file.originalname,
+    });
+
+    if (existingFile) {
+      return res.status(400).json({
+        error: "File already exists.",
+        existingFileId: existingFile._id,
+      });
+    }
+
+    const fileUrl = await uploadToS3(req.file);
+
+    // Prepare form data for API calls
+    const formData = new FormData();
+    const fileStream = new Readable();
+    fileStream.push(req.file.buffer);
+    fileStream.push(null);
+
+    formData.append("file", fileStream, {
+      filename: req.file.originalname,
+      contentType: req.file.mimetype,
+    });
+
+    // 🔹 FIRST API CALL: Extract address from file
+    let extractedAddress = null;
+    try {
+      const addressApiResponse = await axios.post(
+        `${process.env.NGROK_URL}/extract-address/`,
+        formData,
+        { headers: { ...formData.getHeaders() } }
+      );
+
+      // Debug: Log the full response
+      console.log(
+        "Address API Full Response:",
+        JSON.stringify(addressApiResponse.data, null, 2)
+      );
+
+      // Extract address from result field
+      extractedAddress = addressApiResponse.data?.result || null;
+
+      console.log("Extracted Address:", extractedAddress);
+    } catch (addressError) {
+      console.error(
+        "Error extracting address from ngrok API:",
+        addressError.message
+      );
+      return res.status(500).json({
+        error: "Failed to extract address from document.",
+        details: addressError.message,
+      });
+    }
+
+    // 🔹 COMPARE ADDRESSES
+    if (
+      !extractedAddress ||
+      extractedAddress === "" ||
+      extractedAddress === "null"
+    ) {
+      return res.status(400).json({
+        error: "No address found in the document.",
+        debugInfo: {
+          extractedValue: extractedAddress,
+          responseReceived: true,
+        },
+      });
+    }
+
+    // Simple address comparison (you can make this more sophisticated)
+    const normalizeAddress = (addr) =>
+      addr?.toLowerCase().replace(/\s+/g, " ").trim();
+
+    const normalizedClientAddress = normalizeAddress(clientAddress);
+    const normalizedExtractedAddress = normalizeAddress(extractedAddress);
+
+    if (normalizedClientAddress !== normalizedExtractedAddress) {
+      return res.status(400).json({
+        error: "Address mismatch.",
+        clientAddress: clientAddress,
+        extractedAddress: extractedAddress,
+        message:
+          "The address provided does not match the address in the document.",
+      });
+    }
+
+    console.log("✅ Address verification successful!");
+
+    // 🔹 SECOND API CALL: Extract deficiencies (recreate FormData)
+    const formData2 = new FormData();
+    const fileStream2 = new Readable();
+    fileStream2.push(req.file.buffer);
+    fileStream2.push(null);
+
+    formData2.append("file", fileStream2, {
+      filename: req.file.originalname,
+      contentType: req.file.mimetype,
+    });
+
+    let extractedDeficiencies = [];
+    try {
+      const tagApiResponse = await axios.post(
+        `${process.env.NGROK_URL}/extract-ftags/`,
+        formData2,
+        { headers: { ...formData2.getHeaders() } }
+      );
+      extractedDeficiencies = tagApiResponse.data || [];
+    } catch (tagError) {
+      console.error(
+        "Error extracting deficiencies from ngrok API:",
+        tagError.message
+      );
+      // Continue even if deficiency extraction fails
+    }
+
+    // Save file entry to database
+    const fileEntry = await File.create({
+      userId,
+      facilityId,
+      originalName: req.file.originalname,
+      fileUrl,
+      filePath: req.file.path || "",
+      extractedAddress,
+      deficiencies: extractedDeficiencies,
+      uploadedAt: new Date(),
+    });
+
+    res.status(201).json({
+      message: "File uploaded and processed successfully!",
+      documentId: fileEntry._id,
+      fileUrl,
+      facilityId: fileEntry.facilityId,
+      extractedAddress,
+      deficiencies: extractedDeficiencies,
+      uploadedAt: fileEntry.uploadedAt,
+      addressVerified: true,
+    });
+  } catch (error) {
+    console.error("Error in file upload:", error.message);
+    res
+      .status(500)
+      .json({ error: "File upload failed.", details: error.message });
+  }
+};
 const fetchPolicy = async (req, res) => {
   try {
     const userId = req.user?.id;
@@ -138,7 +326,7 @@ const getUserDocuments = async (req, res) => {
     }
 
     const documents = await File.find({ userId });
-console.log("Documents:", documents);
+    console.log("Documents:", documents);
     res.status(200).json(documents);
   } catch (error) {
     console.error("Error fetching user documents:", error);
@@ -151,46 +339,47 @@ const extractInfoApi = async (req, res) => {
     if (!userId) {
       return res.status(401).json({ error: "Unauthorized: user ID missing." });
     }
+    let { text, tag, Deficiency, FileId } = req.body;
+    tag = Array.isArray(tag) ? tag : tag ? [tag] : [];
+    Deficiency = Array.isArray(Deficiency)
+      ? Deficiency
+      : Deficiency
+      ? [Deficiency]
+      : [];
 
-    const { text, Deficiency, FileId,tag } = req.body;
-    console.log("Incoming request:", { text, Deficiency, FileId });
-    if (!text || !Deficiency || !FileId) {
-      return res
-        .status(400)
-        .json({ error: "Text, Deficiency, and File ID are required." });
+    if (!text || !tag.length || !Deficiency.length || !FileId) {
+      return res.status(400).json({
+        error:
+          "Text, Tag (array), Deficiencies (array), and File ID are required.",
+      });
     }
 
-   
-    let tags = [];
     let policies = [];
-    let deficiencies = [];
 
     try {
       const response = await axios.post(
-        `${process.env.NGROK_URL}/extract-info/`,
+        `${process.env.NGROK_URL}/get-solution-policies/`,
         { text }
       );
-      tags = response.data.tags || [];
-      policies = response.data.policies || [];
-      deficiencies = [...(response.data.deficiencies || []), Deficiency];
+
+      policies = response.data.solution_policies || [];
+      console.log("Policies after extraction:", policies);
     } catch (ngrokError) {
       console.error("NGROK API call failed:", ngrokError.message);
       return res.status(500).json({ error: "Failed to process input text." });
     }
-    // ✅ Check for existing entry
+
     const existing = await extractedInfo.findOne({
       userId,
       fileId: FileId,
-    
-      // tags: { $all: tags },
-      deficiencies: { $all: deficiencies },
+      tags: { $all: tag },
+      deficiencies: { $all: Deficiency },
     });
 
     if (existing) {
       return res.status(200).json({
         message: "Similar extraction already exists.",
         data: existing,
-        tags: tag,
         isExisting: true,
       });
     }
@@ -199,11 +388,11 @@ const extractInfoApi = async (req, res) => {
       userId,
       fileId: FileId,
       inputText: text,
-      tags,
-      policies,
-      deficiencies,
+      tags: tag,
+      policies: policies,
+      deficiencies: Deficiency,
     });
-
+    console.log("Saved extracted info:", savedInfo);
     res.status(201).json({
       message: "Extraction successful.",
       data: savedInfo,
@@ -211,23 +400,24 @@ const extractInfoApi = async (req, res) => {
     });
   } catch (error) {
     console.error("Server error:", error.message);
-    res
-      .status(500)
-      .json({ error: "Server error occurred.", details: error.message });
+    res.status(500).json({
+      error: "Server error occurred.",
+      details: error.message,
+    });
   }
 };
-
 
 const getUserFiles = async (req, res) => {
   try {
     const userId = req.user?.id;
-
+    const { facilityId } = req.body;
     if (!userId) {
       return res.status(401).json({ error: "Unauthorized: User ID not found" });
     }
-
-    const userFiles = await File.find({ userId });
-
+    if (!facilityId) {
+      return res.status(400).json({ error: "Facility ID is required" });
+    }
+    const userFiles = await File.find({ userId, facilityId });
     if (!userFiles || userFiles.length === 0) {
       return res.status(404).json({ error: "No files found for this user" });
     }
@@ -350,25 +540,25 @@ const regeneratePolicy = async (req, res) => {
     const extractedInfoDoc = await extractedInfo.findById(extractedInfoId);
 
     if (!extractedInfoDoc) {
-      return res.status(404).json({ error: "Extracted info record not found." });
+      return res
+        .status(404)
+        .json({ error: "Extracted info record not found." });
     }
 
-    // Always regenerate (overwrite if already exists)
-
-    // Call external policy generation service
     let solutionPolicies = null;
 
     try {
+      const textString = [...tags, ...deficiencies, ...policies].join(", ");
+
       const response = await axios.post(
         `${process.env.NGROK_URL}/get-solution-policies/`,
         {
-          tags,
-          deficiencies,
-          policies,
+          text: textString,
         }
       );
 
       solutionPolicies = response.data;
+      console.log("NGROK API response:", solutionPolicies);
     } catch (apiError) {
       console.error("NGROK policy API call failed:", apiError.message);
       return res.status(500).json({
@@ -386,7 +576,7 @@ const regeneratePolicy = async (req, res) => {
       await extractedInfoDoc.save();
 
       return res.status(200).json({
-        message: "Policy regeneration successful. Existing policy was replaced.",
+        message: "Policy regeneration successful.",
         data: extractedInfoDoc.updatedPolicy,
         isExisting: false,
       });
@@ -403,7 +593,6 @@ const regeneratePolicy = async (req, res) => {
     });
   }
 };
-
 
 const fetchPolicyByTagAndDeficiency = async (req, res) => {
   try {
@@ -430,7 +619,6 @@ const fetchPolicyByTagAndDeficiency = async (req, res) => {
       fileId: fileID,
       deficiencies: { $in: [normalizedDef] },
     });
-
 
     if (!existing) {
       return res.status(404).json({
@@ -469,7 +657,7 @@ const updateSolution = async (req, res) => {
       return res.status(404).json({ error: "File not found for this user." });
     }
 
-    const deficiency = file.deficiencies.find(
+    const deficiency = file.deficiencies.data.find(
       (d) => d._id.toString() === tagId
     );
 
@@ -479,14 +667,10 @@ const updateSolution = async (req, res) => {
         .json({ error: "Deficiency not found in this file." });
     }
 
-    // ✅ Properly assign the structured solution object
     deficiency.Solution =
       solution && typeof solution === "object" ? solution : null;
 
     await file.save();
-
-    console.log("✅ updated solution:", deficiency.Solution);
-
     res.status(200).json({
       message: "Solution updated successfully.",
       updatedSolution: deficiency.Solution,
@@ -534,14 +718,14 @@ const getPocApi = async (req, res) => {
       return res.status(500).json({ error: "Failed to fetch solution." });
     }
     console.log("Solution data:", solutionData);
-    const updatedDeficiencies = file.deficiencies.map((deficiency) => {
+    const updatedDeficiencies = file.deficiencies.data.map((deficiency) => {
       if (tags.includes(deficiency.Tag)) {
-        deficiency.Solution = solutionData; // Save full Q&A object
+        deficiency.Solution = solutionData;
       }
       return deficiency;
     });
 
-    file.deficiencies = updatedDeficiencies;
+    file.deficiencies.data = updatedDeficiencies;
     const updatedFile = await file.save();
     console.log("Updated file:", updatedFile);
     return res.status(200).json({
@@ -557,81 +741,6 @@ const getPocApi = async (req, res) => {
   }
 };
 
-const uploadFile = async (req, res) => {
-  try {
-    if (!req.file) {
-      return res.status(400).json({ error: "No file uploaded." });
-    }
-
-    const userId = req.user?.id;
-    if (!userId) {
-      return res.status(401).json({ error: "Unauthorized: user ID missing." });
-    }
-
-    // ✅ Check for existing file with same name for same user
-    const existingFile = await File.findOne({
-      userId,
-      originalName: req.file.originalname,
-    });
-
-    if (existingFile) {
-      return res.status(400).json({
-        error: "File already exists.",
-        existingFileId: existingFile._id,
-      });
-    }
-
-    // ⬇️ Continue as normal
-    const fileUrl = await uploadToS3(req.file);
-
-    const formData = new FormData();
-    const fileStream = new Readable();
-    fileStream.push(req.file.buffer);
-    fileStream.push(null);
-
-    formData.append("file", fileStream, {
-      filename: req.file.originalname,
-      contentType: req.file.mimetype,
-    });
-
-    let extractedDeficiencies = [];
-    try {
-      const tagApiResponse = await axios.post(
-        `${process.env.NGROK_URL}/extract-ftags/`,
-        formData,
-        { headers: { ...formData.getHeaders() } }
-      );
-      extractedDeficiencies = tagApiResponse.data || [];
-    } catch (tagError) {
-      console.error(
-        "Error extracting deficiencies from ngrok API:",
-        tagError.message
-      );
-    }
-
-    const fileEntry = await File.create({
-      userId,
-      originalName: req.file.originalname,
-      fileUrl,
-      filePath: req.file.path || "",
-      deficiencies: extractedDeficiencies,
-      uploadedAt: new Date(),
-    });
-
-    res.status(201).json({
-      message: "File uploaded and processed successfully!",
-      documentId: fileEntry._id,
-      fileUrl,
-      deficiencies: extractedDeficiencies,
-      uploadedAt: fileEntry.uploadedAt,
-    });
-  } catch (error) {
-    console.error("Error in file upload:", error.message);
-    res
-      .status(500)
-      .json({ error: "File upload failed.", details: error.message });
-  }
-};
 const fetchTagsByEmail1 = async (req, res) => {
   const { email } = req.body;
 
@@ -957,5 +1066,5 @@ module.exports = {
   deleteFile,
   approveSolution,
   updateSolution,
-   getUserDocuments,
+  getUserDocuments,
 };

@@ -54,6 +54,9 @@ const userSchema = new mongoose.Schema(
       type: String,
       required: [false, "Facility name is required"],
     },
+    facilityId: {
+      type: String,
+    },
     priceType: {
       type: String,
       enum: ["Basic", "Pro", "Enterprise"],
@@ -71,7 +74,22 @@ const userSchema = new mongoose.Schema(
       type: String,
       default: null,
     },
-
+    assignedFacilities: [
+      {
+        type: mongoose.Schema.Types.ObjectId,
+        ref: "RegionalAdminRequest",
+      },
+    ],
+    assignedFacilityAdmins: [
+      {
+        type: mongoose.Schema.Types.ObjectId,
+        ref: "User",
+      },
+    ],
+    regionalAdmin: {
+      type: mongoose.Schema.Types.ObjectId,
+      ref: "User",
+    },
     refreshToken: {
       type: String,
       default: null,

@@ -8,7 +8,6 @@ const POCAllySection = ({
   data,
   activeTab,
   selectedPolicyID,
-  setActiveTab,
   selectedDocument,
   selectedTag,
   selectedID,
@@ -48,6 +47,7 @@ const POCAllySection = ({
       ></div>
 
       <div className="flex flex-col lg:flex-row mt-4 lg:mt-8 gap-4 ">
+
         <div className="w-full lg:w-[180px] flex-shrink-0">
           <TagList
             selectedDocument={selectedDocument}
@@ -67,6 +67,7 @@ const POCAllySection = ({
             selectedTag={selectedTag}
           />
         </div>
+
         <div className="w-full lg:flex-1">
           <CorrectionPanel
             data={data}

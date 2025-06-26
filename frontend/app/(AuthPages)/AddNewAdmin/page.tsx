@@ -21,24 +21,8 @@ const Adduser = () => {
   const [users, setUsers] = useState<User[]>([]);
   const [loading, setLoading] = useState(true);
 
-  // Pagination state
   const [currentPage, setCurrentPage] = useState(1);
   const usersPerPage = 10;
-
-  // useEffect(() => {
-  //   fetch(`${process.env.NEXT_PUBLIC_API_BASE_URL}/api/users/User123`)
-  //     .then((res) => res.json())
-  //     .then((data) => {
-  //       const facilityAdmins = data.filter(
-  //         (user: any) => user.role === "Facility Admin"
-  //       );
-  //       setUsers(facilityAdmins);
-  //     })
-  //     .catch((error) => {
-  //       console.error("Error fetching data:", error);
-  //     });
-  // }, []);
-
 
   useEffect(() => {
   fetch(`${process.env.NEXT_PUBLIC_API_BASE_URL}/api/users/User123`, {
@@ -46,7 +30,7 @@ const Adduser = () => {
     headers: {
       "Content-Type": "application/json",
     },
-    body: JSON.stringify({}), // empty body
+    body: JSON.stringify({}),
   })
     .then((res) => res.json())
     .then((data) => {
@@ -65,12 +49,10 @@ const Adduser = () => {
     return () => clearTimeout(timer);
   }, []);
 
-  // Sort users by createdAt descending
   const sortedUsers = [...new Map(users.map((u) => [u._id, u])).values()].sort(
     (a, b) => new Date(b.createdAt).getTime() - new Date(a.createdAt).getTime()
   );
 
-  // Pagination slicing
   const indexOfLastUser = currentPage * usersPerPage;
   const indexOfFirstUser = indexOfLastUser - usersPerPage;
   const currentUsers = sortedUsers.slice(indexOfFirstUser, indexOfLastUser);
@@ -86,7 +68,6 @@ const Adduser = () => {
 
   return (
     <div className="flex flex-col lg:flex-row h-screen">
-      {/* Mobile Topbar */}
       <div className="lg:hidden flex items-center justify-between px-4 py-2 bg-[#002F6C] text-white">
         <button onClick={toggleSidebar} className="text-2xl">
           ☰
@@ -103,7 +84,7 @@ const Adduser = () => {
         </div>
       ) : (
         <>
-          {/* Main Content */}
+        
           <div className="lg:ml-64 p-4 sm:p-8 w-full">
             <header className="flex flex-col sm:flex-row justify-between items-center mb-6">
               <h2 className="text-2xl sm:text-3xl font-bold">
@@ -114,7 +95,7 @@ const Adduser = () => {
               </div>
             </header>
 
-            {/* Add User Button */}
+            
             <div className="w-full sm:w-3/4 mx-auto text-center mb-10">
               <p className="text-gray-600 text-sm sm:text-base leading-6 mb-4">
                 Click the button below to add facility admin
@@ -129,7 +110,7 @@ const Adduser = () => {
               </Link>
             </div>
 
-            {/* User Table */}
+            
             <div className="overflow-x-auto ">
               <table className="min-w-full text-left border-collapse border border-[#F2F2F2]">
                 <thead>
@@ -167,7 +148,7 @@ const Adduser = () => {
               </table>
             </div>
 
-            {/* Pagination Controls */}
+           
             <div className="flex justify-center items-center mt-6 space-x-2">
               <button
                 onClick={() => goToPage(currentPage - 1)}

@@ -1,5 +1,3 @@
-
-
 "use client";
 
 import Image from "next/image";
@@ -147,47 +145,47 @@ export default function Dashboard() {
   //   fetchDocuments();
   // }, []);
 
-
   useEffect(() => {
-  const fetchDocuments = async () => {
-    try {
-      const token = Cookies.get("token");
-      if (!token) {
-        toast.error("Token missing");
-        return;
-      }
-
-      const res = await fetch(
-        `${process.env.NEXT_PUBLIC_API_BASE_URL}/api/files/docs`,
-        {
-          method: "POST",  // changed to POST
-          headers: {
-            Authorization: `Bearer ${token}`,
-            "Content-Type": "application/json",
-          },
-          body: JSON.stringify({}), // empty body
+    const fetchDocuments = async () => {
+      try {
+        const token = Cookies.get("token");
+        const facilityId = Cookies.get("selectedFacilityId");
+        if (!token) {
+          console.error("Access token not found!");
+          return;
         }
-      );
+        const res = await fetch(
+          `${process.env.NEXT_PUBLIC_API_BASE_URL}/api/files/docs`,
+          {
+            method: "POST",
+            headers: {
+              Authorization: `Bearer ${token}`,
+              Accept: "application/json",
+              "Content-Type": "application/json",
+            },
+            body: JSON.stringify({ facilityId }),
+          }
+        );
 
-      const data = await res.json();
+        const data = await res.json();
 
-      if (Array.isArray(data) && data.length > 0) {
-        setDocuments(data);
+        if (Array.isArray(data) && data.length > 0) {
+          setDocuments(data);
 
-        // ✅ Auto-select first document
-        const firstDoc = data[0];
-        setSelectedDocument(firstDoc.originalName);
-        setSelectedDocumentId(firstDoc._id);
-        setTagsData(firstDoc.deficiencies || []);
+      
+          const firstDoc = data[0];
+          setSelectedDocument(firstDoc.originalName);
+          setSelectedDocumentId(firstDoc._id);
+          setTagsData(firstDoc.deficiencies.data || []);
+        }
+      } catch (err) {
+        console.error("Error fetching documents:", err);
+        toast.error("Failed to load documents");
       }
-    } catch (err) {
-      console.error("Error fetching documents:", err);
-      toast.error("Failed to load documents");
-    }
-  };
+    };
 
-  fetchDocuments();
-}, []);
+    fetchDocuments();
+  }, []);
 
   useEffect(() => {
     const handleClickOutside = (event: MouseEvent) => {
@@ -207,7 +205,10 @@ export default function Dashboard() {
   return (
     <div className="flex flex-col lg:flex-row">
       <HeaderWithToggle onToggleSidebar={toggleSidebar} />
-      <Sidebar isSidebarOpen={isSidebarOpen} setIsSidebarOpen={setIsSidebarOpen} />
+      <Sidebar
+        isSidebarOpen={isSidebarOpen}
+        setIsSidebarOpen={setIsSidebarOpen}
+      />
 
       {loading ? (
         <div className="flex items-center justify-center w-full h-screen">
@@ -227,7 +228,9 @@ export default function Dashboard() {
 
           <div className="flex items-center justify-between mb-6 ">
             <div className="flex items-center space-x-4">
-              <h3 className="text-lg lg:text-2xl font-bold text-blue-900">Facility</h3>
+              <h3 className="text-lg lg:text-2xl font-bold text-blue-900">
+                Facility
+              </h3>
               <div className="relative" ref={dropdownRef}>
                 <button
                   onClick={toggleDropdown}
@@ -239,7 +242,9 @@ export default function Dashboard() {
                     fill="currentColor"
                     viewBox="0 0 20 20"
                     style={{
-                      transform: dropdownOpen ? "rotate(180deg)" : "rotate(0deg)",
+                      transform: dropdownOpen
+                        ? "rotate(180deg)"
+                        : "rotate(0deg)",
                     }}
                   >
                     <path
