@@ -116,7 +116,7 @@ const Sidebar: React.FC<SidebarProps> = ({
       path: "/HistoryPage",
       label: "History",
       icon: <FaClipboard />,
-      roles: ["Regional Admin", "Facility Admin","super Admin"],
+      roles: ["Regional Admin", "Facility Admin","Super Admin"],
     },
     {
       path: "/InsightPage",
