@@ -218,13 +218,11 @@ function docUpload() {
 
       const result = await response.json();
 
-      // 🔹 DEBUG: Check the actual response structure
       console.log("Full API Result:", result);
       console.log("Result data type:", typeof result.data);
       console.log("Is result.data an array?", Array.isArray(result.data));
 
-      // Handle different response structures - Fixed TypeScript error
-      let dataArray: any[] = []; // Explicitly type as any[]
+      let dataArray: any[] = [];
       if (Array.isArray(result.data)) {
         dataArray = result.data;
       } else if (Array.isArray(result)) {
@@ -243,6 +241,7 @@ function docUpload() {
       );
 
       setData(dataArray);
+
       if (matched?.Solution?.length) {
         setSolution(matched.Solution);
         console.log("Solution:", matched.Solution);
@@ -493,9 +492,10 @@ function docUpload() {
       setSolution(newSolution);
       setSelectedDocument((prev) => {
         if (!prev) return prev;
-        const updatedData = prev.deficiencies?.data?.map((def) =>
-          def.Tag === selectedTag ? { ...def, Solution: newSolution } : def
-        ) || [];
+        const updatedData =
+          prev.deficiencies?.data?.map((def) =>
+            def.Tag === selectedTag ? { ...def, Solution: newSolution } : def
+          ) || [];
 
         return {
           ...prev,
@@ -782,6 +782,7 @@ function docUpload() {
               (() => {
                 return (
                   <TagDetailsView
+                    data={data}
                     navigateToPOCTab={navigateToPOCTab}
                     selectedDocument={selectedDocument}
                     selectedTag={selectedTag || ""}

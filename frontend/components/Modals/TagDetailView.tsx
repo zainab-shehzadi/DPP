@@ -1,9 +1,10 @@
 // components/TagDetailsView.tsx
 import Cookies from "js-cookie";
-import { useState } from "react";
+import { useEffect, useState } from "react";
 import { toast } from "react-toastify";
 
 interface TagDetailsViewProps {
+  data: any[];
   selectedDocument: any;
   selectedTag: string;
   selectedLongDesc: string | null;
@@ -13,6 +14,7 @@ interface TagDetailsViewProps {
 }
 
 const TagDetailsView: React.FC<TagDetailsViewProps> = ({
+  data,
   selectedDocument,
   selectedTag,
   handleTagClick,
@@ -20,21 +22,32 @@ const TagDetailsView: React.FC<TagDetailsViewProps> = ({
   navigateToPOCTab,
 }) => {
   // Extract tags from document data
-  const derivedTags =
-    Array.isArray(selectedDocument?.tags) && selectedDocument.tags.length > 0
-      ? selectedDocument.tags
-      : selectedDocument?.deficiencies?.data?.map((def: any) => ({
-          id: def.id,
-          tag: def.Tag,
-          longDescription: def.Deficiency,
-          solution: def.Solution,
-        })) || [];
 
-  console.log("derivedTags", derivedTags);
+const safeDataArray = Array.isArray(data) ? data : [];
+
+const derivedTags = (
+  Array.isArray(selectedDocument?.tags) && selectedDocument.tags.length > 0
+    ? selectedDocument.tags
+    : selectedDocument?.deficiencies?.data?.map((def: any) => ({
+        id: def.id,
+        tag: def.Tag,
+        longDescription: def.Deficiency,
+        solution: def.Solution,
+      })) || []
+).map((tag: any) => {
+  const override = safeDataArray.find(
+    (d: any) => d?.Tag?.trim() === tag?.tag?.trim()
+  );
+  return {
+    ...tag,
+    solution: override?.Solution || tag.solution || {},
+  };
+});
+console.log("derivedTags", derivedTags)
   const selectedTagObj = derivedTags?.find(
     (tag: any) => tag.tag === selectedTag
   );
-  console.log("solution", selectedTagObj?.solution);
+
   const [loading, setLoading] = useState(false);
   const chunkText = (
     text: string,
